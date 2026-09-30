@@ -17,7 +17,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   KeyboardAvoidingView,
-  Linking,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -34,11 +33,10 @@ import CharacterArtwork from "./src/CharacterArtwork";
 import { portraits } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
+import EmailVerification from "./src/EmailVerification";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
-const PRIVACY_URL = "https://github.com/davelabranchejr-byte/PayPlace-/blob/release/ios-1.0.0/docs/PRIVACY.md";
-const SUPPORT_URL = "https://github.com/davelabranchejr-byte/PayPlace-/blob/release/ios-1.0.0/docs/SUPPORT.md";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -1677,13 +1675,12 @@ const ONBOARDING_STEPS = [
     key: "email",
     mascot: "Tate",
     role: "Tiny Win Champion",
-    question: "Email for later? (optional)",
-    helper: "Your email stays on this device. Online accounts and neighborhood email are upcoming.",
+    question: "What’s your email?",
+    helper: "Annie will send your welcome letter and a code to confirm your email when email delivery is available.",
     placeholder: "you@example.com",
     image: portraits.tate,
     type: "text",
     keyboardType: "email-address",
-    optional: true,
     accent: palette.teal,
   },
   {
@@ -1746,7 +1743,7 @@ const ONBOARDING_STEPS = [
     mascot: "The Post Office Treehouse",
     role: "Letters from Future You",
     question: "Anything else you want us to know?",
-    helper: "A hope, a worry, a promise to yourself. Your notes stay on this device.",
+    helper: "A hope, a worry, a promise to yourself. This can shape future letters.",
     placeholder: "I want Future Me to remember…",
     image: greatAnnieHero,
     type: "multiline",
@@ -1772,6 +1769,10 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   function next() {
     if (!canContinue) {
       Alert.alert("One tiny detail", "Choose or enter an answer before continuing.");
+      return;
+    }
+    if (step.key === "email" && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(String(value).trim())) {
+      Alert.alert("One tiny detail", "Enter a valid email address before continuing.");
       return;
     }
     if (isLast) {
@@ -1811,11 +1812,20 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
             <TouchableOpacity accessibilityRole="button" onPress={() => onComplete({ ...answers, name: answers.name || "Neighbor", arrivalReason: "Just visiting", guest: true })} style={{ paddingVertical: 15, alignItems: "center" }}>
               <Text style={{ color: palette.purple, fontSize: 15, fontWeight: "800" }}>Just visiting? Take a look around</Text>
             </TouchableOpacity>
-            <SupportLinks />
           </View>
         </ScrollView>
       </SafeAreaView>
     );
+  }
+
+  if (welcomeStage === "email") {
+    return <SafeAreaView style={styles.onboardingSafe}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <EmailVerification answers={answers} onVerified={onComplete} onVisit={onComplete} onEdit={() => { setStepIndex(1); setWelcomeStage("questions"); }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>;
   }
 
   if (welcomeStage === "quilt") {
@@ -1838,7 +1848,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
               <Text style={styles.quiltNoteSignature}>Love, Annie 🌳</Text>
             </View>
             <Text style={styles.quiltGiftFooter}>Annie quietly stitches the matching half into the neighborhood quilt. Your place is here now.</Text>
-            <TouchableOpacity style={styles.quiltGiftButton} onPress={() => onComplete(answers)}>
+            <TouchableOpacity style={styles.quiltGiftButton} onPress={() => setWelcomeStage("email")}>
               <Text style={styles.quiltGiftButtonText}>Enter the neighborhood</Text>
               <Ionicons name="home" size={20} color="white" />
             </TouchableOpacity>
@@ -1931,22 +1941,6 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   );
 }
 
-function SupportLinks() {
-  function openPage(url) {
-    Linking.openURL(url).catch(() => Alert.alert("Could not open this page", "Please try again when you have an internet connection."));
-  }
-  return (
-    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 18 }}>
-      <TouchableOpacity accessibilityRole="link" accessibilityLabel="Privacy Policy" onPress={() => openPage(PRIVACY_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
-        <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800" }}>Privacy Policy</Text>
-      </TouchableOpacity>
-      <TouchableOpacity accessibilityRole="link" accessibilityLabel="Help & Support" onPress={() => openPage(SUPPORT_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
-        <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800" }}>Help & Support</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
 function Header() {
   return (
     <View style={styles.header}>
@@ -1970,7 +1964,6 @@ function Header() {
         Money without shame.
       </Text>
       <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", marginTop: 5 }}>NEIGHBORHOOD PREVIEW · UNDER CONSTRUCTION</Text>
-      <SupportLinks />
     </View>
   );
 }
@@ -2009,7 +2002,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
             <CharacterStory person={familyMember} onBack={() => setFoyerStage("home")} />
           )}
           {foyerStage === "leaves" && (
-            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Brush Annie's leaves aside" testID="brush-annie-leaves" style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
+            <TouchableOpacity style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
               <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               <View style={styles.foyerArrivalShade} />
               <View style={styles.leafCurtain}>
@@ -2038,7 +2031,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
               <View style={styles.annieTrunk}>
                 <View style={styles.trunkRingOne} />
                 <View style={styles.trunkRingTwo} />
-                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter Annie's home" testID="annie-red-door" style={styles.redDoor} activeOpacity={0.9} onPress={() => setFoyerStage("home")}>
+                <TouchableOpacity style={styles.redDoor} activeOpacity={0.9} onPress={() => setFoyerStage("home")}>
                   <View style={styles.redDoorInset}>
                     <Ionicons name="leaf" size={32} color="#F7DCA7" />
                     <Text style={styles.redDoorNumber}>P</Text>
@@ -2089,7 +2082,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
         <CharacterArtwork source={greatAnnieHero} style={styles.heroArtwork} resizeMode="contain" />
         <View style={styles.heroEdgeShade} />
 
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's family wall" testID="open-family-wall" style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
+        <TouchableOpacity style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
           <Ionicons name="leaf" size={13} color="#FFFFFF" />
           <Text style={styles.annieChipText}>Welcome Home • Tap Annie's red door</Text>
         </TouchableOpacity>
@@ -3998,9 +3991,6 @@ function BottomNav({ current, switchTab }) {
           return (
             <TouchableOpacity
               key={item.name}
-              accessibilityRole="button"
-              accessibilityLabel={item.name}
-              testID={`nav-${item.name.toLowerCase()}`}
               style={[
                 styles.navItem,
                 active && { backgroundColor: item.color + "18" },
