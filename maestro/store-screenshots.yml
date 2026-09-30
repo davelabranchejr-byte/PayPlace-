@@ -12,35 +12,35 @@ appId: com.davelabranchejr.payplace
     direction: DOWN
 - tapOn: 'Just visiting\? Take a look around'
 - assertVisible: 'Money without shame.'
+- assertVisible: 'Privacy Policy'
+- assertVisible: 'Help & Support'
 - takeScreenshot: 02-neighborhood
 - tapOn:
-    text: Bills
-    index: 0
+    id: nav-bills
 - assertVisible: 'Add, pay, review, or delete bills.'
 - takeScreenshot: 03-bills
 - tapOn:
-    text: Budget
-    index: 0
+    id: nav-budget
 - assertVisible: 'Update your money numbers. This is the cockpit.'
 - takeScreenshot: 04-budget
 - tapOn:
-    text: Debt
-    index: 0
+    id: nav-debt
 - assertVisible: 'Debt Plan'
 - takeScreenshot: 05-debt
 - tapOn:
-    text: Calm
-    index: 0
+    id: nav-calm
 - assertVisible: 'Take a breath. You’re home.'
 - takeScreenshot: 06-calm
 - tapOn:
-    text: Home
-    index: 0
-- tapOn: 'Welcome Home.*Tap Annie.s red door'
-- assertVisible: 'Tap to brush'
-- tapOn: 'Tap to brush'
+    id: nav-home
+- tapOn:
+    id: open-family-wall
+- assertVisible: "Brush Annie's leaves aside"
+- tapOn:
+    id: brush-annie-leaves
 - assertVisible: "Annie's red door"
-- tapOn: P
+- tapOn:
+    id: annie-red-door
 - scrollUntilVisible:
     element:
       text: 'Meet Bobbie. Read their background story.'
