@@ -1,0 +1,10 @@
+node_modules/
+.expo/
+dist/
+.github/
+PayPlaceFinal.js
+*.zip
+*.ipa
+*.p12
+*.mobileprovision
+.env*
