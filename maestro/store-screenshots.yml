@@ -1,0 +1,62 @@
+appId: com.davelabranchejr.payplace
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: 'There you are.'
+    timeout: 30000
+- takeScreenshot: 01-welcome
+- scrollUntilVisible:
+    element:
+      text: 'Just visiting\? Take a look around'
+    direction: DOWN
+- tapOn: 'Just visiting\? Take a look around'
+- assertVisible: 'Money without shame.'
+- takeScreenshot: 02-neighborhood
+- tapOn:
+    text: Bills
+    index: 0
+- assertVisible: 'Add, pay, review, or delete bills.'
+- takeScreenshot: 03-bills
+- tapOn:
+    text: Budget
+    index: 0
+- assertVisible: 'Update your money numbers. This is the cockpit.'
+- takeScreenshot: 04-budget
+- tapOn:
+    text: Debt
+    index: 0
+- assertVisible: 'Debt Plan'
+- takeScreenshot: 05-debt
+- tapOn:
+    text: Calm
+    index: 0
+- assertVisible: 'Take a breath. You’re home.'
+- takeScreenshot: 06-calm
+- tapOn:
+    text: Home
+    index: 0
+- tapOn: 'Welcome Home.*Tap Annie.s red door'
+- assertVisible: 'Tap to brush'
+- tapOn: 'Tap to brush'
+- assertVisible: "Annie's red door"
+- tapOn: P
+- scrollUntilVisible:
+    element:
+      text: 'Meet Bobbie. Read their background story.'
+    direction: DOWN
+- takeScreenshot: 07-family-wall
+- tapOn: 'Meet Bobbie. Read their background story.'
+- assertVisible: 'MEET THE FAMILY'
+- assertVisible: 'Confidence Queen'
+- takeScreenshot: 08-bobbie
+- tapOn:
+    text: 'Back to the family wall'
+    index: 0
+- scrollUntilVisible:
+    element:
+      text: 'Meet Tate. Read their background story.'
+    direction: DOWN
+- tapOn: 'Meet Tate. Read their background story.'
+- assertVisible: 'Tiny Win Champion'
+- takeScreenshot: 09-tate
