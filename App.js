@@ -2009,7 +2009,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
             <CharacterStory person={familyMember} onBack={() => setFoyerStage("home")} />
           )}
           {foyerStage === "leaves" && (
-            <TouchableOpacity style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Brush Annie's leaves aside" testID="brush-annie-leaves" style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
               <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               <View style={styles.foyerArrivalShade} />
               <View style={styles.leafCurtain}>
@@ -2038,7 +2038,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
               <View style={styles.annieTrunk}>
                 <View style={styles.trunkRingOne} />
                 <View style={styles.trunkRingTwo} />
-                <TouchableOpacity style={styles.redDoor} activeOpacity={0.9} onPress={() => setFoyerStage("home")}>
+                <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter Annie's home" testID="annie-red-door" style={styles.redDoor} activeOpacity={0.9} onPress={() => setFoyerStage("home")}>
                   <View style={styles.redDoorInset}>
                     <Ionicons name="leaf" size={32} color="#F7DCA7" />
                     <Text style={styles.redDoorNumber}>P</Text>
@@ -2089,7 +2089,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
         <CharacterArtwork source={greatAnnieHero} style={styles.heroArtwork} resizeMode="contain" />
         <View style={styles.heroEdgeShade} />
 
-        <TouchableOpacity style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's family wall" testID="open-family-wall" style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
           <Ionicons name="leaf" size={13} color="#FFFFFF" />
           <Text style={styles.annieChipText}>Welcome Home • Tap Annie's red door</Text>
         </TouchableOpacity>
@@ -3998,6 +3998,9 @@ function BottomNav({ current, switchTab }) {
           return (
             <TouchableOpacity
               key={item.name}
+              accessibilityRole="button"
+              accessibilityLabel={item.name}
+              testID={`nav-${item.name.toLowerCase()}`}
               style={[
                 styles.navItem,
                 active && { backgroundColor: item.color + "18" },
