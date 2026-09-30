@@ -17,6 +17,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   Modal,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -36,6 +37,8 @@ import ConstructionNotice from "./src/ConstructionNotice";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
+const PRIVACY_URL = "https://github.com/davelabranchejr-byte/PayPlace-/blob/release/ios-1.0.0/docs/PRIVACY.md";
+const SUPPORT_URL = "https://github.com/davelabranchejr-byte/PayPlace-/blob/release/ios-1.0.0/docs/SUPPORT.md";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -1674,12 +1677,13 @@ const ONBOARDING_STEPS = [
     key: "email",
     mascot: "Tate",
     role: "Tiny Win Champion",
-    question: "What’s your email?",
-    helper: "We’ll use this for your account and important neighborhood mail.",
+    question: "Email for later? (optional)",
+    helper: "Your email stays on this device. Online accounts and neighborhood email are upcoming.",
     placeholder: "you@example.com",
     image: portraits.tate,
     type: "text",
     keyboardType: "email-address",
+    optional: true,
     accent: palette.teal,
   },
   {
@@ -1742,7 +1746,7 @@ const ONBOARDING_STEPS = [
     mascot: "The Post Office Treehouse",
     role: "Letters from Future You",
     question: "Anything else you want us to know?",
-    helper: "A hope, a worry, a promise to yourself. This can shape future letters.",
+    helper: "A hope, a worry, a promise to yourself. Your notes stay on this device.",
     placeholder: "I want Future Me to remember…",
     image: greatAnnieHero,
     type: "multiline",
@@ -1807,6 +1811,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
             <TouchableOpacity accessibilityRole="button" onPress={() => onComplete({ ...answers, name: answers.name || "Neighbor", arrivalReason: "Just visiting", guest: true })} style={{ paddingVertical: 15, alignItems: "center" }}>
               <Text style={{ color: palette.purple, fontSize: 15, fontWeight: "800" }}>Just visiting? Take a look around</Text>
             </TouchableOpacity>
+            <SupportLinks />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -1926,6 +1931,22 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   );
 }
 
+function SupportLinks() {
+  function openPage(url) {
+    Linking.openURL(url).catch(() => Alert.alert("Could not open this page", "Please try again when you have an internet connection."));
+  }
+  return (
+    <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 18 }}>
+      <TouchableOpacity accessibilityRole="link" accessibilityLabel="Privacy Policy" onPress={() => openPage(PRIVACY_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
+        <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800" }}>Privacy Policy</Text>
+      </TouchableOpacity>
+      <TouchableOpacity accessibilityRole="link" accessibilityLabel="Help & Support" onPress={() => openPage(SUPPORT_URL)} style={{ minHeight: 44, justifyContent: "center" }}>
+        <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800" }}>Help & Support</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 function Header() {
   return (
     <View style={styles.header}>
@@ -1949,6 +1970,7 @@ function Header() {
         Money without shame.
       </Text>
       <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", marginTop: 5 }}>NEIGHBORHOOD PREVIEW · UNDER CONSTRUCTION</Text>
+      <SupportLinks />
     </View>
   );
 }
