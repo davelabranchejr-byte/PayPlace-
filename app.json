@@ -23,7 +23,7 @@
       "buildNumber": "1",
       "supportsTablet": false
     },
-    "owner": "pilotpay",
+    "owner": "payplace",
     "extra": {
       "eas": {
         "projectId": "4be1e462-b04c-492b-bb9e-d922655dba9f"
