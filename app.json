@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "PayPlace",
+    "description": "A welcoming place to plan your budget, bills, and debt\u2014without shame.",
+    "icon": "./assets/branding/payplace-icon.png",
+    "slug": "payplace",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/branding/payplace-icon.png"
+    },
+    "ios": {
+      "icon": "./assets/branding/payplace-icon.png",
+      "bundleIdentifier": "com.davelabranchejr.payplace",
+      "buildNumber": "1",
+      "supportsTablet": false
+    },
+    "owner": "pilotpay",
+    "extra": {
+      "eas": {
+        "projectId": "4be1e462-b04c-492b-bb9e-d922655dba9f"
+      }
+    }
+  }
+}

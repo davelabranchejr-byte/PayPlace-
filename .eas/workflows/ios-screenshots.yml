@@ -1,0 +1,31 @@
+name: Capture PayPlace iPhone screenshots
+
+jobs:
+  build_simulator:
+    name: Build iPhone simulator copy
+    type: build
+    params:
+      platform: ios
+      profile: ios-screenshots
+  capture_screenshots:
+    name: Check screens and capture App Store images
+    needs: [build_simulator]
+    runs_on: macos-medium
+    image: sdk-54
+    steps:
+      - uses: eas/checkout
+      - uses: eas/download_build
+        id: simulator_app
+        with:
+          build_id: ${{ needs.build_simulator.outputs.build_id }}
+          extensions: [app]
+      - name: Install Maestro from its official Homebrew tap
+        run: brew install mobile-dev-inc/tap/maestro
+      - name: Capture native iPhone screens
+        run: node scripts/capture-ios-screenshots.mjs "${{ steps.simulator_app.outputs.artifact_path }}"
+      - uses: eas/upload_artifact
+        if: ${{ always() }}
+        with:
+          type: other
+          name: PayPlace iPhone Screenshots
+          path: ios-artifacts/**/*

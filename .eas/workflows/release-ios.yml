@@ -1,0 +1,16 @@
+name: Build and upload PayPlace iPhone release
+
+jobs:
+  build_ios:
+    name: Build signed App Store release
+    type: build
+    params:
+      platform: ios
+      profile: production
+  upload_ios:
+    name: Upload release to Apple
+    needs: [build_ios]
+    type: submit
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      profile: production
