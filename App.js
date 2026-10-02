@@ -652,7 +652,7 @@ const pearlCategoryOrder = ['westley','tate','bobbie','chapo','together'];
 
 const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
-const greatAnnieHero = require("./assets/characters/neighborhood-tabby.png");
+const greatAnnieHero = portraits.annie;
 const addDebtMascotsGraphic = portraits.together;
 const snowballBuddyGraphic = portraits.westley;
 const avalancheBuddyGraphic = portraits.tate;
