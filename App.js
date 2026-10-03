@@ -38,6 +38,7 @@ import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
+import PayPlaceBrand from "./src/PayPlaceBrand";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
