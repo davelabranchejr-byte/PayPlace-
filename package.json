@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
-    "test:banking": "node tests/banking.test.mjs"
+    "test:banking": "node tests/banking.test.mjs",
+    "test:mirror": "node --test tests/smart-mirror.test.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.0",
