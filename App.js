@@ -2024,7 +2024,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
   const closeFoyer = () => {
     setFoyerOpen(false);
-    setFoyerStage("leaves");
+    setFoyerStage("door");
   };
 
   return (
