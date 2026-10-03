@@ -37,6 +37,7 @@ import EmailVerification from "./src/EmailVerification";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
+import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
@@ -2619,12 +2620,7 @@ function HomeScreen({
 
           ]}
         >
-          <CharacterArtwork
-            source={imageSource(extraPaycheckDogsGraphic)}
-            style={styles.extraPaycheckDogsImage}
-            resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
-          />
+<ExtraPaycheckChapoScene />
         </View>
 
         <View style={styles.extraSplitGrid}>
