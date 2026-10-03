@@ -3872,7 +3872,7 @@ function DebtBuddyScene({ mode }) {
 }
 
 function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, categoryOrder, selectCategory }) {
-  const pearlImageSource = typeof pearl.image === "string" ? { uri: pearl.image } : pearl.image;
+  
   const collection = collections[category];
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -3902,13 +3902,11 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
 
       <View style={styles.storyCard}>
         <View style={styles.storyImageWrap}>
-          <CharacterArtwork
-            source={pearlImageSource}
-            style={styles.storyImage}
-            resizeMode="contain"
-            fadeDuration={0}
-            accessibilityLabel={pearl.imageLabel}
-          />
+          <CalmGardenScene
+  pearl={pearl}
+  category={category}
+  collectionLabel={collection.label}
+/>
           <View style={styles.storyNumberBadge}>
             <Text style={styles.storyNumberText}>{pearl.number || String((pearl.id || "").split("-").pop()).padStart(2, "0")}</Text>
           </View>
