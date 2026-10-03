@@ -2004,7 +2004,7 @@ function Header() {
 
 function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
-  const [foyerStage, setFoyerStage] = useState("leaves");
+  const [foyerStage, setFoyerStage] = useState("door");
   const [familyMember, setFamilyMember] = useState(null);
   const day = getNeighborhoodDay();
   const poster = NEIGHBORHOOD_POSTERS[day % NEIGHBORHOOD_POSTERS.length];
