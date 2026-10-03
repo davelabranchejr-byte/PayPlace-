@@ -29,7 +29,7 @@ export const CHARACTER_LOCK = Object.freeze({
   version: "2026-10-03-annie-canonical",
   bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
   westley: Object.freeze({ species: "white West Highland Terrier" }),
-  tate: Object.freeze({ species: "tan Chihuahua" }),
+  tate: Object.freeze({ species: "tan Chihuahua", signature: "long goofy pink tongue visible in every illustration" }),
   chapo: Object.freeze({ species: "orange tabby cat" }),
   annie: Object.freeze({ species: "oak tree", face: "Dave's approved image 3: warm grandmotherly bark face", fixed: ["facial structure", "bark facial grooves", "eyes", "nose", "smile"], reference: "assets/characters/references/annie-canonical.jpg" }),
 });
