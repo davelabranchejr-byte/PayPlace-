@@ -31,6 +31,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
 import NeighborhoodMap from "./src/NeighborhoodMap";
+import { artwork } from "./src/artwork";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
@@ -38,7 +39,7 @@ import EmailVerification from "./src/EmailVerification";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
-const approvedClothedCharacterArtwork = portraits.together;
+const approvedClothedCharacterArtwork = artwork["budget"];
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
@@ -657,23 +658,23 @@ const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 // Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
 const greatAnnieHero = annieArtwork.welcome;
-const addDebtMascotsGraphic = portraits.together;
-const snowballBuddyGraphic = portraits.westley;
-const avalancheBuddyGraphic = portraits.tate;
-const extraPaycheckDogsGraphic = portraits.together;
-const safeSpendPetStoreGraphic = portraits.together;
+const addDebtMascotsGraphic = artwork["add-debt"];
+const snowballBuddyGraphic = artwork["snowball"];
+const avalancheBuddyGraphic = artwork["avalanche"];
+const extraPaycheckDogsGraphic = artwork["extra-paycheck"];
+const safeSpendPetStoreGraphic = artwork["safe-to-spend-cafe"];
 
-const addBillTateGraphic = portraits.tate;
-const importBillsWestleyGraphic = portraits.westley;
-const manualModeDriveGraphic = portraits.tate;
-const overwhelmedWestleyGraphic = portraits.westley;
+const addBillTateGraphic = artwork["add-bill"];
+const importBillsWestleyGraphic = artwork["review-bills"];
+const manualModeDriveGraphic = artwork["manual-mode"];
+const overwhelmedWestleyGraphic = artwork["overwhelmed"];
 const calmPearlImage1 = portraits.together;
 const calmPearlImage2 = portraits.together;
 const calmPearlImage3 = portraits.together;
 const calmPearlImage4 = portraits.together;
 const calmPearlImage5 = portraits.together;
 const calmPearlImage6 = portraits.together;
-const moodCardImage = portraits.together;
+const moodCardImage = artwork["money-mood"];
 function imageSource(image) {
   return typeof image === "string" ? { uri: image } : image;
 }
@@ -1975,20 +1976,20 @@ function Header() {
 
 function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onSafeToSpend }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
-  const [foyerStage, setFoyerStage] = useState("leaves");
+  const [foyerStage, setFoyerStage] = useState("home");
   const [familyMember, setFamilyMember] = useState(null);
   const day = getNeighborhoodDay();
   const poster = NEIGHBORHOOD_POSTERS[day % NEIGHBORHOOD_POSTERS.length];
   const greeting = NEIGHBORHOOD_GREETING[day % NEIGHBORHOOD_GREETING.length];
 
   const openFoyer = () => {
-    setFoyerStage("leaves");
+    setFoyerStage("home");
     setFoyerOpen(true);
   };
 
   const closeFoyer = () => {
     setFoyerOpen(false);
-    setFoyerStage("leaves");
+    setFoyerStage("home");
   };
 
   return (
@@ -1998,47 +1999,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onSafeToSpend }) {
           {foyerStage === "story" && familyMember && (
             <CharacterStory person={familyMember} onBack={() => setFoyerStage("home")} />
           )}
-          {foyerStage === "leaves" && (
-            <TouchableOpacity style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
-              <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
-              <View style={styles.foyerArrivalShade} />
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <View style={styles.leafCurtain}>
-                <Ionicons name="leaf" size={74} color="#DFF7C8" style={{ transform: [{ rotate: "-18deg" }] }} />
-                <Ionicons name="leaf" size={92} color="#A9DD91" style={{ transform: [{ rotate: "26deg" }] }} />
-                <Ionicons name="leaf" size={68} color="#72BD72" style={{ transform: [{ rotate: "-42deg" }] }} />
-                <Ionicons name="leaf" size={84} color="#CBEBAE" style={{ transform: [{ rotate: "44deg" }] }} />
-              </View>
-              <View style={styles.foyerArrivalCopy}>
-                <Text style={styles.foyerArrivalEyebrow}>GREAT ANNIE IS WAITING</Text>
-                <Text style={styles.foyerArrivalTitle}>Brush the leaves aside</Text>
-                <Text style={styles.foyerArrivalText}>There is always a way home.</Text>
-                <View style={styles.foyerTapPill}>
-                  <Ionicons name="hand-left" size={17} color="#FFFFFF" />
-                  <Text style={styles.foyerTapPillText}>Tap to brush</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-
-          {foyerStage === "door" && (
-            <View style={styles.redDoorScene}>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
-                <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
-              </TouchableOpacity>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <View style={styles.doorSceneCopy} pointerEvents="none">
-                <Text style={styles.redDoorTitle}>Annie's red door</Text>
-                <Text style={styles.redDoorText}>Go ahead. The family left the porch light on.</Text>
-                <Text style={styles.redDoorHint}>Tap the door to enter</Text>
-              </View>
-            </View>
-          )}
-
           {foyerStage === "home" && (
             <ScrollView style={styles.foyerHome} contentContainerStyle={styles.foyerHomeContent}>
               <TouchableOpacity style={styles.foyerHomeClose} onPress={closeFoyer}>
@@ -2433,7 +2393,7 @@ function HomeScreen({
             source={imageSource(safeSpendPetStoreGraphic)}
             style={styles.safeHeroDogsImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
+            accessibilityLabel={safeSpendPetStoreGraphic.label}
           />
           <View style={styles.safeHeroImageBadge}>
             <Ionicons name="paw" size={15} color={palette.ink} />
@@ -2496,7 +2456,7 @@ function HomeScreen({
         <Text style={styles.moodCopy}>{moodCopy}</Text>
 
         <View style={styles.moodGraphicFrame}>
-          <CharacterArtwork source={imageSource(moodCardImage)} style={styles.moodGraphic} resizeMode="contain" accessibilityLabel={portraits.together.label} />
+          <CharacterArtwork source={imageSource(moodCardImage)} style={styles.moodGraphic} resizeMode="contain" accessibilityLabel={moodCardImage.label} />
         </View>
 
         <TouchableOpacity style={styles.tellMeButton} onPress={() => setGuidanceVisible(true)}>
@@ -2533,7 +2493,7 @@ function HomeScreen({
             source={imageSource(extraPaycheckDogsGraphic)}
             style={styles.extraPaycheckDogsImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
+            accessibilityLabel={extraPaycheckDogsGraphic.label}
           />
         </View>
 
@@ -2581,7 +2541,7 @@ function HomeScreen({
             source={imageSource(manualModeDriveGraphic)}
             style={styles.storyActionImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.tate.label}
+            accessibilityLabel={manualModeDriveGraphic.label}
           />
         </View>
       </TouchableOpacity>
@@ -2608,7 +2568,7 @@ function HomeScreen({
             source={imageSource(overwhelmedWestleyGraphic)}
             style={styles.storyActionImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.westley.label}
+            accessibilityLabel={overwhelmedWestleyGraphic.label}
           />
         </View>
       </TouchableOpacity>
@@ -3155,7 +3115,7 @@ const importDemoBills = () => {
             source={imageSource(addBillTateGraphic)}
             style={styles.billActionImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.tate.label}
+            accessibilityLabel={addBillTateGraphic.label}
           />
           <View style={styles.billActionImageBadge}>
             <Ionicons name="create" size={15} color={palette.ink} />
@@ -3180,7 +3140,7 @@ const importDemoBills = () => {
     source={imageSource(importBillsWestleyGraphic)}
     style={styles.billActionImage}
     resizeMode="contain"
-    accessibilityLabel={portraits.westley.label}
+    accessibilityLabel={importBillsWestleyGraphic.label}
   />
   <View style={styles.billActionImageBadge}>
     <Ionicons name="shield-checkmark" size={15} color={palette.ink} />
@@ -3343,7 +3303,7 @@ function BudgetScreen({
             source={approvedClothedCharacterArtwork}
             style={styles.budgetHeroDogsImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
+            accessibilityLabel={approvedClothedCharacterArtwork.label}
           />
           <View style={styles.budgetHeroImageBadge}>
             <Ionicons name="sparkles" size={15} color={palette.ink} />
@@ -3570,7 +3530,7 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
             source={imageSource(addDebtMascotsGraphic)}
             style={styles.billActionImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
+            accessibilityLabel={addDebtMascotsGraphic.label}
           />
           <View style={styles.billActionImageBadge}>
             <Ionicons name="cash" size={15} color={palette.ink} />
@@ -3762,7 +3722,7 @@ function DebtBuddyScene({ mode }) {
           source={graphicSource}
           style={styles.debtBuddyImage}
           resizeMode="contain"
-          accessibilityLabel={isSnowball ? portraits.westley.label : portraits.tate.label}
+          accessibilityLabel={graphicUri.label}
         />
       </View>
 
@@ -4068,29 +4028,6 @@ function EmptyCard({ text }) {
 
 const styles = StyleSheet.create({
   foyerSafe: { flex: 1, backgroundColor: "#F8F3E8" },
-  foyerArrival: { flex: 1, overflow: "hidden", backgroundColor: "#173D35" },
-  foyerArrivalImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  foyerArrivalShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(7, 28, 25, 0.44)" },
-  leafCurtain: { ...StyleSheet.absoluteFillObject, flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-around", paddingHorizontal: 18, paddingTop: 40, opacity: 0.92 },
-  foyerArrivalCopy: { position: "absolute", left: 24, right: 24, bottom: 54, alignItems: "center" },
-  foyerArrivalEyebrow: { color: "#DFF7C8", fontSize: 11, fontWeight: "900", letterSpacing: 1.8 },
-  foyerArrivalTitle: { color: "#FFFFFF", fontSize: 34, lineHeight: 39, fontWeight: "900", textAlign: "center", marginTop: 8 },
-  foyerArrivalText: { color: "rgba(255,255,255,0.88)", fontSize: 16, lineHeight: 23, fontWeight: "700", textAlign: "center", marginTop: 8 },
-  foyerTapPill: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(122,92,230,0.92)", borderRadius: 999, paddingHorizontal: 17, paddingVertical: 11, marginTop: 20 },
-  foyerTapPillText: { color: "#FFFFFF", fontWeight: "900" },
-  redDoorScene: { flex: 1, backgroundColor: "#244E3D", alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
-  doorSceneCopy: { position: "absolute", left: 20, right: 20, bottom: 24, alignItems: "center", backgroundColor: "rgba(16, 48, 36, 0.94)", borderRadius: 22, padding: 15 },
-  foyerCloseButton: { position: "absolute", top: 18, right: 18, width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(0,0,0,0.22)", alignItems: "center", justifyContent: "center", zIndex: 5 },
-  annieTrunk: { width: 270, height: 390, borderRadius: 135, backgroundColor: "#714A2A", alignItems: "center", justifyContent: "flex-end", paddingBottom: 24, overflow: "hidden", borderWidth: 8, borderColor: "#52331F", shadowColor: "#091D17", shadowOpacity: 0.34, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } },
-  trunkRingOne: { position: "absolute", width: 330, height: 90, borderRadius: 50, borderWidth: 8, borderColor: "rgba(245,205,139,0.18)", top: 58, transform: [{ rotate: "-14deg" }] },
-  trunkRingTwo: { position: "absolute", width: 320, height: 80, borderRadius: 45, borderWidth: 7, borderColor: "rgba(54,29,14,0.19)", top: 170, transform: [{ rotate: "11deg" }] },
-  redDoor: { width: 154, height: 238, borderTopLeftRadius: 77, borderTopRightRadius: 77, borderBottomLeftRadius: 12, borderBottomRightRadius: 12, backgroundColor: "#C8463D", borderWidth: 7, borderColor: "#8E2C2A", alignItems: "center", justifyContent: "center", shadowColor: "#1F100A", shadowOpacity: 0.38, shadowRadius: 14, shadowOffset: { width: 0, height: 8 } },
-  redDoorInset: { width: 105, height: 154, borderTopLeftRadius: 53, borderTopRightRadius: 53, borderBottomLeftRadius: 8, borderBottomRightRadius: 8, borderWidth: 4, borderColor: "rgba(255,220,170,0.5)", alignItems: "center", justifyContent: "center" },
-  redDoorNumber: { color: "#F7DCA7", fontSize: 26, fontWeight: "900", marginTop: 2 },
-  doorKnob: { position: "absolute", right: 18, top: 131, width: 16, height: 16, borderRadius: 8, backgroundColor: "#F3C66B", borderWidth: 2, borderColor: "#A56A1F" },
-  redDoorTitle: { color: "#FFFFFF", fontSize: 28, fontWeight: "900", marginTop: 24 },
-  redDoorText: { color: "rgba(255,255,255,0.82)", fontSize: 15, lineHeight: 22, fontWeight: "700", textAlign: "center", marginTop: 7 },
-  redDoorHint: { color: "#DFF7C8", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginTop: 15 },
   foyerHome: { flex: 1, backgroundColor: "#F8F3E8" },
   foyerHomeContent: { padding: 18, paddingBottom: 42 },
   foyerHomeClose: { position: "absolute", top: 28, right: 28, zIndex: 8, width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.9)", alignItems: "center", justifyContent: "center" },
@@ -5742,7 +5679,7 @@ const styles = StyleSheet.create({
   },
   debtBuddyImageFrame: {
     width: "100%",
-    height: 280,
+    aspectRatio: 1,
     borderRadius: 24,
     borderWidth: 3,
     borderColor: "rgba(255,255,255,0.95)",
