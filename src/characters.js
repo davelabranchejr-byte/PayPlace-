@@ -19,7 +19,7 @@ export const portraits = Object.freeze({
   daddy: reference(family, 1402, 1122, [510, 20, 330, 480], "Daddy, smiling in his teal PayPlace hoodie"),
   westley: reference(guide, 1024, 1536, [14, 330, 240, 355], "Westley, the white West Highland Terrier in his PayPlace hoodie"),
   bobbie: reference(family, 1402, 1122, [760, 300, 365, 465], "Bobbie, the green-eyed brown tabby with glamorous hair and her pink PayPlace outfit"),
-  tate: reference(guide, 1024, 1536, [515, 340, 240, 345], "Tate, the tiny tan Chihuahua with oversized ears in his yellow hoodie"),
+  tate: reference(guide, 1024, 1536, [515, 340, 240, 345], "Tate, the tiny tan Chihuahua with oversized ears, his long goofy tongue, and his yellow hoodie"),
   chapo: reference(guide, 1024, 1536, [770, 325, 245, 360], "Chapo, the round orange tabby wearing his teal hoodie and beanie"),
   annie: annieArtwork.portrait,
   together: reference(family, 1402, 1122, [0, 0, 1402, 1122], "Dave with Westley, Tate, tabby Bobbie and orange tabby Chapo in the PayPlace family foyer"),
@@ -29,7 +29,11 @@ export const CHARACTER_LOCK = Object.freeze({
   version: "2026-10-03-annie-canonical",
   bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
   westley: Object.freeze({ species: "white West Highland Terrier" }),
-  tate: Object.freeze({ species: "tan Chihuahua" }),
+  tate: Object.freeze({
+    species: "tan Chihuahua",
+    fixed: ["Chihuahua identity", "oversized ears", "long goofy tongue"],
+    artworkRule: "Tate's long goofy tongue must be visible in Tate artwork whenever his face is shown."
+  }),
   chapo: Object.freeze({ species: "orange tabby cat" }),
   annie: Object.freeze({ species: "oak tree", face: "Dave's approved image 3: warm grandmotherly bark face", fixed: ["facial structure", "bark facial grooves", "eyes", "nose", "smile"], reference: "assets/characters/references/annie-canonical.jpg" }),
 });
