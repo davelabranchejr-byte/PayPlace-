@@ -34,25 +34,46 @@ export const FAMILY_STORIES = [
   ] },
   { id: "annie", ...MASCOT_LORE.annie, promise: MASCOT_LORE.annie.emotionalPromise, paragraphs: [
     "Great Annie is the heart of the neighborhood. A welcoming oak with a warm grandmotherly face, flowers, and leaves, she is more than a mascot. She is home.",
-    "Her branches open like welcoming arms. Brush aside her leaves and you will find the familiar red door in her trunk. Beyond it is this family's foyer: photographs, warmth, and a place where every neighbor belongs.",
+    "Her branches open like welcoming arms around the familiar red door in her trunk. Beyond it is this family's foyer: photographs, warmth, and a place where every neighbor belongs.",
     "Patient, wise, and never preachy, Annie holds the neighborhood together. Whenever you return, her promise stays the same: you will always have a place here."
   ] }
 ];
+
+const GALLERY_DETAILS = {
+  daddy: { note: "The center of the family wall.", frame: "daddy" },
+  westley: { note: "Westley drew Daddy in crayon. He gave him extra-big arms.", frame: "westley" },
+  tate: { note: "Tate draws everything. Nobody is entirely sure what this one is.", frame: "tate" },
+  bobbie: { note: "Bobbie Bucks, starring Bobbie. Fashion sketches sold separately.", frame: "bobbie" },
+  chapo: { note: "Chapo drew snacks. Then added more snacks.", frame: "chapo" },
+  annie: { note: "Great Annie keeps every masterpiece on the wall.", frame: "annie" },
+};
 
 export default function FamilyWall({ onSelect }) {
   return <View style={s.wall}>
     <Text style={s.eyebrow}>THE FAMILY WALL</Text>
     <Text style={s.title}>This home has stories</Text>
-    <Text style={s.hint}>Tap a portrait to meet the family.</Text>
-    <View style={s.grid}>{FAMILY_STORIES.map(person =>
-      <TouchableOpacity key={person.id} style={[s.card, person.id === "daddy" && s.daddy]} activeOpacity={0.8}
-        accessibilityRole="button" accessibilityLabel={`Meet ${person.name}. Read their background story.`} onPress={() => onSelect(person)}>
-        <CharacterArtwork source={portraits[person.id]} style={s.portrait} resizeMode="contain" />
+    <Text style={s.hint}>Tap a portrait to meet the family. The little drawings are staying, obviously.</Text>
+    <View style={s.grid}>{FAMILY_STORIES.map(person => {
+      const detail = GALLERY_DETAILS[person.id] || {};
+      const frameStyle = s[`frame_${detail.frame}`];
+      return <TouchableOpacity
+        key={person.id}
+        style={[s.card, person.id === "daddy" && s.daddy, frameStyle]}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`Meet ${person.name}. Read their background story.`}
+        onPress={() => onSelect(person)}>
+        <View style={[s.photoMat, person.id === "bobbie" && s.photoMatBobbie]}>
+          <CharacterArtwork source={portraits[person.id]} style={s.portrait} resizeMode="contain" />
+        </View>
         <Text style={s.name}>{person.name}</Text>
         <Text style={s.role}>{person.role}</Text>
+        {!!detail.note && <View style={[s.artNote, person.id === "bobbie" && s.artNoteBobbie]}>
+          <Text style={[s.artNoteText, person.id === "bobbie" && s.artNoteTextBobbie]}>{detail.note}</Text>
+        </View>}
         <View style={s.read}><Text style={s.readText}>Read story</Text><Ionicons name="chevron-forward" size={15} color="#6754C5" /></View>
-      </TouchableOpacity>
-    )}</View>
+      </TouchableOpacity>;
+    })}</View>
   </View>;
 }
 
@@ -79,11 +100,23 @@ const s = StyleSheet.create({
   title: { color: "#173557", fontSize: 25, fontWeight: "900", marginTop: 5 },
   hint: { color: "#667085", fontSize: 14, lineHeight: 20, marginTop: 6, marginBottom: 16 },
   grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 12 },
-  card: { width: "47%", borderRadius: 20, backgroundColor: "#F4EBDD", borderWidth: 3, borderColor: "#D6B98B", alignItems: "center", padding: 10 },
+  card: { width: "47%", borderRadius: 18, backgroundColor: "#F4EBDD", borderWidth: 4, alignItems: "center", padding: 10, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 5, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
   daddy: { width: "100%", backgroundColor: "#F2ECFF", borderColor: "#BCAAEF" },
-  portrait: { width: "100%", height: 155, borderRadius: 12, overflow: "hidden" },
+  frame_daddy: { borderColor: "#BCAAEF", borderRadius: 24 },
+  frame_westley: { borderColor: "#9AC7D8", borderRadius: 26, transform: [{ rotate: "-0.5deg" }] },
+  frame_tate: { borderColor: "#E0A85B", borderRadius: 14, transform: [{ rotate: "0.8deg" }] },
+  frame_bobbie: { borderColor: "#D19AB7", borderRadius: 20, backgroundColor: "#FFF5FA" },
+  frame_chapo: { borderColor: "#D6A24A", borderRadius: 16, backgroundColor: "#FFF7DD", transform: [{ rotate: "-0.8deg" }] },
+  frame_annie: { borderColor: "#9DB88B", borderRadius: 22, backgroundColor: "#F5F6E8" },
+  photoMat: { width: "100%", borderRadius: 12, backgroundColor: "#FFFDF8", padding: 5, borderWidth: 1, borderColor: "#EADFCB" },
+  photoMatBobbie: { borderWidth: 2, borderColor: "#E5B7CC" },
+  portrait: { width: "100%", height: 155, borderRadius: 10, overflow: "hidden" },
   name: { color: "#173557", fontSize: 18, fontWeight: "900", textAlign: "center", marginTop: 10 },
   role: { color: "#667085", fontSize: 12, lineHeight: 17, textAlign: "center", marginTop: 4 },
+  artNote: { alignSelf: "stretch", marginTop: 10, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#FFF9E9", borderRadius: 10, borderWidth: 1, borderColor: "#E8D7AA", transform: [{ rotate: "-1deg" }] },
+  artNoteBobbie: { backgroundColor: "#FFF2F8", borderColor: "#E7B6CF", transform: [{ rotate: "0.6deg" }] },
+  artNoteText: { color: "#6A5843", fontSize: 11, lineHeight: 15, textAlign: "center", fontStyle: "italic", fontWeight: "700" },
+  artNoteTextBobbie: { color: "#8D3A69", fontStyle: "normal" },
   read: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 10, minHeight: 28 },
   readText: { color: "#6754C5", fontSize: 13, fontWeight: "800" },
   screen: { flex: 1, backgroundColor: "#F8F3E8" },
