@@ -2018,7 +2018,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
   ];
 
   const openFoyer = () => {
-    setFoyerStage("leaves");
+    setFoyerStage("door");
     setFoyerOpen(true);
   };
 
