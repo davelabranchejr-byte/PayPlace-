@@ -23,6 +23,9 @@
       "buildNumber": "1",
       "supportsTablet": false
     },
+    "android": {
+  "package": "com.davelabranchejr.payplace"
+},
     "owner": "pilotpay",
     "extra": {
       "eas": {
