@@ -34,13 +34,7 @@ appId: com.davelabranchejr.payplace
 - tapOn:
     id: nav-home
 - tapOn:
-    id: open-family-wall
-- assertVisible: "Brush Annie's leaves aside"
-- tapOn:
-    id: brush-annie-leaves
-- assertVisible: "Annie's red door"
-- tapOn:
-    id: annie-red-door
+    id: treehouse-annie
 - scrollUntilVisible:
     element:
       text: 'Meet Bobbie. Read their background story.'
