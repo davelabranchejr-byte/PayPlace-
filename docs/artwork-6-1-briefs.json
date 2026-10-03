@@ -1,0 +1,617 @@
+[
+  {
+    "key": "safe-to-spend-cafe",
+    "subject": "Westley and Tate",
+    "brief": "Already generated: kindly choosing a small biscuit and a savings jar at the woodland caf\u00e9 counter. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "money-mood",
+    "subject": "Chapo",
+    "brief": "Chapo in lavender pajamas on a treehouse window bench, putting colorful emotion pebbles into a little wooden tray while gently smiling; calm reflective atmosphere, rainy forest morning."
+  },
+  {
+    "key": "extra-paycheck",
+    "subject": "Chapo",
+    "brief": "Chapo, a round ORANGE tabby Reward Goblin in teal pajamas and a purple nightcap, excitedly orders snacks from BellyBox at his desktop computer inside his dark treehouse room at night. He is licking his lips in delighted hunger, tongue curled up over his upper lip, eyes wide with anticipation, one paw on mouse ready to place his order. The blue-purple COMPUTER SCREEN GLOW is the MAIN light and brightly illuminates his orange face and paws against the dark room. Three-quarter front view of Chapo, with the monitor tilted enough toward viewer to show an online snack storefront. Screen storefront heading must read exactly BellyBox (capital B lowercase elly capital B lowercase ox), with clearly recognizable cookie, popcorn and snack product thumbnails and a small cart icon. No real bank/payment info or amounts. Cozy nighttime scene, tiny warm distant lantern, compelling funny appetite, no other character, no jars or budget sorting."
+  },
+  {
+    "key": "manual-mode",
+    "subject": "Tate",
+    "brief": "Tate in a teal driving hoodie and purple scarf confidently drives a tiny coral convertible along a twisting woodland road; full vehicle and face visible, landscape scenery and an oak treehouse in distance. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "overwhelmed",
+    "subject": "Westley",
+    "brief": "Westley in soft purple cardigan sits with a cozy blanket and warm tea on a sheltered treehouse porch at dusk, compassionate face, fireflies, tiny lantern and calm forest beyond."
+  },
+  {
+    "key": "add-bill",
+    "subject": "Tate",
+    "brief": "Tate in yellow postal overalls places a single envelope in a coral postbox on a flower-covered treehouse balcony, excited at one small accomplished task, clear midday sky. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "review-bills",
+    "subject": "Westley",
+    "brief": "Westley in teal postal waistcoat and reading spectacles studies neat envelopes with a wooden magnifying glass at a Post Office desk, scattered stationery, cozy golden light."
+  },
+  {
+    "key": "budget",
+    "subject": "Bobbie",
+    "brief": "Bobbie the GREEN-EYED BROWN TABBY in elegant purple belted jumpsuit and ice blonde bob thoughtfully arranges cash envelopes and fabric swatches on her Budget Studio table; chic couture atelier with mint drawers and coral flowers."
+  },
+  {
+    "key": "add-debt",
+    "subject": "Westley and Tate",
+    "brief": "Westley in a teal jacket and Tate in a mustard explorer vest make a little climbing plan beside a debt mountain map on their oak clubhouse table, hopeful teamwork, tiny flag and compass. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "snowball",
+    "subject": "Westley",
+    "brief": "Use the EXACT approved later winter illustration supplied October3: Westley wears teal/purple knit hat, sweater and scarf, carrying a teal ball in snowy woods. No regeneration.",
+    "status": "restored-approved",
+    "source": "features/snowball-reference.jpg",
+    "crop": [
+      58,
+      501,
+      588,
+      579
+    ]
+  },
+  {
+    "key": "avalanche",
+    "subject": "Tate",
+    "brief": "Use the EXACT approved later Tate avalanche illustration supplied October3: teal sweater, purple scarf, long pink tongue, colorful balls and snow behind him. Existing original extracted from archived project; no regeneration.",
+    "status": "restored-approved",
+    "source": "features/avalanche.jpg"
+  },
+  {
+    "key": "story-daddy",
+    "subject": "Daddy",
+    "brief": "Daddy, the smiling curly-haired brown-bearded man with black rectangular glasses and teal hoodie, sits in a beautiful oak home library holding an open family album on his lap, warmly lit, a single portrait, no other characters."
+  },
+  {
+    "key": "story-westley",
+    "subject": "Westley",
+    "brief": "Westley in teal hoodie and little purple backpack stands at the entrance to a woodland trail, warmly welcoming the viewer, soft sunlight, a wooden paw-print trail marker."
+  },
+  {
+    "key": "story-tate",
+    "subject": "Tate",
+    "brief": "Tate in mustard outdoor coat and teal bandana splashes joyfully in a shallow woodland creek, muddy boots, oversized ears entirely visible, happy brave tiny explorer. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "story-bobbie",
+    "subject": "Bobbie",
+    "brief": "Bobbie the brown tabby with vivid green eyes and glamorous dark upswept curls wears a fitted teal evening gown and pearl tiara on a woodland fashion runway, poised blowing a kiss, theatrical elegance."
+  },
+  {
+    "key": "story-chapo",
+    "subject": "Chapo",
+    "brief": "Chapo the round orange tabby in plum velvet robe and teal beanie hosts a cozy feast at an oak dinner table, welcoming empty place settings, warm string lights, joyful chubby cheeks."
+  },
+  {
+    "key": "story-annie",
+    "subject": "Annie",
+    "brief": "Great Annie as a loving grandmotherly oak overlooking neighbors\u2019 illuminated treehouses at twilight; angled canonical bark face and white flower hair prominent, red stained glass P door shut, welcoming branch arms."
+  },
+  {
+    "key": "onboard-name",
+    "subject": "Westley",
+    "brief": "Westley in purple hoodie warmly offers a little blank name tag and a golden pen at a welcome desk, bright oak reception nook with flowers."
+  },
+  {
+    "key": "onboard-email",
+    "subject": "Tate",
+    "brief": "Tate in yellow postal cap and coat holds a sealed lavender envelope with a tiny heart wax seal beside a flower-covered postbox, welcoming new correspondence. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "onboard-goal",
+    "subject": "Bobbie",
+    "brief": "Bobbie the brown green-eyed tabby in coral silk blouse and platinum curls points to a beautiful inspiration board of a home, woodland getaway, coin jar and a little flag, stylish studio."
+  },
+  {
+    "key": "onboard-feeling",
+    "subject": "Chapo",
+    "brief": "Chapo in teal pajamas hugs a lavender heart pillow on a small cozy couch, gentle expression, a warm sunrise window and cup of cocoa, emotional check-in."
+  },
+  {
+    "key": "onboard-challenge",
+    "subject": "Tate",
+    "brief": "Tate in explorer overalls carefully steps across small stepping stones over a shallow brook toward a little treehouse, one manageable obstacle at a time, cheerful expression. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "onboard-payday",
+    "subject": "Westley",
+    "brief": "Westley in teal cardigan marks a payday on a blank colorful calendar beside gold envelopes and a small wooden clock in an oak office, organized gentle routine."
+  },
+  {
+    "key": "onboard-bank",
+    "subject": "Bobbie",
+    "brief": "Bobbie the brown tabby with green eyes in lavender pantsuit looks at two separate model treehouses joined by a tiny wooden bridge, representing connection choice, elegant small office, no bank logos."
+  },
+  {
+    "key": "onboard-notes",
+    "subject": "Annie",
+    "brief": "At Great Annie\u2019s flower-framed red stained glass P door, a tiny oak writing table holds a blank letter, fountain pen and purple heart seal, canonical smiling face above, afternoon light."
+  },
+  {
+    "key": "annie-foyer",
+    "subject": "Annie",
+    "brief": "Inside Great Annie\u2019s warm magical oak foyer looking toward her open RED stained glass P door, canonical grandmotherly bark face visible outside above the door arch, coat hooks, framed blank photo mounts, cozy rugs and white flowers, no animal portraits duplicated."
+  },
+  {
+    "key": "mirror-room",
+    "subject": "Bobbie",
+    "brief": "Bobbie the BROWN TABBY with GREEN eyes, pale ice blonde curls, yellow plaid outfit and white boots in her couture dressing room at an oval smart mirror; a new over-the-shoulder angle with only the BACK of her head in mirror reflection, colorful handwritten confidence marks kept illegible, clothes racks and makeup vanity, golden-pink interior, distinct view for room screen."
+  },
+  {
+    "key": "poster-bobbie",
+    "subject": "Bobbie",
+    "brief": "A brown green-eyed tabby Bobbie in an elegant magenta blazer hangs a welcoming purple heart banner over her Budget Studio doorway, no readable text."
+  },
+  {
+    "key": "poster-westley",
+    "subject": "Westley",
+    "brief": "Westley in teal overalls plants a small sapling beside an imperfect winding stone path, sunny encouraging progress."
+  },
+  {
+    "key": "poster-tate",
+    "subject": "Tate",
+    "brief": "Tate in yellow raincoat confidently takes one step onto a tiny wooden bridge over a puddle, cheerful morning. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "poster-chapo",
+    "subject": "Chapo",
+    "brief": "Chapo in purple pajamas naps peacefully in a round woven hammock between oak branches, pastel sunset and a closed cookie jar."
+  },
+  {
+    "key": "poster-neighbors",
+    "subject": "Westley and Tate",
+    "brief": "Westley and Tate in teal and gold knit sweaters solve a simple wooden puzzle together on a flowered porch table, cozy teamwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "poster-showing-up",
+    "subject": "Westley and Tate",
+    "brief": "Westley and Tate in festive purple jackets arrive together at a warmly lit neighborhood door carrying a tiny heart-shaped gift, joyful showing up. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "poster-confidence",
+    "subject": "Bobbie",
+    "brief": "Green-eyed brown tabby Bobbie in a tailored emerald gown and platinum curls confidently stands beside a small staircase made of glowing stepping stones in her garden, elegant encouragement."
+  },
+  {
+    "key": "mirror-reflection",
+    "subject": "Bobbie",
+    "brief": "A new soft reflective portrait of the BACK of Bobbie\u2019s ice blonde curled hair, yellow plaid shoulders and pearl necklace as seen inside an oval golden vanity mirror; background blur of pink wardrobe and soft dressing room lights. No face visible at all, no text, single original photographic illustration for a subtle smart mirror background."
+  },
+  {
+    "key": "pearl-westley-01",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Start with one step. Message: You do not need the whole map today. Choose the next kind step and begin.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-01 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-02",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Watch before you decide. Message: Pause long enough to see what is really happening before your money moves.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-02 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-03",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Your future self thanks you. Message: A small choice today can leave tomorrow-you a little more room to breathe.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-03 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-04",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Small choices add up. Message: Steady stones build strong paths. Tiny progress still counts.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-04 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-05",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Guard one small goal. Message: Choose one priority and keep it safe today.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-05 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-06",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Progress, not perfection. Message: Done with care beats perfect plans that never leave the chalkboard.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-06 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-07",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Rainy days happen. Message: A hard day is weather, not a verdict. Protect yourself and keep walking.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-07 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-08",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Ask for help. Message: Strong neighbors share the load. You were never meant to carry everything alone.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-08 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-09",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Plan, then play. Message: Give your money a simple job, then make room for joy.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-09 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-10",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Protect your peace. Message: A plan should protect your life, not consume it.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-10 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-11",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Comparison steals joy. Message: Your path only needs to fit your life. Let somebody else keep theirs.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-11 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-12",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Keep your why close. Message: Remember what your money is helping you protect: freedom, family, and a life that feels like yours.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-12 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-13",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Celebrate small wins. Message: A tiny victory is still a victory. Wag first, measure later.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-13 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-14",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Be kind to yourself. Message: You are learning, not failing. Speak to yourself like someone worth protecting.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-14 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-15",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Let go of what drains you. Message: Not every expense, habit, or expectation deserves a permanent place in your life.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-15 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-westley-16",
+    "subject": "Westley",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Tomorrow is a new day. Message: Rest, reset, and begin again. You are always welcome home.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number westley-16 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-tate-01",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Adventure is everywhere. Message: A fresh start can begin with one ordinary Tuesday.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-01 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-02",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Say yes to new things. Message: Try one money habit before deciding it is not for you.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-02 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-03",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Pockets are for treasures. Message: Save a little joy for later.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-03 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-04",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Curiosity leads to magic. Message: Ask where the money went without blaming yourself.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-04 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-05",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Mud makes memories. Message: Messy progress is still a real life being lived.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-05 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-06",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Climb higher, safely. Message: Stretch the goal, not your nervous system.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-06 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-07",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Explore with joy. Message: Make learning your money feel like discovery.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-07 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-08",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Make friends anywhere. Message: Build support before you need rescue.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-08 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-09",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Collect happy moments. Message: A budget should leave room for living.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-09 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-10",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: No path? Make one. Message: Create a method that fits your brain.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-10 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-11",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Splash often. Message: Celebrate progress before racing to the next task.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-11 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-12",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Imagination has no limits. Message: Your future can look different from your past.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-12 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-13",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Be brave, not perfect. Message: Take the step while your knees are still wobbling.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-13 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-14",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Celebrate the little wins. Message: Ten dollars saved deserves a tail wag.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-14 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-15",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Every day is a new quest. Message: Yesterday does not own today.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-15 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-tate-16",
+    "subject": "Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Life is for living. Message: The plan serves your life, not the other way around.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number tate-16 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-bobbie-01",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Confidence is your best outfit. Message: Wear the decision before the doubt talks you out of it.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-01 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-02",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Walk like you own it. Message: Take up space in your own financial life.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-02 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-03",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: You are the main character. Message: Your goals do not need anyone else\u2019s approval.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-03 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-04",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Stand tall, whiskers high. Message: A mistake is information, not an identity.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-04 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-05",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Your vibe attracts your tribe. Message: Choose people who celebrate your growth.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-05 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-06",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Elegance is an attitude. Message: Calm choices can still be powerful choices.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-06 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-07",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Never dull your sparkle. Message: Do not shrink your dreams to match a rough month.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-07 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-08",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Set trends, do not chase them. Message: Build a budget around your values, not appearances.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-08 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-09",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Puuuurfect is a mindset. Message: Progress becomes glamorous when it is yours.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-09 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-10",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Be bold. Be you.. Message: Name the goal you actually want.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-10 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-11",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Take up space. Message: Put your needs in the budget too.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-11 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-12",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Do not seek approval. Message: A healthy boundary is always in season.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-12 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-13",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Beauty is power. Message: Make your surroundings support the person you are becoming.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-13 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-14",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Invest in you. Message: Time, rest, and learning belong in the plan.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-14 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-15",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Slay the day. Message: Finish one useful task and let it count.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-15 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-bobbie-16",
+    "subject": "Bobbie",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Leave a little sparkle everywhere. Message: Encourage somebody after encouraging yourself.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number bobbie-16 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-01",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Snacks are self-care. Message: Plan the treat so joy does not have to sneak in.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-01 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-02",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Naps are necessary. Message: Rest is productive maintenance.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-02 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-03",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Comfort is productive. Message: A safe nervous system makes clearer choices.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-03 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-04",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Treats fix everything-ish. Message: A reward helps, but future you still needs a plan.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-04 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-05",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: A full belly, happy heart. Message: Meet the basic need before solving the big problem.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-05 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-06",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Slow down, buddy. Message: Urgency is not always truth.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-06 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-07",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Find your cozy spot. Message: Create one place where money tasks feel less threatening.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-07 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-08",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: It is okay to rest. Message: Pausing is not quitting.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-08 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-09",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Gratitude fills the bowl. Message: Notice what is working while repairing what is not.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-09 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-10",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Water, snacks, repeat. Message: Simple care can prevent dramatic decisions.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-10 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-11",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Belly rubs help. Message: Accept comfort when the day feels sharp.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-11 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-12",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Good vibes only-ish. Message: Feel the hard thing, then choose one helpful action.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-12 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-13",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Home is where the snacks are. Message: Safety is a valid financial goal.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-13 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-14",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Laugh daily. Message: Humor can loosen shame\u2019s grip.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-14 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-15",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Life is better with cookies. Message: Leave room for pleasure without abandoning tomorrow.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-15 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-chapo-16",
+    "subject": "Chapo",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Be kind to your soul. Message: You are not a problem to be fixed.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number chapo-16 is an internal reference, must not appear in artwork."
+  },
+  {
+    "key": "pearl-together-01",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Laugh together daily. Message: A shared laugh can make the hard conversation possible.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-01 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-02",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Snack together, stay together. Message: Plan joy and responsibility at the same table.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-02 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-03",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Fashion is better with a wingcat. Message: Let somebody support you while you try something brave.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-03 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-04",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Friends support the drama. Message: Comfort first, solutions second.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-04 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-05",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Conspiracy theories are no fun alone. Message: Question the story, then check the facts together.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-05 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-06",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: It is not gossip. It is research.. Message: Gather information before making the money move.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-06 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-07",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Protect each other\u2019s naps. Message: Respect rest, boundaries, and recovery.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-07 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-08",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: We dream bigger together. Message: Shared hope can make a goal feel reachable.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-08 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-09",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Side-eye together, try together. Message: Skepticism is allowed. So is one small experiment.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-09 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-10",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Celebrate each other\u2019s wins. Message: Someone else\u2019s progress does not steal yours.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-10 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-11",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: One team, one family. Message: Solve the problem without turning on each other.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-11 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-12",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Keep secrets, give treats. Message: Trust grows through care and consistency.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-12 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-13",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Encourage the crazy ideas. Message: A strange idea may be the bridge to a better system.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-13 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-14",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Life is better with a partner in crime. Message: Accountability works best without shame.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-14 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-15",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: Love fiercely, silly endlessly. Message: Serious goals still need playful hearts.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-15 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "pearl-together-16",
+    "subject": "Westley and Tate",
+    "brief": "Create an imaginative DISTINCT visual story that illustrates this exact calm message without printing the quote. Title: We do not do normal. Message: Build the plan that works, not the one that looks conventional.. Use a bespoke location, pose and props that make the meaning understandable visually; not a generic repeated portrait. One standalone illustration, all subjects fully clothed. The story number together-16 is an internal reference, must not appear in artwork. MANDATORY character gag: Tate has a comically LONG PINK TONGUE hanging from his happy open mouth, reaching well past his chin toward his chest, with a curled floppy tip. Tongue clearly visible, never tucked away or hidden. Westley must retain an ordinary tongue."
+  },
+  {
+    "key": "portrait-tate",
+    "subject": "Tate",
+    "brief": "An original family-wall portrait of tiny tan Chihuahua Tate with his enormous upright ears and cheerful big brown eyes, wearing a yellow PayPlace hoodie, seated in a teal armchair beside a sunlit oak window. Portrait 4:3 crop-safe, head and ears whole, chest and paws visible. MANDATORY comically LONG goofy PINK TONGUE flops down from his smiling mouth well beyond his chin to chest, curls playfully at tip, affectionate energetic personality. No other characters."
+  },
+  {
+    "key": "gallery-westley-daddy",
+    "subject": "Westley drawing Daddy",
+    "brief": "ONE original childlike wax CRAYON drawing on warm textured off-white paper, flat front-on view of the entire paper, no frame, no hands or artist visible. Westley drew a loving messy portrait of Daddy: smiling curly-haired brown-bearded man with black rectangular glasses in teal hoodie, giant purple heart beside him and a friendly sun overhead. Intentionally naive crayon lines and scribbles, bright cheerful colors, handwritten caption exactly Daddy. Keep Daddy recognizable to family reference in a crude cute child drawing. No animal subjects."
+  },
+  {
+    "key": "gallery-chapo-snacks",
+    "subject": "Chapo drawing snacks",
+    "brief": "ONE original charming wax CRAYON drawing on textured cream paper, flat front-on whole sheet, no frame or hands. Chapo drew a fantasy snack feast: huge chocolate-chip cookies, popcorn overflowing a purple bowl, colorful candies, donut with sprinkles and a tiny smiling orange paw print. Enthusiastic scribbly amateur drawing, obvious crayon texture, bright food colors, handwritten caption exactly Snacks. No mascot portrait or animal subject."
+  },
+  {
+    "key": "gallery-tate-everything",
+    "subject": "Tate drawing everything",
+    "brief": "ONE original busy joyful wax CRAYON drawing on textured ivory paper, flat front-on whole sheet, no frame or hands: wildly exuberant drawing of a treehouse, sunny mountains, a butterfly, little coral convertible, a river, stars, rainbow and two tiny stick-figure fully clothed dogs. The tiny tan Chihuahua self-portrait has gigantic ears and a very LONG goofy pink tongue reaching his chest, white fluffy Westie friend normal tongue. Intentional chaotic but sweet crayon drawing, handwritten signature exactly Tate. Colorful playful everyday adventures."
+  },
+  {
+    "key": "gallery-bobbie-money",
+    "subject": "Bobbie drawing her own money",
+    "brief": "ONE original beautifully skilled hand-drawn colored-pencil/crayon MONEY DESIGN on warm ivory art paper, flat front-on whole sheet, no frame or hands. A single elaborate completely fictional purple-and-teal banknote with ornate curls, flowers, paw shapes and a stunning finely drawn oval portrait of BOBBIE the green-eyed BROWN TABBY with glamorous dark upswept curls and pearl jewelry. Clearly theatrical make-believe money, NOT resembling actual US or real currency, no denomination. Hand lettered banknote title exactly Bank of Bobbie. Elegant expert-level rendering, humorous diva self portrait, not an actual screenshot or real cash."
+  },
+  {
+    "key": "gallery-bobbie-fashion",
+    "subject": "Bobbie drawing fashion",
+    "brief": "ONE original professionally skilled couture FASHION DESIGN sketch page on cream art paper, flat front-on entire sheet, no frame or hands. Three refined sketches of fitted teal ball gown, magenta cocktail dress and purple tailored suit, elegantly drawn on BROWN TABBY CAT fashion models with green eyes and stylish hair, exquisite details, tiny pencil arrows with illegible scribbled annotations and fabric-color swatches. All clothed, chic fashion-illustration colored-pencil and wax-crayon technique. Hand-lettered heading exactly Bobbie Couture. Clearly expert designs, not a crude preschool drawing."
+  }
+]
