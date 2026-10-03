@@ -30,7 +30,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
-import { portraits } from "./src/characters";
+import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
 import EmailVerification from "./src/EmailVerification";
@@ -655,9 +655,8 @@ const pearlCategoryOrder = ['westley','tate','bobbie','chapo','together'];
 const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
-// Both arrival scenes use the very same approved red door and stained glass.
-const greatAnnieHero = { source: neighborhoodScene, width: 1672, height: 941,
-  crop: [565, 175, 420, 660], label: "Great Annie above her red door with the stained-glass PayPlace logo" };
+// Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
+const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = portraits.together;
 const snowballBuddyGraphic = portraits.westley;
 const avalancheBuddyGraphic = portraits.tate;
