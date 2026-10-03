@@ -35,6 +35,8 @@ import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
 import EmailVerification from "./src/EmailVerification";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
+import BobbieSmartMirror from "./src/BobbieSmartMirror";
+import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
 const lockedWestley = portraits.westley;
@@ -652,7 +654,10 @@ const pearlCategoryOrder = ['westley','tate','bobbie','chapo','together'];
 
 const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
-const greatAnnieHero = portraits.annie;
+const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
+// Both arrival scenes use the very same approved red door and stained glass.
+const greatAnnieHero = { source: neighborhoodScene, width: 1672, height: 941,
+  crop: [565, 175, 420, 660], label: "Great Annie above her red door with the stained-glass PayPlace logo" };
 const addDebtMascotsGraphic = portraits.together;
 const snowballBuddyGraphic = portraits.westley;
 const avalancheBuddyGraphic = portraits.tate;
@@ -1265,25 +1270,10 @@ export default function App() {
     });
   }, [finance, loaded]);
 
-  const upcomingTotal = useMemo(() => {
-    return finance.bills.reduce((total, bill) => {
-      if (bill.status === "Paid") return total;
-      return total + Number(bill.amount || 0);
-    }, 0);
-  }, [finance.bills]);
-
-  const debtDueTotal = useMemo(() => {
-    return finance.debts.reduce((total, debt) => {
-      return total + Number(debt.minimum || 0);
-    }, 0);
-  }, [finance.debts]);
-
-  const safeToSpend = useMemo(() => {
-    return Math.max(
-      Number(finance.balance || 0) - upcomingTotal - debtDueTotal - Number(finance.buffer || 0),
-      0
-    );
-  }, [finance.balance, upcomingTotal, debtDueTotal, finance.buffer]);
+  const currentBudget = useMemo(() => mirrorBudget(finance), [finance]);
+  const upcomingTotal = currentBudget.bills;
+  const debtDueTotal = currentBudget.debt;
+  const safeToSpend = currentBudget.available;
 
   const safeToSpendDaily = useMemo(() => {
     const days = Math.max(Number(finance.daysUntilPayday || 0), 1);
@@ -1302,6 +1292,20 @@ export default function App() {
       ...current,
       [field]: text,
     }));
+  }
+
+  function updateMirror(action) {
+    try {
+      const next = action.type === "save" ? saveFunMoney(finance, action.amount)
+        : action.type === "record" ? recordTreat(finance, action)
+        : action.type === "undo" ? undoTreat(finance, action.id)
+        : action.type === "look" ? saveLook(finance, action.look) : finance;
+      setFinance(next);
+      return true;
+    } catch (error) {
+      Alert.alert("A little mirror check", error.message);
+      return false;
+    }
   }
 
   function toggleManualMode() {
@@ -1601,6 +1605,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             handleOverwhelmed={handleOverwhelmed}
             showPlaidPlan={showPlaidPlan}
             replayAnnieOnboarding={replayAnnieOnboarding}
+            onMirrorAction={updateMirror}
           />
         )}
 
@@ -1963,7 +1968,7 @@ function Header() {
       <Text style={styles.tagline} numberOfLines={1} adjustsFontSizeToFit>
         Money without shame.
       </Text>
-      <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", marginTop: 5 }}>NEIGHBORHOOD PREVIEW · UNDER CONSTRUCTION</Text>
+      <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", marginTop: 5 }}>SMART MIRROR UPDATE · EARLY PREVIEW</Text>
     </View>
   );
 }
@@ -2005,6 +2010,9 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
             <TouchableOpacity style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
               <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               <View style={styles.foyerArrivalShade} />
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
               <View style={styles.leafCurtain}>
                 <Ionicons name="leaf" size={74} color="#DFF7C8" style={{ transform: [{ rotate: "-18deg" }] }} />
                 <Ionicons name="leaf" size={92} color="#A9DD91" style={{ transform: [{ rotate: "26deg" }] }} />
@@ -2025,23 +2033,17 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
           {foyerStage === "door" && (
             <View style={styles.redDoorScene}>
-              <TouchableOpacity style={styles.foyerCloseButton} onPress={closeFoyer}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
+                <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
+              </TouchableOpacity>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
-              <View style={styles.annieTrunk}>
-                <View style={styles.trunkRingOne} />
-                <View style={styles.trunkRingTwo} />
-                <TouchableOpacity style={styles.redDoor} activeOpacity={0.9} onPress={() => setFoyerStage("home")}>
-                  <View style={styles.redDoorInset}>
-                    <Ionicons name="leaf" size={32} color="#F7DCA7" />
-                    <Text style={styles.redDoorNumber}>P</Text>
-                  </View>
-                  <View style={styles.doorKnob} />
-                </TouchableOpacity>
+              <View style={styles.doorSceneCopy} pointerEvents="none">
+                <Text style={styles.redDoorTitle}>Annie's red door</Text>
+                <Text style={styles.redDoorText}>Go ahead. The family left the porch light on.</Text>
+                <Text style={styles.redDoorHint}>Tap the door to enter</Text>
               </View>
-              <Text style={styles.redDoorTitle}>Annie's red door</Text>
-              <Text style={styles.redDoorText}>Go ahead. The family left the porch light on.</Text>
-              <Text style={styles.redDoorHint}>Tap the door to enter</Text>
             </View>
           )}
 
@@ -2079,13 +2081,16 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
       </Modal>
 
       <View style={styles.neighborhoodHero}>
-        <CharacterArtwork source={greatAnnieHero} style={styles.heroArtwork} resizeMode="contain" />
+        <CharacterArtwork source={neighborhoodScene} style={styles.heroArtwork} resizeMode="contain" accessibilityLabel="PayPlace's treehouse neighborhood around Annie and her red stained-glass door" />
         <View style={styles.heroEdgeShade} />
 
         <TouchableOpacity style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
           <Ionicons name="leaf" size={13} color="#FFFFFF" />
           <Text style={styles.annieChipText}>Welcome Home • Tap Annie's red door</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
+          style={[styles.heroHotspot, { left: "40%", top: "58%", width: "12%", height: "25%" }]} onPress={openFoyer} />
 
         <TouchableOpacity
           accessibilityRole="button"
@@ -2177,77 +2182,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 }
 
 
-function BobbieRenaissanceCard() {
-  const [visible, setVisible] = useState(false);
-  const bobbiePortrait = lockedBobbie;
-
-  return (
-    <>
-      <TouchableOpacity
-        style={styles.bobbieRenaissanceCard}
-        activeOpacity={0.9}
-        onPress={() => setVisible(true)}
-        accessibilityRole="button"
-        accessibilityLabel="Open Bobbie's Creative Renaissance"
-      >
-        <View style={styles.bobbieRenaissanceImageWrap}>
-          {bobbiePortrait ? (
-            <CharacterArtwork source={bobbiePortrait} style={styles.bobbieRenaissanceImage} resizeMode="contain" />
-          ) : (
-            <Ionicons name="sparkles" size={34} color="#FFFFFF" />
-          )}
-        </View>
-        <View style={styles.bobbieRenaissanceCopy}>
-          <Text style={styles.bobbieRenaissanceEyebrow}>BOBBIE'S CREATIVE RENAISSANCE</Text>
-          <Text style={styles.bobbieRenaissanceTitle}>A little wardrobe magic</Text>
-          <Text style={styles.bobbieRenaissanceText}>
-            Bobbie is choosing her next fabulous outfit. Her green eyes, tabby markings, and unmistakable face are always her own.
-          </Text>
-          <View style={styles.bobbieRenaissanceButton}>
-            <Text style={styles.bobbieRenaissanceButtonText}>Visit her smart mirror</Text>
-            <Ionicons name="arrow-forward" size={17} color="#FFFFFF" />
-          </View>
-        </View>
-      </TouchableOpacity>
-
-      <Modal visible={visible} animationType="slide" transparent onRequestClose={() => setVisible(false)}>
-        <View style={styles.bobbieModalBackdrop}>
-          <View style={styles.bobbieModalCard}>
-            <TouchableOpacity style={styles.bobbieModalClose} onPress={() => setVisible(false)}>
-              <Ionicons name="close" size={24} color={palette.ink} />
-            </TouchableOpacity>
-
-            <View style={styles.bobbieMirrorFrame}>
-              {bobbiePortrait ? (
-                <CharacterArtwork source={bobbiePortrait} style={styles.bobbieMirrorImage} resizeMode="contain" />
-              ) : (
-                <Ionicons name="sparkles" size={54} color="#7A5CE6" />
-              )}
-              <View style={styles.bobbieMirrorGlow} />
-            </View>
-
-            <Text style={styles.bobbieModalEyebrow}>SMART MIRROR STUDIO</Text>
-            <Text style={styles.bobbieModalTitle}>There she is.</Text>
-            <Text style={styles.bobbieModalQuote}>
-              “The most beautiful thing you'll ever wear is believing you belong.”
-            </Text>
-            <Text style={styles.bobbieModalAttribution}>— Great Annie Oak Tree</Text>
-
-            <View style={styles.bobbieAffirmation}>
-              <Ionicons name="sparkles" size={20} color="#7A5CE6" />
-              <Text style={styles.bobbieAffirmationText}>Confidence is always in season.</Text>
-            </View>
-
-            <TouchableOpacity style={styles.bobbieModalButton} onPress={() => setVisible(false)}>
-              <Text style={styles.bobbieModalButtonText}>Puuuurfect</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </>
-  );
-}
-
 function HomeScreen({
   finance,
   upcomingTotal,
@@ -2259,6 +2193,7 @@ function HomeScreen({
   handleOverwhelmed,
   showPlaidPlan,
   replayAnnieOnboarding,
+  onMirrorAction,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2328,7 +2263,7 @@ function HomeScreen({
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
       </TouchableOpacity>
-      <BobbieRenaissanceCard />
+      <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => switchTab("Budget")} />
       <Modal
         visible={extraPlanVisible}
         transparent={true}
@@ -3452,7 +3387,7 @@ function BudgetScreen({
           {money(safeToSpend)}
         </Text>
         <Text style={styles.safeSpendSub}>
-          Balance minus unpaid bills and your emergency buffer.
+          Balance minus unpaid bills, debt minimums and your emergency buffer.
         </Text>
 
         <View
@@ -4201,6 +4136,7 @@ const styles = StyleSheet.create({
   foyerTapPill: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(122,92,230,0.92)", borderRadius: 999, paddingHorizontal: 17, paddingVertical: 11, marginTop: 20 },
   foyerTapPillText: { color: "#FFFFFF", fontWeight: "900" },
   redDoorScene: { flex: 1, backgroundColor: "#244E3D", alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
+  doorSceneCopy: { position: "absolute", left: 20, right: 20, bottom: 24, alignItems: "center", backgroundColor: "rgba(16, 48, 36, 0.94)", borderRadius: 22, padding: 15 },
   foyerCloseButton: { position: "absolute", top: 18, right: 18, width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(0,0,0,0.22)", alignItems: "center", justifyContent: "center", zIndex: 5 },
   annieTrunk: { width: 270, height: 390, borderRadius: 135, backgroundColor: "#714A2A", alignItems: "center", justifyContent: "flex-end", paddingBottom: 24, overflow: "hidden", borderWidth: 8, borderColor: "#52331F", shadowColor: "#091D17", shadowOpacity: 0.34, shadowRadius: 22, shadowOffset: { width: 0, height: 12 } },
   trunkRingOne: { position: "absolute", width: 330, height: 90, borderRadius: 50, borderWidth: 8, borderColor: "rgba(245,205,139,0.18)", top: 58, transform: [{ rotate: "-14deg" }] },
@@ -4233,7 +4169,7 @@ const styles = StyleSheet.create({
   foyerEnterButton: { minHeight: 58, borderRadius: 20, backgroundColor: palette.purple, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 18 },
   foyerEnterButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   neighborhoodHero: {
-    aspectRatio: 1604 / 981,
+    aspectRatio: 1672 / 941,
     borderRadius: 34,
     marginTop: 4,
     marginBottom: 10,
@@ -4279,28 +4215,28 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   postOfficeHotspot: {
-    left: "2%",
-    top: "12%",
-    width: "34%",
-    height: "30%",
+    left: "20%",
+    top: "23%",
+    width: "17%",
+    height: "23%",
   },
   budgetHotspot: {
-    left: "1%",
-    top: "42%",
-    width: "38%",
-    height: "28%",
+    left: "3%",
+    top: "35%",
+    width: "19%",
+    height: "22%",
   },
   debtHotspot: {
-    right: "1%",
-    top: "8%",
-    width: "35%",
-    height: "33%",
+    right: "32%",
+    top: "24%",
+    width: "15%",
+    height: "22%",
   },
   calmHotspot: {
     right: "1%",
-    bottom: "1%",
-    width: "32%",
-    height: "25%",
+    bottom: "22%",
+    width: "19%",
+    height: "22%",
   },
   heroCaptionRow: {
     flexDirection: "row",
@@ -6243,101 +6179,6 @@ const styles = StyleSheet.create({
   firstLetterTitle: { marginTop: 6, fontSize: 16, fontWeight: "900", color: palette.ink },
   firstLetterText: { marginTop: 4, textAlign: "center", color: palette.muted, lineHeight: 20 },
 
-
-  bobbieRenaissanceCard: {
-    marginTop: 18,
-    borderRadius: 28,
-    overflow: "hidden",
-    backgroundColor: "#24143D",
-    borderWidth: 2,
-    borderColor: "#E7C7FF",
-    flexDirection: "row",
-    minHeight: 190,
-  },
-  bobbieRenaissanceImageWrap: {
-    width: 124,
-    backgroundColor: "#7A5CE6",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  bobbieRenaissanceImage: { width: "100%", height: "100%" },
-  bobbieRenaissanceCopy: { flex: 1, padding: 17, justifyContent: "center" },
-  bobbieRenaissanceEyebrow: { color: "#F4C6FF", fontSize: 11, fontWeight: "900", letterSpacing: 0.8 },
-  bobbieRenaissanceTitle: { color: "#FFFFFF", fontSize: 20, fontWeight: "900", lineHeight: 24, marginTop: 5 },
-  bobbieRenaissanceText: { color: "#EADFF5", fontSize: 13, lineHeight: 18, marginTop: 7 },
-  bobbieRenaissanceButton: {
-    alignSelf: "flex-start",
-    marginTop: 12,
-    borderRadius: 999,
-    backgroundColor: "#E553A3",
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  bobbieRenaissanceButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 12 },
-  bobbieModalBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(15, 8, 28, 0.74)",
-    justifyContent: "center",
-    padding: 20,
-  },
-  bobbieModalCard: {
-    backgroundColor: "#FFF8FF",
-    borderRadius: 34,
-    padding: 22,
-    borderWidth: 3,
-    borderColor: "#E7C7FF",
-    alignItems: "center",
-  },
-  bobbieModalClose: { position: "absolute", right: 16, top: 16, zIndex: 5, padding: 8 },
-  bobbieMirrorFrame: {
-    width: 190,
-    height: 230,
-    borderRadius: 95,
-    borderWidth: 7,
-    borderColor: "#F4C6FF",
-    backgroundColor: "#7A5CE6",
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 6,
-  },
-  bobbieMirrorImage: { width: "100%", height: "100%" },
-  bobbieMirrorGlow: {
-    position: "absolute",
-    width: 76,
-    height: 190,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    transform: [{ rotate: "18deg" }],
-    left: 10,
-    top: -18,
-  },
-  bobbieModalEyebrow: { marginTop: 18, color: "#A33683", fontWeight: "900", fontSize: 12, letterSpacing: 1 },
-  bobbieModalTitle: { color: palette.ink, fontWeight: "900", fontSize: 30, marginTop: 5 },
-  bobbieModalQuote: { color: palette.ink, fontSize: 17, lineHeight: 24, textAlign: "center", fontWeight: "800", marginTop: 12 },
-  bobbieModalAttribution: { color: palette.muted, fontWeight: "800", marginTop: 7 },
-  bobbieAffirmation: {
-    marginTop: 16,
-    borderRadius: 18,
-    backgroundColor: "#F2E8FF",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  bobbieAffirmationText: { color: "#5D3BB5", fontWeight: "900" },
-  bobbieModalButton: {
-    marginTop: 18,
-    minWidth: 180,
-    backgroundColor: "#E553A3",
-    borderRadius: 18,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  bobbieModalButtonText: { color: "#FFFFFF", fontWeight: "900", fontSize: 17 },
 
   visitAnnieButton: {
     alignSelf: "center",
