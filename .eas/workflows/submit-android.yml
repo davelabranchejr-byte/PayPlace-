@@ -1,0 +1,9 @@
+name: Upload PayPlace Android 1.0.0 build 2 to Google Play
+
+jobs:
+  submit_android:
+    name: Upload signed Android build 2
+    type: submit
+    params:
+      build_id: ec59603e-4ade-4a1d-8ca8-9165dd032e4d
+      profile: production
