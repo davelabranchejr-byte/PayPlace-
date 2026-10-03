@@ -12,7 +12,7 @@
 */
 
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Modal,
@@ -30,6 +30,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
+import NeighborhoodMap from "./src/NeighborhoodMap";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
@@ -654,7 +655,6 @@ const pearlCategoryOrder = ['westley','tate','bobbie','chapo','together'];
 
 const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
-const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
 // Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
 const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = portraits.together;
@@ -1973,20 +1973,13 @@ function Header() {
 }
 
 
-function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
+function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onSafeToSpend }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("leaves");
   const [familyMember, setFamilyMember] = useState(null);
   const day = getNeighborhoodDay();
   const poster = NEIGHBORHOOD_POSTERS[day % NEIGHBORHOOD_POSTERS.length];
   const greeting = NEIGHBORHOOD_GREETING[day % NEIGHBORHOOD_GREETING.length];
-
-  const places = [
-    { label: "Post Office", tab: "Bills", icon: "mail", color: "#FF7F73", note: "Bills" },
-    { label: "Budget Studio", tab: "Budget", icon: "color-palette", color: "#19A9D8", note: "Plan" },
-    { label: "Debt Climb", tab: "Debt", icon: "flag", color: "#7A5CE6", note: "Payoff" },
-    { label: "Calm Porch", tab: "Calm", icon: "leaf", color: "#16B89F", note: "Breathe" },
-  ];
 
   const openFoyer = () => {
     setFoyerStage("leaves");
@@ -2079,48 +2072,19 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
         </SafeAreaView>
       </Modal>
 
-      <View style={styles.neighborhoodHero}>
-        <CharacterArtwork source={neighborhoodScene} style={styles.heroArtwork} resizeMode="contain" accessibilityLabel="PayPlace's treehouse neighborhood around Annie and her red stained-glass door" />
-        <View style={styles.heroEdgeShade} />
-
-        <TouchableOpacity style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
-          <Ionicons name="leaf" size={13} color="#FFFFFF" />
-          <Text style={styles.annieChipText}>Welcome Home • Tap Annie's red door</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
-          style={[styles.heroHotspot, { left: "40%", top: "58%", width: "12%", height: "25%" }]} onPress={openFoyer} />
-
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open the Post Office bills screen"
-          style={[styles.heroHotspot, styles.postOfficeHotspot]}
-          onPress={() => switchTab("Bills")}
-        />
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open Bobbie's Budget Studio"
-          style={[styles.heroHotspot, styles.budgetHotspot]}
-          onPress={() => switchTab("Budget")}
-        />
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open the Debt Tree Climb"
-          style={[styles.heroHotspot, styles.debtHotspot]}
-          onPress={() => switchTab("Debt")}
-        />
-        <TouchableOpacity
-          accessibilityRole="button"
-          accessibilityLabel="Open the Calm Porch"
-          style={[styles.heroHotspot, styles.calmHotspot]}
-          onPress={() => switchTab("Calm")}
-        />
+      <View style={styles.neighborhoodSectionHead}>
+        <View>
+          <Text style={styles.neighborhoodEyebrow}>YOUR NEIGHBORHOOD</Text>
+          <Text style={styles.neighborhoodSectionTitle}>Where are we heading?</Text>
+        </View>
+        <Ionicons name="map" size={25} color={palette.purple} />
       </View>
+      <NeighborhoodMap switchTab={switchTab} onOpenAnnie={openFoyer} onSafeToSpend={onSafeToSpend} />
 
       <View style={styles.heroCaptionRow}>
         <View style={styles.heroCaptionCopy}>
           <Text style={styles.heroCaptionTitle}>The porch light is on</Text>
-          <Text style={styles.heroCaptionText}>{greeting} Tap a treehouse to explore.</Text>
+          <Text style={styles.heroCaptionText}>{greeting} Tap a treehouse or Annie’s red door. Swipe across the map to explore.</Text>
         </View>
         <Ionicons name="sparkles" size={20} color={palette.purple} />
       </View>
@@ -2133,31 +2097,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
           <Text style={styles.gentleLimitLabel}>TODAY’S GENTLE LIMIT</Text>
           <Text style={styles.gentleLimitValue}>{money(safeToSpendDaily)}/day</Text>
           <Text style={styles.gentleLimitSub}>A calm guide, not a guilt trip.</Text>
-        </View>
-      </View>
-
-      <View style={styles.neighborhoodPlacesCard}>
-        <View style={styles.neighborhoodSectionHead}>
-          <View>
-            <Text style={styles.neighborhoodEyebrow}>TREEHOUSE MAP</Text>
-            <Text style={styles.neighborhoodSectionTitle}>Where are we heading?</Text>
-          </View>
-          <Ionicons name="map" size={25} color={palette.purple} />
-        </View>
-        <View style={styles.placeGrid}>
-          {places.map((place) => (
-            <TouchableOpacity
-              key={place.label}
-              style={[styles.placeButton, { backgroundColor: place.color + "16", borderColor: place.color + "44" }]}
-              onPress={() => switchTab(place.tab)}
-            >
-              <View style={[styles.placeIcon, { backgroundColor: place.color }]}>
-                <Ionicons name={place.icon} size={19} color="white" />
-              </View>
-              <Text style={styles.placeLabel}>{place.label}</Text>
-              <Text style={[styles.placeNote, { color: place.color }]}>{place.note}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
       </View>
 
@@ -2194,6 +2133,11 @@ function HomeScreen({
   replayAnnieOnboarding,
   onMirrorAction,
 }) {
+  const homeScroll = useRef(null);
+  const [safeToSpendY, setSafeToSpendY] = useState(null);
+  const visitCafe = () => {
+    if (safeToSpendY !== null) homeScroll.current?.scrollTo({ y: safeToSpendY, animated: true });
+  };
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
   const nextBill = unpaidBills[0];
@@ -2255,9 +2199,9 @@ function HomeScreen({
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView ref={homeScroll} style={styles.screen} contentContainerStyle={styles.content}>
       <View style={{ marginBottom: 14 }}><ConstructionNotice /></View>
-      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} />
+      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onSafeToSpend={visitCafe} />
       <TouchableOpacity style={styles.visitAnnieButton} onPress={replayAnnieOnboarding}>
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
@@ -2458,7 +2402,7 @@ function HomeScreen({
         </View>
       </Modal>
 
-      <View style={styles.safeHeroCard}>
+      <View testID="safe-to-spend-cafe" style={styles.safeHeroCard} onLayout={({ nativeEvent: { layout } }) => setSafeToSpendY(layout.y)}>
         <View style={styles.safeHeroGlowOne} />
         <View style={styles.safeHeroGlowTwo} />
 
@@ -4167,76 +4111,6 @@ const styles = StyleSheet.create({
   foyerMessageText: { color: palette.muted, fontSize: 12, lineHeight: 18, fontWeight: "700", marginTop: 5 },
   foyerEnterButton: { minHeight: 58, borderRadius: 20, backgroundColor: palette.purple, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 9, marginTop: 18 },
   foyerEnterButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
-  neighborhoodHero: {
-    aspectRatio: 1672 / 941,
-    borderRadius: 34,
-    marginTop: 4,
-    marginBottom: 10,
-    overflow: "hidden",
-    backgroundColor: "#153F35",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
-    shadowColor: "#153557",
-    shadowOpacity: 0.18,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-  },
-  heroArtwork: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
-  heroEdgeShade: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(5, 18, 28, 0.02)",
-  },
-  annieChip: {
-    position: "absolute",
-    top: 13,
-    left: 13,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(11, 65, 58, 0.82)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.72)",
-  },
-  annieChipText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "900",
-  },
-  heroHotspot: {
-    position: "absolute",
-    backgroundColor: "transparent",
-  },
-  postOfficeHotspot: {
-    left: "20%",
-    top: "23%",
-    width: "17%",
-    height: "23%",
-  },
-  budgetHotspot: {
-    left: "3%",
-    top: "35%",
-    width: "19%",
-    height: "22%",
-  },
-  debtHotspot: {
-    right: "32%",
-    top: "24%",
-    width: "15%",
-    height: "22%",
-  },
-  calmHotspot: {
-    right: "1%",
-    bottom: "22%",
-    width: "19%",
-    height: "22%",
-  },
   heroCaptionRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -4302,14 +4176,6 @@ const styles = StyleSheet.create({
     color: "#617286",
     marginTop: 2,
   },
-  neighborhoodPlacesCard: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 28,
-    padding: 17,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: palette.border,
-  },
   neighborhoodSectionHead: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -4326,37 +4192,6 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: "900",
     color: palette.ink,
-    marginTop: 2,
-  },
-  placeGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    marginHorizontal: -5,
-  },
-  placeButton: {
-    width: "47%",
-    margin: "1.5%",
-    minHeight: 104,
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 12,
-  },
-  placeIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
-  placeLabel: {
-    fontSize: 14,
-    fontWeight: "900",
-    color: palette.ink,
-  },
-  placeNote: {
-    fontSize: 11,
-    fontWeight: "800",
     marginTop: 2,
   },
   dailyPosterCard: {
