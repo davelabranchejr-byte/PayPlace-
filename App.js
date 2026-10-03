@@ -1901,14 +1901,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   return (
     <SafeAreaView style={styles.onboardingSafe}>
       <KeyboardAvoidingView style={styles.onboardingSafe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.onboardingScroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.onboardingBrandRow}>
-            <View style={styles.onboardingMiniLogo}><Ionicons name="leaf" size={22} color="white" /></View>
-            <View>
-              <Text style={styles.onboardingBrand}>Pay<Text style={{ color: palette.teal }}>Place</Text></Text>
-              <Text style={styles.onboardingTagline}>Money without shame.</Text>
-            </View>
-          </View>
+        <ScrollView contentContainerStyle={styles.onboardingScroll} keyboardShouldPersistTaps="<PayPlaceBrand style={styles.onboardingBrandRow} />
 
           <View style={styles.onboardingProgressTrack}>
             <View style={[styles.onboardingProgressFill, { width: `${((stepIndex + 1) / ONBOARDING_STEPS.length) * 100}%`, backgroundColor: step.accent }]} />
