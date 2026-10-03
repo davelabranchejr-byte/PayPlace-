@@ -693,8 +693,8 @@ const neighborhoodScene = require("./assets/characters/annie-red-door-village.pn
 // Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
 const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = portraits.together;
-const snowballBuddyGraphic = portraits.westley;
-const avalancheBuddyGraphic = portraits.tate;
+const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
+const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const extraPaycheckDogsGraphic = portraits.together;
 const safeSpendPetStoreGraphic = portraits.together;
 
