@@ -1901,7 +1901,8 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   return (
     <SafeAreaView style={styles.onboardingSafe}>
       <KeyboardAvoidingView style={styles.onboardingSafe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <ScrollView contentContainerStyle={styles.onboardingScroll} keyboardShouldPersistTaps="<PayPlaceBrand style={styles.onboardingBrandRow} />
+         <ScrollView contentContainerStyle={styles.onboardingScroll} keyboardShouldPersistTaps="handled">
+  <PayPlaceBrand style={styles.onboardingBrandRow} />
 
           <View style={styles.onboardingProgressTrack}>
             <View style={[styles.onboardingProgressFill, { width: `${((stepIndex + 1) / ONBOARDING_STEPS.length) * 100}%`, backgroundColor: step.accent }]} />
