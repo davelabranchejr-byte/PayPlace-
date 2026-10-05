@@ -4919,7 +4919,7 @@ const styles = StyleSheet.create({
   },
   extraPaycheckImageFrame: {
     width: "100%",
-    height: 176,
+    aspectRatio: 4 / 3,
     borderRadius: 22,
     borderWidth: 3,
     borderColor: "rgba(255,255,255,0.95)",
