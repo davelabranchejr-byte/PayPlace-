@@ -3902,11 +3902,10 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
           <View style={styles.storyNumberBadge}>
             <Text style={styles.storyNumberText}>{pearl.number || String((pearl.id || "").split("-").pop()).padStart(2, "0")}</Text>
           </View>
-          <View style={styles.storyImageShade} />
-          <View style={styles.storyImageTitleWrap}>
-            <Text style={styles.storyCollectionTitle}>{collection.subtitle || `${collection.label} Neighborhood Stories`}</Text>
-            <Text style={styles.storyTitle}>{pearl.title}</Text>
-          </View>
+        </View>
+        <View style={{ padding: 22 }}>
+          <Text style={[styles.storyCollectionTitle, { color: palette.mintDark }]}>{collection.subtitle || `${collection.label} Neighborhood Stories`}</Text>
+          <Text style={[styles.storyTitle, { color: palette.ink }]}>{pearl.title}</Text>
         </View>
 
         <View style={styles.storyQuotePanel}>
