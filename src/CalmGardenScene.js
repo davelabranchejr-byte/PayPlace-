@@ -43,7 +43,7 @@ function GardenVisitor({ left, top, symbol, index, glow, still }) {
   );
 }
 
-export default function CalmGardenScene() {
+function BackyardScene() {
   const [isNight, setIsNight] = useState(isNighttime);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [active, setActive] = useState(AppState.currentState === "active");
@@ -93,6 +93,33 @@ export default function CalmGardenScene() {
     </View>
   );
 }
+const westleyScenes = {
+  "westley-01": require("../assets/characters/westley-pearl-01.png"),
+  "westley-02": require("../assets/characters/westley-pearl-02.png"),
+  "westley-03": require("../assets/characters/westley-pearl-03.png"),
+  "westley-04": require("../assets/characters/westley-pearl-04.png"),
+  "westley-05": require("../assets/characters/westley-pearl-05.png"),
+  "westley-06": require("../assets/characters/westley-pearl-06.png"),
+  "westley-07": require("../assets/characters/westley-pearl-07.png"),
+  "westley-08": require("../assets/characters/westley-pearl-08.png"),
+  "westley-09": require("../assets/characters/westley-pearl-09.png"),
+  "westley-10": require("../assets/characters/westley-pearl-10.png"),
+  "westley-11": require("../assets/characters/westley-pearl-11.png"),
+  "westley-12": require("../assets/characters/westley-pearl-12.png"),
+  "westley-13": require("../assets/characters/westley-pearl-13.png"),
+  "westley-14": require("../assets/characters/westley-pearl-14.png"),
+  "westley-15": require("../assets/characters/westley-pearl-15.png"),
+  "westley-16": require("../assets/characters/westley-pearl-16.png"),
+};
+
+export default function CalmGardenScene({ pearl }) {
+  const westleyScene = westleyScenes[pearl?.id];
+  if (westleyScene) {
+    return <Image source={westleyScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`Westley — ${pearl.title}`} />;
+  }
+  return <BackyardScene />;
+}
+
 const s = StyleSheet.create({
   scene: { width: "100%", height: "100%", overflow: "hidden", backgroundColor: "#183A35" },
   visitor: { position: "absolute" },
