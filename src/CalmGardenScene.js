@@ -126,12 +126,28 @@ const pearlScenes = {
   "tate-14": require("../assets/characters/tate-pearl-14.png"),
   "tate-15": require("../assets/characters/tate-pearl-15.png"),
   "tate-16": require("../assets/characters/tate-pearl-16.png"),
+  "bobbie-01": require("../assets/characters/bobbie-pearl-01.png"),
+  "bobbie-02": require("../assets/characters/bobbie-pearl-02.png"),
+  "bobbie-03": require("../assets/characters/bobbie-pearl-03.png"),
+  "bobbie-04": require("../assets/characters/bobbie-pearl-04.png"),
+  "bobbie-05": require("../assets/characters/bobbie-pearl-05.png"),
+  "bobbie-06": require("../assets/characters/bobbie-pearl-06.png"),
+  "bobbie-07": require("../assets/characters/bobbie-pearl-07.png"),
+  "bobbie-08": require("../assets/characters/bobbie-pearl-08.png"),
+  "bobbie-09": require("../assets/characters/bobbie-pearl-09.png"),
+  "bobbie-10": require("../assets/characters/bobbie-pearl-10.png"),
+  "bobbie-11": require("../assets/characters/bobbie-pearl-11.png"),
+  "bobbie-12": require("../assets/characters/bobbie-pearl-12.png"),
+  "bobbie-13": require("../assets/characters/bobbie-pearl-13.png"),
+  "bobbie-14": require("../assets/characters/bobbie-pearl-14.png"),
+  "bobbie-15": require("../assets/characters/bobbie-pearl-15.png"),
+  "bobbie-16": require("../assets/characters/bobbie-pearl-16.png"),
 };
 
 export default function CalmGardenScene({ pearl }) {
   const pearlScene = pearlScenes[pearl?.id];
   if (pearlScene) {
-    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
+    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
   }
   return <BackyardScene />;
 }
