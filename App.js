@@ -3899,9 +3899,6 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
   category={category}
   collectionLabel={collection.label}
 />
-          <View style={styles.storyNumberBadge}>
-            <Text style={styles.storyNumberText}>{pearl.number || String((pearl.id || "").split("-").pop()).padStart(2, "0")}</Text>
-          </View>
         </View>
         <View style={{ padding: 22 }}>
           <Text style={[styles.storyCollectionTitle, { color: palette.mintDark }]}>{collection.subtitle || `${collection.label} Neighborhood Stories`}</Text>
