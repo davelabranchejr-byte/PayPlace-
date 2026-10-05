@@ -703,7 +703,7 @@ const addBillTateGraphic = portraits.tate;
 const importBillsWestleyGraphic = portraits.westley;
 const manualModeDriveGraphic = require("./assets/characters/manual-mode-tate-convertible.png");
 
-const overwhelmedWestleyGraphic = portraits.westley;
+const overwhelmedWestleyGraphic = require("./assets/characters/overwhelmed-westley-cozy.jpg");
 const calmPearlImage1 = portraits.together;
 const calmPearlImage2 = portraits.together;
 const calmPearlImage3 = portraits.together;
