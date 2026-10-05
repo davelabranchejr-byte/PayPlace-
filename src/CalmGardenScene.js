@@ -93,7 +93,7 @@ function BackyardScene() {
     </View>
   );
 }
-const westleyScenes = {
+const pearlScenes = {
   "westley-01": require("../assets/characters/westley-pearl-01.png"),
   "westley-02": require("../assets/characters/westley-pearl-02.png"),
   "westley-03": require("../assets/characters/westley-pearl-03.png"),
@@ -110,12 +110,28 @@ const westleyScenes = {
   "westley-14": require("../assets/characters/westley-pearl-14.png"),
   "westley-15": require("../assets/characters/westley-pearl-15.png"),
   "westley-16": require("../assets/characters/westley-pearl-16.png"),
+  "tate-01": require("../assets/characters/tate-pearl-01.png"),
+  "tate-02": require("../assets/characters/tate-pearl-02.png"),
+  "tate-03": require("../assets/characters/tate-pearl-03.png"),
+  "tate-04": require("../assets/characters/tate-pearl-04.png"),
+  "tate-05": require("../assets/characters/tate-pearl-05.png"),
+  "tate-06": require("../assets/characters/tate-pearl-06.png"),
+  "tate-07": require("../assets/characters/tate-pearl-07.png"),
+  "tate-08": require("../assets/characters/tate-pearl-08.png"),
+  "tate-09": require("../assets/characters/tate-pearl-09.png"),
+  "tate-10": require("../assets/characters/tate-pearl-10.png"),
+  "tate-11": require("../assets/characters/tate-pearl-11.png"),
+  "tate-12": require("../assets/characters/tate-pearl-12.png"),
+  "tate-13": require("../assets/characters/tate-pearl-13.png"),
+  "tate-14": require("../assets/characters/tate-pearl-14.png"),
+  "tate-15": require("../assets/characters/tate-pearl-15.png"),
+  "tate-16": require("../assets/characters/tate-pearl-16.png"),
 };
 
 export default function CalmGardenScene({ pearl }) {
-  const westleyScene = westleyScenes[pearl?.id];
-  if (westleyScene) {
-    return <Image source={westleyScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`Westley — ${pearl.title}`} />;
+  const pearlScene = pearlScenes[pearl?.id];
+  if (pearlScene) {
+    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
   }
   return <BackyardScene />;
 }
