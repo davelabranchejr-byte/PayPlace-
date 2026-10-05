@@ -709,7 +709,7 @@ const calmPearlImage3 = portraits.together;
 const calmPearlImage4 = portraits.together;
 const calmPearlImage5 = portraits.together;
 const calmPearlImage6 = portraits.together;
-const moodCardImage = portraits.together;
+const moodCardImage = require("./assets/characters/money-mood-family-budget.jpg");
 function imageSource(image) {
   return typeof image === "string" ? { uri: image } : image;
 }
@@ -2582,7 +2582,7 @@ function HomeScreen({
         <Text style={styles.moodCopy}>{moodCopy}</Text>
 
         <View style={styles.moodGraphicFrame}>
-          <CharacterArtwork source={imageSource(moodCardImage)} style={styles.moodGraphic} resizeMode="contain" accessibilityLabel={portraits.together.label} />
+          <CharacterArtwork source={imageSource(moodCardImage)} style={styles.moodGraphic} resizeMode="contain" accessibilityLabel="Bobbie, Westley, Tate, and Chapo planning their budget together" />
         </View>
 
         <TouchableOpacity style={styles.tellMeButton} onPress={() => setGuidanceVisible(true)}>
