@@ -693,7 +693,7 @@ const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
 // Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
 const greatAnnieHero = annieArtwork.welcome;
-const addDebtMascotsGraphic = portraits.together;
+const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
 const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const extraPaycheckDogsGraphic = portraits.together;
