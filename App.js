@@ -701,7 +701,8 @@ const safeSpendPetStoreGraphic = portraits.together;
 
 const addBillTateGraphic = portraits.tate;
 const importBillsWestleyGraphic = portraits.westley;
-const manualModeDriveGraphic = portraits.tate;
+const manualModeDriveGraphic = require("./assets/characters/manual-mode-tate-convertible.png");
+
 const overwhelmedWestleyGraphic = portraits.westley;
 const calmPearlImage1 = portraits.together;
 const calmPearlImage2 = portraits.together;
