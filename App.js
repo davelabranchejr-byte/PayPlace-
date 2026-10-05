@@ -760,7 +760,7 @@ const NEIGHBORHOOD_POSTERS = [
     mascot: "Westley & Tate",
     quote: "Showing up counts.",
     sub: "Opening the app was already a win.",
-    image: calmPearlImage1,
+    image: require("./assets/characters/showing-up-counts-westley-tate.jpg"),
     accent: "#FF6E83",
     soft: "#FFF0F4",
   },
