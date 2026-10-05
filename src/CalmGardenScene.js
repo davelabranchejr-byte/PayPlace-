@@ -94,6 +94,38 @@ function BackyardScene() {
   );
 }
 const pearlScenes = {
+  "chapo-01": require("../assets/characters/chapo-pearl-01.png"),
+  "chapo-02": require("../assets/characters/chapo-pearl-02.png"),
+  "chapo-03": require("../assets/characters/chapo-pearl-03.png"),
+  "chapo-04": require("../assets/characters/chapo-pearl-04.png"),
+  "chapo-05": require("../assets/characters/chapo-pearl-05.png"),
+  "chapo-06": require("../assets/characters/chapo-pearl-06.png"),
+  "chapo-07": require("../assets/characters/chapo-pearl-07.png"),
+  "chapo-08": require("../assets/characters/chapo-pearl-08.png"),
+  "chapo-09": require("../assets/characters/chapo-pearl-09.png"),
+  "chapo-10": require("../assets/characters/chapo-pearl-10.png"),
+  "chapo-11": require("../assets/characters/chapo-pearl-11.png"),
+  "chapo-12": require("../assets/characters/chapo-pearl-12.png"),
+  "chapo-13": require("../assets/characters/chapo-pearl-13.png"),
+  "chapo-14": require("../assets/characters/chapo-pearl-14.png"),
+  "chapo-15": require("../assets/characters/chapo-pearl-15.png"),
+  "chapo-16": require("../assets/characters/chapo-pearl-16.png"),
+  "together-01": require("../assets/characters/annie-pearl-01.png"),
+  "together-02": require("../assets/characters/annie-pearl-02.png"),
+  "together-03": require("../assets/characters/annie-pearl-03.png"),
+  "together-04": require("../assets/characters/annie-pearl-04.png"),
+  "together-05": require("../assets/characters/annie-pearl-05.png"),
+  "together-06": require("../assets/characters/annie-pearl-06.png"),
+  "together-07": require("../assets/characters/annie-pearl-07.png"),
+  "together-08": require("../assets/characters/annie-pearl-08.png"),
+  "together-09": require("../assets/characters/annie-pearl-09.png"),
+  "together-10": require("../assets/characters/annie-pearl-10.png"),
+  "together-11": require("../assets/characters/annie-pearl-11.png"),
+  "together-12": require("../assets/characters/annie-pearl-12.png"),
+  "together-13": require("../assets/characters/annie-pearl-13.png"),
+  "together-14": require("../assets/characters/annie-pearl-14.png"),
+  "together-15": require("../assets/characters/annie-pearl-15.png"),
+  "together-16": require("../assets/characters/annie-pearl-16.png"),
   "westley-01": require("../assets/characters/westley-pearl-01.png"),
   "westley-02": require("../assets/characters/westley-pearl-02.png"),
   "westley-03": require("../assets/characters/westley-pearl-03.png"),
@@ -147,7 +179,7 @@ const pearlScenes = {
 export default function CalmGardenScene({ pearl }) {
   const pearlScene = pearlScenes[pearl?.id];
   if (pearlScene) {
-    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
+    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("together-") ? "Annie" : pearl.id.startsWith("chapo-") ? "Chapo" : pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
   }
   return <BackyardScene />;
 }
