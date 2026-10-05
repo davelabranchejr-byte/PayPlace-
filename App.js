@@ -3878,7 +3878,7 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
         </View>
       </View>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pearlCategoryRow}>
+      <View style={{ width: "100%", aspectRatio: 4 / 5, borderRadius: 26, overflow: "hidden", marginBottom: 18 }}><CalmGardenScene /></View><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.pearlCategoryRow}>
         {categoryOrder.map((key) => (
           <TouchableOpacity
             key={key}
