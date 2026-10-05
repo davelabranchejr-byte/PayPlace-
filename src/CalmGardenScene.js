@@ -1,110 +1,102 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import CharacterArtwork from "./CharacterArtwork";
-import PayPlaceBrand from "./PayPlaceBrand";
-import { portraits } from "./characters";
+import React, { useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, Animated, AppState, Easing, Image, StyleSheet, Text, View } from "react-native";
 
-const SCENES = [
-  { key: "water", title: "Water what you want to grow", icon: "water", sky: "#CFF4FF", ground: "#DDF4C8", note: "Morning birds hop between the beds while Annie tends the garden." },
-  { key: "fireflies", title: "Night garden", icon: "sparkles", sky: "#172A46", ground: "#1E493D", note: "Fireflies glow, stars twinkle, and the garden gets very quiet." },
-  { key: "smores", title: "Campfire circle", icon: "flame", sky: "#283655", ground: "#36513F", note: "Everyone gathers for s’mores and a money conversation that does not feel like homework." },
-  { key: "plant", title: "Plant one small thing", icon: "leaf", sky: "#E6F8FF", ground: "#D6EDBA", note: "One seed. One plan. One tiny thing that future-you can thank you for." },
-  { key: "path", title: "Garden path", icon: "trail-sign", sky: "#DDF5FF", ground: "#DBEBC0", note: "You do not need the whole map. Just the next stepping stone." },
-  { key: "bench", title: "Sit with it", icon: "cafe", sky: "#E8F7F2", ground: "#D3E9C1", note: "A garden bench is allowed to be part of the plan. Not every moment needs action." },
-  { key: "lantern", title: "Lantern walk", icon: "bulb", sky: "#2B365A", ground: "#29473D", note: "A little light is enough to see the next few feet." },
-  { key: "birds", title: "Morning chorus", icon: "musical-notes", sky: "#D9F6FF", ground: "#D9F1C5", note: "Birds overhead, paws in the grass, and no emergency where there is only uncertainty." },
+const sunset = require("../assets/characters/annie-backyard-sunset.png");
+const night = require("../assets/characters/annie-backyard-night.png");
+const isNighttime = () => {
+  const hour = new Date().getHours();
+  return hour >= 20 || hour < 6;
+};
+const fireflies = [[10, 27], [24, 45], [76, 30], [88, 49], [16, 70], [66, 63], [45, 78], [81, 82], [35, 55]];
+const lights = [[7, 10], [17, 14], [26, 16], [69, 12], [81, 8], [93, 4]];
+const visitors = [
+  { left: 12, top: 28, symbol: "🐦" },
+  { left: 78, top: 23, symbol: "🐦" },
+  { left: 23, top: 47, symbol: "🦋" },
+  { left: 73, top: 55, symbol: "🦋" },
 ];
 
-const CATEGORY_PERSON = {
-  westley: "westley",
-  tate: "tate",
-  bobbie: "bobbie",
-  chapo: "chapo",
-  together: "annie",
-};
-
-function pearlNumber(pearl) {
-  const raw = String(pearl?.number || String(pearl?.id || "").split("-").pop() || "1");
-  return Number(raw.replace(/\D/g, "")) || 1;
+function GardenVisitor({ left, top, symbol, index, glow, still }) {
+  const progress = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    if (still) { progress.setValue(0.5); return; }
+    const duration = 2800 + index * 420;
+    const animation = Animated.loop(Animated.sequence([
+      Animated.timing(progress, { toValue: 1, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(progress, { toValue: 0, duration, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ]));
+    animation.start();
+    return () => animation.stop();
+  }, [index, still, progress]);
+  return (
+    <Animated.View style={[s.visitor, {
+      left: `${left}%`, top: `${top}%`,
+      opacity: glow ? progress.interpolate({ inputRange: [0, 1], outputRange: [0.25, 1] }) : 1,
+      transform: [
+        { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [-14, 14] }) },
+        { translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [6, -12] }) },
+        { rotate: progress.interpolate({ inputRange: [0, 1], outputRange: ["-8deg", "8deg"] }) },
+      ],
+    }]}>
+      {glow ? <View style={s.firefly} /> : <Text style={s.flying}>{symbol}</Text>}
+    </Animated.View>
+  );
 }
 
-export default function CalmGardenScene({ pearl, category, collectionLabel }) {
-  const number = pearlNumber(pearl);
-  const scene = SCENES[(number - 1) % SCENES.length];
-  const characterKey = CATEGORY_PERSON[category] || "annie";
-  const character = portraits[characterKey] || portraits.annie;
-  const isNight = scene.key === "fireflies" || scene.key === "smores" || scene.key === "lantern";
-  const textColor = isNight ? "#FFFFFF" : "#173557";
-
+export default function CalmGardenScene() {
+  const [isNight, setIsNight] = useState(isNighttime);
+  const [reducedMotion, setReducedMotion] = useState(true);
+  const [active, setActive] = useState(AppState.currentState === "active");
+  const twinkle = useRef(new Animated.Value(0.5)).current;
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled().then(value => {
+      if (mounted) setReducedMotion(value);
+    }).catch(() => {});
+    const motion = AccessibilityInfo.addEventListener("reduceMotionChanged", setReducedMotion);
+    const app = AppState.addEventListener("change", state => {
+      setActive(state === "active");
+      if (state === "active") setIsNight(isNighttime());
+    });
+    const timer = setInterval(() => setIsNight(isNighttime()), 60000);
+    return () => { mounted = false; motion.remove(); app.remove(); clearInterval(timer); };
+  }, []);
+  const still = reducedMotion || !active;
+  useEffect(() => {
+    if (!isNight || still) { twinkle.setValue(0.5); return; }
+    const animation = Animated.loop(Animated.sequence([
+      Animated.timing(twinkle, { toValue: 1, duration: 1900, useNativeDriver: true }),
+      Animated.timing(twinkle, { toValue: 0, duration: 2300, useNativeDriver: true }),
+    ]));
+    animation.start();
+    return () => animation.stop();
+  }, [isNight, still, twinkle]);
   return (
-    <View style={[s.scene, { backgroundColor: scene.sky }]} accessibilityLabel={`${collectionLabel || "PayPlace"} in the Calm Garden. ${scene.note}`}>
-      <View style={[s.ground, { backgroundColor: scene.ground }]} />
-      <View style={s.sunMoon}>
-        <Ionicons name={isNight ? "moon" : "sunny"} size={30} color={isNight ? "#FFF3B8" : "#F6BE48"} />
-      </View>
-
-      {isNight ? (
-        <>
-          <Text style={[s.sparkle, { left: "12%", top: 26 }]}>✦</Text>
-          <Text style={[s.sparkle, { left: "35%", top: 48 }]}>·</Text>
-          <Text style={[s.sparkle, { right: "18%", top: 34 }]}>✧</Text>
-          <Text style={[s.sparkle, { right: "35%", top: 72 }]}>•</Text>
-        </>
-      ) : (
-        <>
-          <Ionicons name="leaf" size={24} color="#63A461" style={[s.floating, { left: 18, top: 54 }]} />
-          <Ionicons name="leaf" size={20} color="#8ABC6B" style={[s.floating, { right: 32, top: 76 }]} />
-        </>
-      )}
-
-      <View style={s.annieWrap}>
-        <CharacterArtwork source={portraits.annie} style={s.annie} resizeMode="contain" accessibilityLabel={portraits.annie.label} />
-      </View>
-
-      {category !== "together" && (
-        <View style={s.characterWrap}>
-          <CharacterArtwork source={character} style={s.character} resizeMode="contain" accessibilityLabel={character.label} />
-        </View>
-      )}
-
-      {scene.key === "smores" && (
-        <View style={s.campfire}>
-          <Ionicons name="flame" size={34} color="#FFB24D" />
-          <Text style={s.smores}>◻︎  ◻︎</Text>
-        </View>
-      )}
-
-      <View style={s.brandBadge}>
-        <PayPlaceBrand compact light={isNight} />
-      </View>
-
-      <View style={s.caption}>
-        <View style={s.captionTitleRow}>
-          <Ionicons name={scene.icon} size={17} color={textColor} />
-          <Text style={[s.captionTitle, { color: textColor }]}>{scene.title}</Text>
-        </View>
-        <Text style={[s.captionText, { color: textColor }]}>{scene.note}</Text>
+    <View style={s.scene}>
+      <Image source={isNight ? night : sunset} style={StyleSheet.absoluteFillObject} resizeMode="cover"
+        accessibilityLabel={isNight
+          ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
+          : "Annie's fenced backyard at sunset, with birds and butterflies flying above the flowers"} />
+      <View pointerEvents="none" style={StyleSheet.absoluteFillObject} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        {isNight ? (
+          <>
+            {fireflies.map(([left, top], index) => <GardenVisitor key={`firefly-${index}`} left={left} top={top} index={index} glow still={still} />)}
+            {lights.map(([left, top], index) => (
+              <Animated.View key={`light-${index}`} style={[s.light, {
+                left: `${left}%`, top: `${top}%`,
+                opacity: twinkle.interpolate({ inputRange: [0, 1], outputRange: index % 2 ? [0.7, 0.15] : [0.15, 0.7] }),
+              }]} />
+            ))}
+          </>
+        ) : visitors.map((visitor, index) => <GardenVisitor key={`visitor-${index}`} {...visitor} index={index} still={still} />)}
       </View>
     </View>
   );
 }
-
 const s = StyleSheet.create({
-  scene: { width: "100%", height: "100%", minHeight: 245, overflow: "hidden", position: "relative" },
-  ground: { position: "absolute", left: 0, right: 0, bottom: 0, height: "43%", borderTopLeftRadius: 120, borderTopRightRadius: 120 },
-  sunMoon: { position: "absolute", right: 18, top: 16, width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.28)", alignItems: "center", justifyContent: "center" },
-  floating: { position: "absolute" },
-  sparkle: { position: "absolute", color: "#FFF7C8", fontSize: 22, fontWeight: "900" },
-  annieWrap: { position: "absolute", right: -6, bottom: 22, width: "53%", height: "86%" },
-  annie: { width: "100%", height: "100%" },
-  characterWrap: { position: "absolute", left: 8, bottom: 18, width: "47%", height: "70%" },
-  character: { width: "100%", height: "100%" },
-  campfire: { position: "absolute", left: "41%", bottom: 30, alignItems: "center" },
-  smores: { color: "#F8E3BE", fontWeight: "900", marginTop: -4 },
-  brandBadge: { position: "absolute", left: 10, top: 10, backgroundColor: "rgba(255,255,255,0.84)", borderRadius: 14, paddingHorizontal: 8, paddingVertical: 6 },
-  caption: { position: "absolute", left: 12, right: 12, bottom: 12, backgroundColor: "rgba(255,255,255,0.74)", borderRadius: 16, padding: 10 },
-  captionTitleRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  captionTitle: { fontSize: 12, fontWeight: "900" },
-  captionText: { fontSize: 10, lineHeight: 14, fontWeight: "700", marginTop: 3 },
+  scene: { width: "100%", height: "100%", overflow: "hidden", backgroundColor: "#183A35" },
+  visitor: { position: "absolute" },
+  flying: { fontSize: 18 },
+  firefly: { width: 5, height: 5, borderRadius: 3, backgroundColor: "#FFFFA0", shadowColor: "#F9FF6C", shadowOpacity: 1, shadowRadius: 7, shadowOffset: { width: 0, height: 0 } },
+  light: { position: "absolute", width: 10, height: 10, borderRadius: 5, backgroundColor: "#FFF3AD", shadowColor: "#FFD65D", shadowOpacity: 1, shadowRadius: 9, shadowOffset: { width: 0, height: 0 } },
 });
