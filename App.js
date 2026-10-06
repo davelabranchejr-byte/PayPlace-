@@ -34,6 +34,7 @@ import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
 import EmailVerification from "./src/EmailVerification";
+import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
@@ -1267,7 +1268,7 @@ export default function App() {
         if (savedOnboarding && active) {
           const parsedOnboarding = JSON.parse(savedOnboarding);
           setOnboardingAnswers((current) => ({ ...current, ...parsedOnboarding }));
-          setOnboardingComplete(Boolean(parsedOnboarding.completed));
+          setOnboardingComplete(Boolean(parsedOnboarding.completed) && hasVerifiedContact(parsedOnboarding));
         }
 
         if (saved && active) {
@@ -1589,6 +1590,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function finishOnboarding(answers) {
+    if (!hasVerifiedContact(answers)) {
+      Alert.alert("Confirm your place", "Enter the security code sent to your phone or email before continuing.");
+      return;
+    }
     const completedAnswers = { ...answers, completed: true, completedAt: new Date().toISOString() };
     try {
       await AsyncStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
@@ -1713,18 +1718,6 @@ const ONBOARDING_STEPS = [
     accent: palette.purple,
   },
   {
-    key: "email",
-    mascot: "Tate",
-    role: "Tiny Win Champion",
-    question: "What’s your email?",
-    helper: "Annie will send your welcome letter and a code to confirm your email when email delivery is available.",
-    placeholder: "you@example.com",
-    image: portraits.tate,
-    type: "text",
-    keyboardType: "email-address",
-    accent: palette.teal,
-  },
-  {
     key: "goal",
     mascot: "Bobbie",
     role: "Confidence Queen",
@@ -1795,7 +1788,7 @@ const ONBOARDING_STEPS = [
 ];
 
 function OnboardingFlow({ initialAnswers, onComplete }) {
-  const [welcomeStage, setWelcomeStage] = useState("annie");
+  const [welcomeStage, setWelcomeStage] = useState(initialAnswers.completed ? "email" : "annie");
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState(initialAnswers);
   const step = ONBOARDING_STEPS[stepIndex];
@@ -1810,10 +1803,6 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   function next() {
     if (!canContinue) {
       Alert.alert("One tiny detail", "Choose or enter an answer before continuing.");
-      return;
-    }
-    if (step.key === "email" && !/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(String(value).trim())) {
-      Alert.alert("One tiny detail", "Enter a valid email address before continuing.");
       return;
     }
     if (isLast) {
@@ -1850,9 +1839,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
               <Text style={styles.annieWelcomeButtonText}>Sit with Annie</Text>
               <Ionicons name="leaf" size={20} color="white" />
             </TouchableOpacity>
-            <TouchableOpacity accessibilityRole="button" onPress={() => onComplete({ ...answers, name: answers.name || "Neighbor", arrivalReason: "Just visiting", guest: true })} style={{ paddingVertical: 15, alignItems: "center" }}>
-              <Text style={{ color: palette.purple, fontSize: 15, fontWeight: "800" }}>Just visiting? Take a look around</Text>
-            </TouchableOpacity>
+
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -1863,7 +1850,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
     return <SafeAreaView style={styles.onboardingSafe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <EmailVerification answers={answers} onVerified={onComplete} onVisit={onComplete} onEdit={() => { setStepIndex(1); setWelcomeStage("questions"); }} />
+          <EmailVerification answers={answers} onVerified={onComplete} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>;
