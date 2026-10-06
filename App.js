@@ -2703,6 +2703,19 @@ function HomeScreen({
         <Ionicons name="chevron-forward" size={20} color={palette.purple} />
       </TouchableOpacity>
 
+      <View style={styles.plaidPlanCard}>
+        <View style={styles.plaidIcon}>
+          <Ionicons name="chatbubble-ellipses" size={20} color={palette.ink} />
+        </View>
+        <View style={styles.flexOne}>
+          <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800", marginBottom: 5 }}>COMING SOON · PREMIUM</Text>
+          <Text style={styles.plaidTitle}>Text-message security codes</Text>
+          <Text style={styles.plaidText}>
+            A planned paid option: receive your sign-in code by text. Email verification and Annie’s welcome email remain included.
+          </Text>
+        </View>
+      </View>
+
       <SectionTitle
         title="Your Snapshot"
         subtitle="A clean money command center for real life."
