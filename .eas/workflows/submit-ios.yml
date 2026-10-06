@@ -1,9 +1,9 @@
-name: Upload PayPlace 1.0.0 build 9 to Apple
+name: Upload PayPlace 1.0.0 build 16 to Apple
 
 jobs:
   submit_ios:
-    name: Upload signed iPhone build 9
+    name: Upload signed iPhone build 16
     type: submit
     params:
-      build_id: aa4b8a1b-5c3d-4f4d-b32c-0d44076c7ad6
+      build_id: 41975337-fb46-40c9-8142-786ebf486f34
       profile: production
