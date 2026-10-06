@@ -43,6 +43,8 @@ import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
+import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
+import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const approvedClothedCharacterArtwork = portraits.together;
@@ -997,16 +999,6 @@ function parseDateSafe(value, fallbackDays = 0) {
   return fallback;
 }
 
-function addDays(date, days) {
-  const copy = new Date(date);
-  copy.setDate(copy.getDate() + days);
-  return copy;
-}
-
-function monthKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-}
-
 function formatMonthYear(date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
@@ -1015,95 +1007,27 @@ function formatShortDate(date) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function getPayScheduleSettings(frequency) {
-  const normalized = String(frequency || "Biweekly").toLowerCase();
-
-  if (normalized.includes("week") && !normalized.includes("bi")) {
-    return { intervalDays: 7, expectedPerMonth: 4, label: "Weekly" };
-  }
-
-  if (normalized.includes("semi") || normalized.includes("twice")) {
-    return { intervalDays: 15, expectedPerMonth: 2, label: "Twice monthly" };
-  }
-
-  if (normalized.includes("month")) {
-    return { intervalDays: 30, expectedPerMonth: 1, label: "Monthly" };
-  }
-
-  return { intervalDays: 14, expectedPerMonth: 2, label: "Biweekly" };
-}
-
 function getExtraPaycheckInfo(finance, upcomingTotal, debtDueTotal) {
-  const settings = getPayScheduleSettings(finance.payFrequency);
-  const paycheckAmount = Number(finance.nextPaycheck || 0);
-  const today = new Date();
-  today.setHours(12, 0, 0, 0);
-
-  let nextPayDate = parseDateSafe(finance.nextPaycheckDate, finance.daysUntilPayday);
-  while (nextPayDate < today) {
-    nextPayDate = addDays(nextPayDate, settings.intervalDays);
-  }
-
-  const payDates = [];
-  let cursor = new Date(nextPayDate);
-  for (let index = 0; index < 28; index += 1) {
-    payDates.push(new Date(cursor));
-    cursor = addDays(cursor, settings.intervalDays);
-  }
-
-  const months = payDates.reduce((grouped, date) => {
-    const key = monthKey(date);
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(date);
-    return grouped;
-  }, {});
-
-  const extraMonthKey = Object.keys(months).find(
-    (key) => months[key].length > settings.expectedPerMonth
-  );
-
-  const safeAmount = paycheckAmount > 0 ? paycheckAmount : Number(finance.balance || 0);
-  const billCatchUp = Math.min(safeAmount * 0.35, Math.max(Number(upcomingTotal || 0), 0));
-  const debtPush = Math.min(safeAmount * 0.3, Math.max(Number(debtDueTotal || 0), safeAmount * 0.3));
-  const emergencyFund = safeAmount * 0.25;
-  const joyBuffer = Math.max(safeAmount - billCatchUp - debtPush - emergencyFund, 0);
-
-  if (!extraMonthKey) {
-    return {
-      hasExtra: false,
-      title: "Extra paycheck radar",
-      subtitle: "No extra check detected yet. Add your next payday and pay rhythm in Budget.",
-      monthLabel: "Not detected",
-      count: 0,
-      extraDateLabel: "Set payday",
-      amount: paycheckAmount,
-      frequencyLabel: settings.label,
-      suggestions: [
-        { label: "Bills", value: money(billCatchUp), color: palette.gold, textColor: palette.ink },
-        { label: "Debt", value: money(debtPush), color: palette.purple, textColor: "white" },
-        { label: "Buffer", value: money(emergencyFund), color: palette.mintBright, textColor: palette.ink },
-        { label: "Joy", value: money(joyBuffer), color: palette.coral, textColor: "white" },
-      ],
-    };
-  }
-
-  const dates = months[extraMonthKey];
-  const extraDate = dates[dates.length - 1];
-
+  const settings = scheduleSettings(finance.payFrequency);
+  const extra = nextExtraPaycheck(finance);
+  const amount = extra?.amount || Math.max(Number(finance.nextPaycheck) || 0, 0);
+  const split = suggestedSplit(amount, upcomingTotal);
+  const date = extra ? readDate(extra.date) : null;
+  const count = date ? buildCalendar(finance, date).events.filter(event => event.type === "pay").length : 0;
   return {
-    hasExtra: true,
-    title: "Extra paycheck alert",
-    subtitle: `${formatMonthYear(extraDate)} has ${dates.length} paychecks. The extra one looks like ${formatShortDate(extraDate)}.`,
-    monthLabel: formatMonthYear(extraDate),
-    count: dates.length,
-    extraDateLabel: formatShortDate(extraDate),
-    amount: paycheckAmount,
+    hasExtra: Boolean(extra),
+    title: extra ? "Extra paycheck alert" : "Extra paycheck radar",
+    subtitle: extra ? `${formatMonthYear(date)}: ${extra.label.toLowerCase()} on ${formatShortDate(date)}. Open your calendar to plan it.`
+      : readDate(finance.nextPaycheckDate) ? "No extra checks in the next 12 months. Open your calendar to see paydays or add a bonus."
+      : "Set your next payday in Budget, then open your calendar to spot extra checks.",
+    monthLabel: date ? formatMonthYear(date) : "Not detected",
+    count, extraDateLabel: date ? formatShortDate(date) : "Set payday", amount,
     frequencyLabel: settings.label,
     suggestions: [
-      { label: "Bills", value: money(billCatchUp), color: palette.gold, textColor: palette.ink },
-      { label: "Debt", value: money(debtPush), color: palette.purple, textColor: "white" },
-      { label: "Buffer", value: money(emergencyFund), color: palette.mintBright, textColor: palette.ink },
-      { label: "Joy", value: money(joyBuffer), color: palette.coral, textColor: "white" },
+      { label: "Bills", value: money(split.bills), color: palette.gold, textColor: palette.ink },
+      { label: "Debt", value: money(split.debt), color: palette.purple, textColor: "white" },
+      { label: "Buffer", value: money(split.buffer), color: palette.mintBright, textColor: palette.ink },
+      { label: "Joy", value: money(split.joy), color: palette.coral, textColor: "white" },
     ],
   };
 }
@@ -1367,6 +1291,24 @@ function PayPlaceApp() {
       return true;
     } catch (error) {
       Alert.alert("A little mirror check", error.message);
+      return false;
+    }
+  }
+
+  function updateExtraPaycheck(action) {
+    try {
+      let next = finance;
+      if (action.type === "bonus") next = addBonus(finance, action.entry);
+      if (action.type === "split") next = saveSplit(finance, action.event, action.values);
+      if (action.type === "removeBonus") {
+        const plans = { ...(finance.extraPaycheckPlans || {}) };
+        delete plans[action.id];
+        next = { ...finance, extraPaychecks: (finance.extraPaychecks || []).filter(item => item.id !== action.id), extraPaycheckPlans: plans };
+      }
+      setFinance(next);
+      return true;
+    } catch (error) {
+      Alert.alert("A little paycheck check", error.message);
       return false;
     }
   }
@@ -1696,6 +1638,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             showPlaidPlan={showPlaidPlan}
             replayAnnieOnboarding={replayAnnieOnboarding}
             onMirrorAction={updateMirror}
+            onExtraPaycheckAction={updateExtraPaycheck}
           />
         )}
 
@@ -2269,6 +2212,7 @@ function HomeScreen({
   showPlaidPlan,
   replayAnnieOnboarding,
   onMirrorAction,
+  onExtraPaycheckAction,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2339,147 +2283,14 @@ function HomeScreen({
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
       </TouchableOpacity>
       <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => switchTab("Budget")} />
-      <Modal
+      <ExtraPaycheckCalendar
         visible={extraPlanVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setExtraPlanVisible(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "rgba(7, 18, 40, 0.58)",
-            justifyContent: "center",
-            padding: 22,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: "#FFFDF4",
-              borderRadius: 34,
-              padding: 22,
-              borderWidth: 2,
-              borderColor: "#FFD21F",
-              overflow: "hidden",
-            }}
-          >
-            <View
-              style={{
-                position: "absolute",
-                width: 170,
-                height: 170,
-                borderRadius: 85,
-                backgroundColor: palette.mintBright,
-                opacity: 0.22,
-                top: -70,
-                left: -60,
-              }}
-            />
-            <View
-              style={{
-                position: "absolute",
-                width: 170,
-                height: 170,
-                borderRadius: 85,
-                backgroundColor: palette.coral,
-                opacity: 0.16,
-                right: -65,
-                bottom: -75,
-              }}
-            />
-
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 14 }}>
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 20,
-                  backgroundColor: palette.mintBright,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: 12,
-                  borderWidth: 2,
-                  borderColor: "rgba(255,255,255,0.85)",
-                }}
-              >
-                <Ionicons name="sparkles" size={23} color={palette.ink} />
-              </View>
-              <View style={styles.flexOne}>
-                <Text style={styles.extraEyebrow}>EXTRA PAYCHECK PLAN</Text>
-                <Text style={[styles.formTitle, { marginTop: 2 }]}>
-                  {extraPaycheckInfo.hasExtra
-                    ? extraPaycheckInfo.monthLabel
-                    : "Set up the radar"}
-                </Text>
-              </View>
-              <View style={styles.extraPill}>
-                <Text style={styles.extraPillText}>{extraPaycheckInfo.frequencyLabel}</Text>
-              </View>
-            </View>
-
-            <Text style={[styles.billMeta, { lineHeight: 22 }]}>
-              {extraPaycheckInfo.hasExtra
-                ? `PayPlace found ${extraPaycheckInfo.count} ${extraPaycheckInfo.frequencyLabel.toLowerCase()} paychecks in ${extraPaycheckInfo.monthLabel}. The extra check estimate is ${money(extraPaycheckInfo.amount)} around ${extraPaycheckInfo.extraDateLabel}.`
-                : "Add your next payday date and pay frequency in Budget so PayPlace can spot three-check or five-check months."}
-            </Text>
-
-            <View style={styles.extraSplitGrid}>
-              {extraPaycheckInfo.suggestions.map((item) => (
-                <View
-                  key={item.label}
-                  style={[
-                    styles.extraSplitCard,
-                    {
-                      backgroundColor: item.color,
-                      borderColor: "rgba(255,255,255,0.8)",
-                    },
-                  ]}
-                >
-                  <Text style={[styles.extraSplitLabel, { color: item.textColor }]}>
-                    {item.label}
-                  </Text>
-                  <Text
-                    style={[styles.extraSplitValue, { color: item.textColor }]}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                  >
-                    {item.value}
-                  </Text>
-                </View>
-              ))}
-            </View>
-
-            <View
-              style={{
-                backgroundColor: "white",
-                borderRadius: 22,
-                borderWidth: 1,
-                borderColor: palette.border,
-                padding: 14,
-                marginTop: 4,
-              }}
-            >
-              <Text style={styles.inputLabel}>PayPlace suggestion</Text>
-              <Text style={[styles.billMeta, { lineHeight: 21 }]}>
-                Cover the boring stuff first, push debt second, protect a buffer third, then keep a small guilt-free joy slice so the plan does not feel like punishment.
-              </Text>
-            </View>
-
-            <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                {
-                  backgroundColor: palette.purple,
-                  marginTop: 18,
-                },
-              ]}
-              onPress={() => setExtraPlanVisible(false)}
-            >
-              <Text style={styles.primaryButtonText}>Got it</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setExtraPlanVisible(false)}
+        finance={finance}
+        upcomingTotal={upcomingTotal}
+        onAction={onExtraPaycheckAction}
+        onBudget={() => { setExtraPlanVisible(false); switchTab("Budget"); }}
+      />
 
       <Modal
         visible={guidanceVisible}
@@ -2645,7 +2456,7 @@ function HomeScreen({
             <Ionicons name="sparkles" size={22} color={palette.ink} />
           </View>
           <View style={styles.flexOne}>
-            <Text style={styles.extraEyebrow}>EXTRA PAYCHECK RADAR</Text>
+            <Text style={styles.extraEyebrow}>EXTRA PAYCHECK · PAID FEATURE PREVIEW</Text>
             <Text style={styles.extraTitle}>{extraPaycheckInfo.title}</Text>
           </View>
           <View style={styles.extraPill}>
@@ -2681,7 +2492,7 @@ function HomeScreen({
         </View>
 
         <View style={styles.extraButton}>
-          <Text style={styles.extraButtonText}>Plan my extra check</Text>
+          <Text style={styles.extraButtonText}>Open my paycheck calendar</Text>
           <Ionicons name="chevron-forward" size={18} color="white" />
         </View>
       </TouchableOpacity>
@@ -2746,6 +2557,16 @@ function HomeScreen({
           Your plan stays in your hands. Enter your balance and bills manually to get started.
         </Text>
       </View>
+
+      <TouchableOpacity style={styles.plaidPlanCard} onPress={showExtraPaycheckPlan} accessibilityRole="button">
+        <View style={styles.plaidIcon}><Ionicons name="calendar" size={20} color={palette.ink} /></View>
+        <View style={styles.flexOne}>
+          <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800", marginBottom: 5 }}>PAID FEATURES · BETA PREVIEW</Text>
+          <Text style={styles.plaidTitle}>Extra Paycheck Calendar</Text>
+          <Text style={styles.plaidText}>See regular paydays and highlighted extra checks, add bonuses, and save a plan for bills, debt, your buffer, and joy.</Text>
+        </View>
+        <Ionicons name="chevron-forward" size={20} color={palette.purple} />
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.plaidPlanCard} onPress={showPlaidPlan}>
         <View style={styles.plaidIcon}>
@@ -3541,6 +3362,14 @@ function BudgetScreen({
           placeholder="Weekly, biweekly, twice monthly, monthly"
           onChangeText={(text) => updateText("payFrequency", text)}
         />
+
+        {scheduleSettings(finance.payFrequency).kind === "semi" && <InputField
+          label="Second payday day (1–31; 31 means month end)"
+          value={String(finance.secondPaydayDay || "")}
+          keyboardType="number-pad"
+          placeholder="Leave blank to estimate from next payday"
+          onChangeText={text => updateText("secondPaydayDay", text)}
+        />}
 
         <InputField
           label="Days until payday"
@@ -6276,3 +6105,4 @@ const styles = StyleSheet.create({
   },
 
 });
+
