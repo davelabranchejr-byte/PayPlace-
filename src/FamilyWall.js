@@ -1,9 +1,14 @@
 import React from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
-import { portraits } from "./characters";
 import { MASCOT_LORE } from "./data/mascotLore";
+import { FAMILY_PORTRAITS, FAMILY_WALL_SIZE, portraitFrameStyle } from "./family-wall-layout.mjs";
+
+const familyWallArtwork = require("../assets/characters/annie-family-wall.jpg");
+const storyPortraits = Object.fromEntries(Object.entries(FAMILY_PORTRAITS).map(([id, detail]) => [
+  id, { source: familyWallArtwork, ...FAMILY_WALL_SIZE, crop: detail.crop, label: detail.label },
+]));
 
 // Backgrounds adapted from PAYPLACE_CHARACTER_BIBLE.md, preserving the approved canon.
 export const FAMILY_STORIES = [
@@ -39,41 +44,25 @@ export const FAMILY_STORIES = [
   ] }
 ];
 
-const GALLERY_DETAILS = {
-  daddy: { note: "The center of the family wall.", frame: "daddy" },
-  westley: { note: "Westley drew Daddy in crayon. He gave him extra-big arms.", frame: "westley" },
-  tate: { note: "Tate draws everything. Nobody is entirely sure what this one is.", frame: "tate" },
-  bobbie: { note: "Bobbie Bucks, starring Bobbie. Fashion sketches sold separately.", frame: "bobbie" },
-  chapo: { note: "Chapo drew snacks. Then added more snacks.", frame: "chapo" },
-  annie: { note: "Great Annie keeps every masterpiece on the wall.", frame: "annie" },
-};
-
 export default function FamilyWall({ onSelect }) {
   return <View style={s.wall}>
-    <Text style={s.eyebrow}>THE FAMILY WALL</Text>
-    <Text style={s.title}>This home has stories</Text>
-    <Text style={s.hint}>Tap a portrait to meet the family. The little drawings are staying, obviously.</Text>
-    <View style={s.grid}>{FAMILY_STORIES.map(person => {
-      const detail = GALLERY_DETAILS[person.id] || {};
-      const frameStyle = s[`frame_${detail.frame}`];
-      return <TouchableOpacity
+    <View style={s.heading}>
+      <Text style={s.eyebrow}>THE FAMILY WALL</Text>
+      <Text style={s.title} accessibilityRole="header">This home has stories</Text>
+      <Text style={s.hint}>You're inside Annie. Tap any framed portrait to read their full story.</Text>
+    </View>
+    <View style={s.gallery}>
+      <Image source={familyWallArtwork} style={StyleSheet.absoluteFillObject} resizeMode="contain" accessible={false} />
+      {FAMILY_STORIES.map(person => <Pressable
         key={person.id}
-        style={[s.card, person.id === "daddy" && s.daddy, frameStyle]}
-        activeOpacity={0.8}
+        testID={`family-portrait-${person.id}`}
+        style={({ pressed }) => [s.portraitTarget, portraitFrameStyle(person.id), pressed && s.portraitPressed]}
         accessibilityRole="button"
-        accessibilityLabel={`Meet ${person.name}. Read their background story.`}
-        onPress={() => onSelect(person)}>
-        <View style={[s.photoMat, person.id === "bobbie" && s.photoMatBobbie]}>
-          <CharacterArtwork source={portraits[person.id]} style={s.portrait} resizeMode="contain" />
-        </View>
-        <Text style={s.name}>{person.name}</Text>
-        <Text style={s.role}>{person.role}</Text>
-        {!!detail.note && <View style={[s.artNote, person.id === "bobbie" && s.artNoteBobbie]}>
-          <Text style={[s.artNoteText, person.id === "bobbie" && s.artNoteTextBobbie]}>{detail.note}</Text>
-        </View>}
-        <View style={s.read}><Text style={s.readText}>Read story</Text><Ionicons name="chevron-forward" size={15} color="#6754C5" /></View>
-      </TouchableOpacity>;
-    })}</View>
+        accessibilityLabel={`Meet ${person.name}. Read their full story.`}
+        accessibilityHint={`Opens ${person.name}'s story. You can return to this wall afterwards.`}
+        onPress={() => onSelect(person)}
+      />)}
+    </View>
   </View>;
 }
 
@@ -83,7 +72,7 @@ export function CharacterStory({ person, onBack }) {
       <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.backText}>Back to the family wall</Text>
     </TouchableOpacity>
     <View style={s.storyCard}>
-      <CharacterArtwork source={portraits[person.id]} style={s.storyPortrait} resizeMode="contain" />
+      <CharacterArtwork source={storyPortraits[person.id]} style={s.storyPortrait} resizeMode="contain" />
       <Text style={s.eyebrow}>MEET THE FAMILY</Text>
       <Text style={s.title} accessibilityRole="header">{person.name}</Text>
       <Text style={s.storyRole}>{person.role}</Text>
@@ -95,30 +84,14 @@ export function CharacterStory({ person, onBack }) {
 }
 
 const s = StyleSheet.create({
-  wall: { backgroundColor: "#FFFDF8", borderRadius: 28, padding: 18, marginTop: 16, borderWidth: 1, borderColor: "#EADFCB" },
+  wall: { backgroundColor: "#FFF8EA", borderRadius: 28, marginTop: 16, borderWidth: 1, borderColor: "#D9BD87", overflow: "hidden" },
+  heading: { padding: 18 },
   eyebrow: { color: "#B25B4A", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
   title: { color: "#173557", fontSize: 25, fontWeight: "900", marginTop: 5 },
-  hint: { color: "#667085", fontSize: 14, lineHeight: 20, marginTop: 6, marginBottom: 16 },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", gap: 12 },
-  card: { width: "47%", borderRadius: 18, backgroundColor: "#F4EBDD", borderWidth: 4, alignItems: "center", padding: 10, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 5, shadowOffset: { width: 0, height: 3 }, elevation: 2 },
-  daddy: { width: "100%", backgroundColor: "#F2ECFF", borderColor: "#BCAAEF" },
-  frame_daddy: { borderColor: "#BCAAEF", borderRadius: 24 },
-  frame_westley: { borderColor: "#9AC7D8", borderRadius: 26, transform: [{ rotate: "-0.5deg" }] },
-  frame_tate: { borderColor: "#E0A85B", borderRadius: 14, transform: [{ rotate: "0.8deg" }] },
-  frame_bobbie: { borderColor: "#D19AB7", borderRadius: 20, backgroundColor: "#FFF5FA" },
-  frame_chapo: { borderColor: "#D6A24A", borderRadius: 16, backgroundColor: "#FFF7DD", transform: [{ rotate: "-0.8deg" }] },
-  frame_annie: { borderColor: "#9DB88B", borderRadius: 22, backgroundColor: "#F5F6E8" },
-  photoMat: { width: "100%", borderRadius: 12, backgroundColor: "#FFFDF8", padding: 5, borderWidth: 1, borderColor: "#EADFCB" },
-  photoMatBobbie: { borderWidth: 2, borderColor: "#E5B7CC" },
-  portrait: { width: "100%", height: 155, borderRadius: 10, overflow: "hidden" },
-  name: { color: "#173557", fontSize: 18, fontWeight: "900", textAlign: "center", marginTop: 10 },
-  role: { color: "#667085", fontSize: 12, lineHeight: 17, textAlign: "center", marginTop: 4 },
-  artNote: { alignSelf: "stretch", marginTop: 10, paddingVertical: 8, paddingHorizontal: 10, backgroundColor: "#FFF9E9", borderRadius: 10, borderWidth: 1, borderColor: "#E8D7AA", transform: [{ rotate: "-1deg" }] },
-  artNoteBobbie: { backgroundColor: "#FFF2F8", borderColor: "#E7B6CF", transform: [{ rotate: "0.6deg" }] },
-  artNoteText: { color: "#6A5843", fontSize: 11, lineHeight: 15, textAlign: "center", fontStyle: "italic", fontWeight: "700" },
-  artNoteTextBobbie: { color: "#8D3A69", fontStyle: "normal" },
-  read: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginTop: 10, minHeight: 28 },
-  readText: { color: "#6754C5", fontSize: 13, fontWeight: "800" },
+  hint: { color: "#526177", fontSize: 14, lineHeight: 20, marginTop: 6 },
+  gallery: { width: "100%", aspectRatio: FAMILY_WALL_SIZE.width / FAMILY_WALL_SIZE.height, position: "relative", backgroundColor: "#7D4527" },
+  portraitTarget: { position: "absolute", borderRadius: 12, borderWidth: 3, borderColor: "transparent" },
+  portraitPressed: { backgroundColor: "rgba(255, 239, 166, 0.18)", borderColor: "#FFE89B" },
   screen: { flex: 1, backgroundColor: "#F8F3E8" },
   story: { padding: 18, paddingBottom: 40, alignSelf: "center", width: "100%", maxWidth: 720 },
   back: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 48, marginBottom: 14 },
