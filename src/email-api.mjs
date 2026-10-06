@@ -1,6 +1,6 @@
 // Public service address only. Resend credentials stay on the server.
 export const EMAIL_SERVICE_ORIGIN = 'https://payplace-dave.davelabranchejr.chatgpt.site';
-export function createEmailApi(platform, request = fetch) {
+export function createEmailApi(platform, request = fetch, namespace = 'email') {
   return async function emailApi(path, data) {
     const native = platform !== 'web';
     const controller = new AbortController();
@@ -9,7 +9,7 @@ export function createEmailApi(platform, request = fetch) {
       const headers = data ? { 'Content-Type': 'application/json' } : {};
       // Native fetch has no browser Origin. Use the service's expected public origin.
       if (native) headers.Origin = EMAIL_SERVICE_ORIGIN;
-      const result = await request(`${native ? EMAIL_SERVICE_ORIGIN : ''}/api/email/${path}`, {
+      const result = await request(`${native ? EMAIL_SERVICE_ORIGIN : ''}/api/${namespace}/${path}`, {
         method: data ? 'POST' : 'GET', credentials: native ? 'omit' : 'same-origin',
         headers, body: data ? JSON.stringify(data) : undefined, signal: controller.signal,
       });
@@ -24,3 +24,5 @@ export function createEmailApi(platform, request = fetch) {
     } finally { clearTimeout(timer); }
   };
 }
+
+export const createContactApi = (platform, request = fetch) => createEmailApi(platform, request, 'contact');
