@@ -22,10 +22,24 @@ When bill payments launch, each payment must have a receipt accessible from its 
 
 Agreed rollout: connect accounts and show data first, add user-confirmed bill payments with receipts second, then introduce optional scheduling/autopay. Local Annie bill reminders can be used before connected payments. A provider must be evaluated against this complete path. No payment provider has been selected or activated.
 
-Before production: establish provider accounts and approved product access; implement authenticated cloud accounts and trusted server-side purchase entitlements; keep secrets and provider tokens on the server; connect financial data to the correct user; provide consent, disconnect, deletion, and updated privacy disclosures. Do not accept a client-supplied paid flag. No pricing is set in this plan.
+Before production: establish provider accounts and approved product access; implement authenticated cloud accounts and trusted server-side purchase entitlements; keep secrets and provider tokens on the server; connect financial data to the correct user; provide consent, disconnect, deletion, and updated privacy disclosures. Do not accept a client-supplied paid flag. The October 6 pricing discussion sets the eventual core/basic app target at $4.99/month. A $9.99/month tier was discussed for connected accounts, automation, advanced insights, and premium tools; its final scope and price still need to be confirmed. Subscription billing is not activated by this update.
 
 References:
 - https://plaid.com/docs/financial-insights/
 - https://plaid.com/products/liabilities/
 - https://plaid.com/docs/identity-verification/
 - https://help.openai.com/en/articles/12652064-age-prediction-in-chatgpt (OpenAI documents Persona for ChatGPT age verification.)
+
+
+
+## Extra Paycheck Calendar — paid-feature beta preview
+
+Extra Paycheck is expanded into a calendar and placed under paid features. It is available without charge during beta testing; no purchase, paid toggle, or live subscription entitlement is introduced. Preserve the existing reminder/security behavior. Activate a real paywall only after trusted App Store/Play purchase validation is implemented.
+
+- Navigate calendar months and see every projected regular payday. Mark the third biweekly or fifth weekly check with a gold star and explicit extra-check text. Include earlier paydays in the month when determining which check is extra.
+- Keep monthly and twice-monthly pay on calendar days, with month-end clamping, rather than drifting 30/15-day intervals. Budget includes an optional second payday day for twice-monthly schedules. Employer holiday/early-deposit adjustments are not predicted.
+- Add dated bonus/extra checks with a name and amount, or remove them. They count as extra checks without changing regular pay cadence.
+- Tap a check and save adjustable amounts for catch-up bills, debt, a buffer, and guilt-free joy. Show unassigned money; reject negative, invalid, and overallocated amounts. Round in cents. Plans and added checks persist in the existing encrypted finance vault.
+- Show saved plans and flag paycheck amount changes for review. Calendar estimates and saved plans do not increase the balance or Safe to Spend, mark bills paid, or move money.
+
+The current native source now contains this preview. It requires a new Expo/EAS iOS or Android binary before it appears in installed beta apps. This change does not publish the separate hosted Site.
