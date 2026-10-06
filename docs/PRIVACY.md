@@ -28,7 +28,15 @@ The current iPhone app has no configured advertising, analytics, cross-app track
 
 ## Local storage and your choices
 
-PayPlace cannot remotely access or recover your local entries. You can edit or remove bills and debts inside the app. Removing the app removes its local app storage; any copies in iOS backups remain subject to your Apple backup settings. Device security and backup settings affect access to your saved information. PayPlace does not promise that entries are separately encrypted by the app.
+The security update encrypts budget entries and onboarding answers with AES-256-GCM. Its random device encryption key is held in the iOS Keychain or Android Keystore through Expo SecureStore. On iOS, the key is accessible only while the device is unlocked and does not transfer to another device. Previously saved entries migrate to the encrypted vault; legacy plaintext entries are removed only after the encrypted copy has been verified. This does not erase historical operating-system backups.
+
+On phones with configured device authentication, app lock is on by default. It uses Face ID, Touch ID, supported Android biometrics, or the device passcode. The app locks on launch, after thirty seconds away, or after five minutes without interaction. App screens are covered while the app is inactive. You can turn the lock off after device authentication. A device without a configured passcode cannot enable the app lock. Device authentication unlocks this app; it is separate from verified email, cloud sign-in, and authorization of future bank payments.
+
+You can create an optional password-protected backup containing your manual budget and selected onboarding profile fields. A new backup password must contain at least twelve characters. Backup files use AES-256-GCM with PBKDF2-SHA256 at 600,000 iterations and a fresh random salt. You choose where the file is saved or shared; that destination's privacy and retention policies apply. Export/import temporarily uses the app cache for encrypted files and removes its temporary copy afterward. Backup passwords are not sent to PayPlace. PayPlace cannot reset a forgotten backup password. Restoring replaces local entries after confirmation and requires fresh email verification and letter consent; verification claims and consent do not transfer through the backup.
+
+PayPlace cannot remotely access or recover your local entries. You can edit or remove bills and debts inside the app. Removing the app or clearing storage can make entries inaccessible. Operating-system backups are not a guaranteed recovery path because the device key may be unavailable after restoration or transfer. Keep an exported backup and its password if you need portable recovery. iOS Keychain items can survive reinstallations; do not rely on that behavior to recover a plan.
+
+The browser version encrypts saved entries with a key in IndexedDB and has no native device-authentication app lock. Encryption in the browser does not prevent access by scripts running on the same website. Clearing browser data can remove both entries and the key.
 
 ## Support
 
