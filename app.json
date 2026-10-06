@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "PayPlace",
-    "description": "A welcoming place to plan your budget, bills, and debt\u2014without shame.",
+    "description": "A welcoming place to plan your budget, bills, and debt—without shame.",
     "icon": "./assets/branding/payplace-icon.png",
     "slug": "payplace",
     "version": "1.0.0",
@@ -24,13 +24,27 @@
       "supportsTablet": false
     },
     "android": {
-  "package": "com.davelabranchejr.payplace"
-},
+      "package": "com.davelabranchejr.payplace"
+    },
     "owner": "pilotpay",
     "extra": {
       "eas": {
         "projectId": "4be1e462-b04c-492b-bb9e-d922655dba9f"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow PayPlace to use Face ID to protect your budget and encrypted backups."
+        }
+      ]
+    ]
   }
 }

@@ -27,7 +27,9 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import ProtectedStorage from "./src/secure-storage";
+import AppSecurity from "./src/AppSecurity";
+import SecuritySettings from "./src/SecuritySettings";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
 import { portraits, annieArtwork } from "./src/characters";
@@ -1235,6 +1237,13 @@ function getTellMeWhatToDoPlan({ finance, upcomingTotal, debtDueTotal, safeToSpe
 }
 
 export default function App() {
+  return <AppSecurity><PayPlaceApp /></AppSecurity>;
+}
+
+function PayPlaceApp() {
+  const [securityVisible, setSecurityVisible] = useState(false);
+  const [storageError, setStorageError] = useState(false);
+  const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [tab, setTab] = useState("Home");
   const [finance, setFinance] = useState(starterFinance);
@@ -1261,8 +1270,8 @@ export default function App() {
     async function loadData() {
       try {
         const [saved, savedOnboarding] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY),
-          AsyncStorage.getItem(ONBOARDING_KEY),
+          ProtectedStorage.getItem(STORAGE_KEY),
+          ProtectedStorage.getItem(ONBOARDING_KEY),
         ]);
 
         if (savedOnboarding && active) {
@@ -1282,13 +1291,14 @@ export default function App() {
             payoffMode: parsed.payoffMode === "avalanche" ? "avalanche" : "snowball",
           });
         }
+        if (active) setStorageError(false);
       } catch (error) {
-        Alert.alert("Storage hiccup", "PayPlace had trouble loading saved data.");
-      } finally {
-        if (active) {
-          setLoaded(true);
-          setOnboardingLoaded(true);
-        }
+        if (active) setStorageError(true);
+        return; // Never overwrite an unreadable vault with starter data.
+      }
+      if (active) {
+        setLoaded(true);
+        setOnboardingLoaded(true);
       }
     }
 
@@ -1297,13 +1307,13 @@ export default function App() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [loadAttempt]);
 
   useEffect(() => {
     if (!loaded) return;
 
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(finance)).catch((error) => {
-      console.log("PayPlace save failed:", error);
+    ProtectedStorage.setItem(STORAGE_KEY, JSON.stringify(finance)).catch(() => {
+      Alert.alert("Your changes are not saved yet", "PayPlace could not save this update. Keep the app open and try again, or create an encrypted backup from Security & backup.");
     });
   }, [finance, loaded]);
 
@@ -1561,7 +1571,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
   async function resetDemoData() {
     try {
-      await AsyncStorage.removeItem(STORAGE_KEY);
+      await ProtectedStorage.removeItem(STORAGE_KEY);
       setFinance(starterFinance);
       Alert.alert("Reset complete", "PayPlace is back to starter demo data.");
     } catch (error) {
@@ -1571,7 +1581,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
   async function replayAnnieOnboarding() {
     try {
-      await AsyncStorage.removeItem(ONBOARDING_KEY);
+      await ProtectedStorage.removeItem(ONBOARDING_KEY);
       setOnboardingAnswers({
         name: "",
         email: "",
@@ -1591,17 +1601,45 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
   async function finishOnboarding(answers) {
     if (!hasVerifiedContact(answers)) {
-      Alert.alert("Confirm your place", "Enter the security code sent to your phone or email before continuing.");
+      Alert.alert("Confirm your place", "Enter the security code sent to your email before continuing.");
       return;
     }
     const completedAnswers = { ...answers, completed: true, completedAt: new Date().toISOString() };
     try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
+      await ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
       setOnboardingAnswers(completedAnswers);
       setOnboardingComplete(true);
     } catch (error) {
       Alert.alert("Almost there", "PayPlace could not save onboarding yet. Please try again.");
     }
+  }
+
+  async function restorePlan(data) {
+    const restoredFinance = { ...starterFinance, ...data.finance };
+    const restoredProfile = { ...data.profile, completed: false };
+    await ProtectedStorage.replaceAll({
+      [STORAGE_KEY]: JSON.stringify(restoredFinance),
+      [ONBOARDING_KEY]: JSON.stringify(restoredProfile),
+    });
+    setFinance(restoredFinance);
+    setOnboardingAnswers(restoredProfile);
+    setOnboardingComplete(false);
+    setStorageError(false);
+    setLoaded(true); setOnboardingLoaded(true);
+    setTab("Home");
+  }
+
+  const securityPanel = <SecuritySettings visible={securityVisible} onClose={() => setSecurityVisible(false)} finance={finance} profile={onboardingAnswers} onRestore={restorePlan} recovery={storageError} />;
+
+  if (storageError) {
+    return <SafeAreaView style={[styles.safe, styles.onboardingLoading]}>
+      <Ionicons name="lock-closed" size={40} color={palette.teal} />
+      <Text style={styles.onboardingLoadingText}>Your saved plan could not be opened.</Text>
+      <Text style={{ margin: 24, color: palette.ink, textAlign: "center" }}>Your saved entries have not been replaced. Try again, or recover your plan from an encrypted backup.</Text>
+      <TouchableOpacity onPress={() => setLoadAttempt(n => n + 1)} style={styles.visitAnnieButton}><Text style={styles.visitAnnieText}>Try again</Text></TouchableOpacity>
+      <TouchableOpacity onPress={() => setSecurityVisible(true)} style={styles.visitAnnieButton}><Text style={styles.visitAnnieText}>Restore a backup</Text></TouchableOpacity>
+      {securityPanel}
+    </SafeAreaView>;
   }
 
   if (!loaded || !onboardingLoaded) {
@@ -1617,6 +1655,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     return (
       <>
         <OnboardingFlow initialAnswers={onboardingAnswers} onComplete={finishOnboarding} />
+        {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </>
     );
@@ -1632,7 +1671,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowTwo} />
         <View style={styles.glowThree} />
 
-        <Header />
+        <Header onSecurity={() => setSecurityVisible(true)} />
 
         {tab === "Home" && (
           <HomeScreen
@@ -1697,6 +1736,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         )}
 
         <BottomNav current={tab} switchTab={setTab} />
+        {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -1963,7 +2003,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
   );
 }
 
-function Header() {
+function Header({ onSecurity }) {
   return (
     <View style={styles.header}>
       <View style={styles.headerTopRow}>
@@ -1985,7 +2025,10 @@ function Header() {
       <Text style={styles.tagline} numberOfLines={1} adjustsFontSizeToFit>
         Money without shame.
       </Text>
-      <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", marginTop: 5 }}>SMART MIRROR UPDATE · EARLY PREVIEW</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
+        <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", flexShrink: 1 }}>SMART MIRROR UPDATE · EARLY PREVIEW</Text>
+        {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
+      </View>
     </View>
   );
 }
@@ -3517,7 +3560,7 @@ function BudgetScreen({
       <View style={styles.noteCard}>
         <Ionicons name="save" size={22} color={palette.purple} />
         <Text style={styles.noteText}>
-          PayPlace saves your prototype data locally on this device.
+          PayPlace encrypts your entries on this device. Use Security & backup to save a portable, password-protected copy.
         </Text>
       </View>
 
