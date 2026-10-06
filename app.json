@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "PayPlace",
-    "description": "A welcoming place to plan your budget, bills, and debt—without shame.",
+    "description": "A welcoming place to plan your budget, bills, and debt\u2014without shame.",
     "icon": "./assets/branding/payplace-icon.png",
     "slug": "payplace",
     "version": "1.0.0",
@@ -43,6 +43,12 @@
         "expo-local-authentication",
         {
           "faceIDPermission": "Allow PayPlace to use Face ID to protect your budget and encrypted backups."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "enableBackgroundRemoteNotifications": false
         }
       ]
     ]

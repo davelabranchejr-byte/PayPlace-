@@ -30,6 +30,8 @@ import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
 import AppSecurity from "./src/AppSecurity";
 import SecuritySettings from "./src/SecuritySettings";
+import useBillReminders from "./src/useBillReminders";
+import { deletedItems, deleteEntry, restoreEntry } from "./src/deleted-items.mjs";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
 import { portraits, annieArtwork } from "./src/characters";
@@ -1263,6 +1265,20 @@ function PayPlaceApp() {
     notes: "",
     arrivalReason: "",
   });
+  const reminderStatus = useBillReminders(finance.bills, finance.billReminders, loaded && !storageError,
+    () => setTab("Bills"));
+  const recentDeleted = deletedItems(finance);
+  function changeReminders(options) {
+    setFinance(current => ({ ...current, billReminders: options }));
+  }
+  function undoDeletion(key) {
+    const entry = recentDeleted.find(item => item.key === key);
+    if (entry && finance[entry.collection].some(item => item.id === entry.item.id)) {
+      Alert.alert("This entry already exists", "PayPlace kept the current entry. Restore will not replace it with an older copy.");
+      return;
+    }
+    setFinance(current => restoreEntry(current, key));
+  }
 
   useEffect(() => {
     let active = true;
@@ -1450,7 +1466,7 @@ function PayPlaceApp() {
       ...current,
       bills: current.bills.map((bill) =>
         bill.id === id
-          ? { ...bill, status: bill.status === "Paid" ? "Upcoming" : "Paid" }
+          ? { ...bill, status: bill.status === "Paid" || bill.paid === true ? "Upcoming" : "Paid", paid: !(bill.status === "Paid" || bill.paid === true) }
           : bill
       ),
     }));
@@ -1499,10 +1515,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 };
 
   function deleteBill(id) {
-    setFinance((current) => ({
-      ...current,
-      bills: current.bills.filter((bill) => bill.id !== id),
-    }));
+    setFinance(current => deleteEntry(current, "bills", id));
   }
 
   function addDebt(newDebt) {
@@ -1545,10 +1558,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   function deleteDebt(id) {
-    setFinance((current) => ({
-      ...current,
-      debts: current.debts.filter((debt) => debt.id !== id),
-    }));
+    setFinance(current => deleteEntry(current, "debts", id));
   }
 
   function setPayoffMode(mode) {
@@ -1615,7 +1625,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function restorePlan(data) {
-    const restoredFinance = { ...starterFinance, ...data.finance };
+    const restoredFinance = { ...starterFinance, ...data.finance, billReminders: { ...data.finance.billReminders, enabled: false } };
     const restoredProfile = { ...data.profile, completed: false };
     await ProtectedStorage.replaceAll({
       [STORAGE_KEY]: JSON.stringify(restoredFinance),
@@ -1629,7 +1639,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     setTab("Home");
   }
 
-  const securityPanel = <SecuritySettings visible={securityVisible} onClose={() => setSecurityVisible(false)} finance={finance} profile={onboardingAnswers} onRestore={restorePlan} recovery={storageError} />;
+  const securityPanel = <SecuritySettings visible={securityVisible} onClose={() => setSecurityVisible(false)} finance={finance} profile={onboardingAnswers} onRestore={restorePlan} recovery={storageError} onRemindersChange={changeReminders} reminderStatus={reminderStatus} onUndoDeletion={undoDeletion} />;
 
   if (storageError) {
     return <SafeAreaView style={[styles.safe, styles.onboardingLoading]}>
@@ -1735,6 +1745,11 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
+        {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Text style={{ flex: 1, color: palette.ink }}>Deleted {recentDeleted[0].collection === "bills" ? "bill" : "debt"}. You can bring it back.</Text>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
+        </View>}
         <BottomNav current={tab} switchTab={setTab} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
@@ -3009,7 +3024,7 @@ const importDemoBills = () => {
               <InputField
                 label="Due date"
                 value={editingReviewBill.due}
-                placeholder="Jun 15"
+                placeholder="YYYY-MM-DD"
                 onChangeText={(text) =>
                   setEditingReviewBill((current) => ({
                     ...current,
@@ -3204,7 +3219,7 @@ const importDemoBills = () => {
         <InputField
           label="Due date"
           value={newBill.due}
-          placeholder="Jun 15"
+          placeholder="YYYY-MM-DD"
           onChangeText={(text) => setNewBill({ ...newBill, due: text })}
         />
 
