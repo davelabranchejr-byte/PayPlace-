@@ -18,6 +18,12 @@ The welcome email includes an eight-character code. Codes are hashed on the serv
 
 Future Annie letters are optional. Email replies go to annieoaktree@payplace.app in the operator’s Porkbun-hosted mailbox. Delivery providers may retain operational logs under their own policies. Email is not end-to-end encrypted.
 
+## Annie’s discreet bill reminders and recovery
+
+Bill reminders are optional, free local notifications scheduled on your phone. They do not send bills or financial entries to a push, email, or SMS provider. Notifications contain only a general invitation from Annie to open PayPlace; they never include bill names, amounts, account details, or bill identifiers. You can choose 9 AM or 6 PM local time and one or three days before the due date, plus a due-day reminder. Your phone may delay or block delivery. Disable reminders in Security & backup or your phone’s settings. Restoring a backup leaves reminders off until you enable them again.
+
+The last 20 deleted bills/debts are retained in the encrypted local vault for undo or restoration. They are included in encrypted backups. Restored records do not replace an existing record with the same identifier. Older retained deletions are replaced as newer entries are deleted; resetting demo data also removes this local recovery history. Historical backups may still contain deleted entries.
+
 ## Bank connections and purchases
 
 Bank linking through Plaid and text-message security codes are upcoming paid Premium features. Email verification remains included. Bank linking, automatic bank synchronization, subscriptions, and in-app purchases are not active in this release. PayPlace does not ask for or transmit bank sign-in credentials.

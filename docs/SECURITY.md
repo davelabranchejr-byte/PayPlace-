@@ -31,3 +31,11 @@ The app now uses bundled standard cryptographic code in addition to platform sto
 ## Suggested next features (not implemented)
 
 User-controlled bill reminders with discreet notification text, disconnect/delete-data controls for future connections, and payment receipts with clear pending/posted/failed status. Real payments must never be inferred from manually marking a bill paid.
+
+## Reminders and deleted-entry recovery
+
+- Basic security, encrypted backup/recovery, Annie reminders, and recently deleted entry recovery are free; no Premium check gates them.
+- Reminder consent lives inside the encrypted finance vault. It defaults off. OS permission is requested only after the user enables reminders. No push token is requested or sent. The Android channel has no sound/vibration and uses private lock-screen visibility. Generic notification payloads have no financial identifiers or values.
+- Native scheduling reconciles paid/deleted/edited bills, preserves other notification features, and caps the next reminder days at 48. Settings and time-zone changes reconcile on app resume. Repeated openings do not duplicate unchanged schedules. Android uses the SDK’s inexact fallback rather than requesting exact-alarm access.
+- Deleted bills/debts retain their full record in the encrypted vault; restore changes only that record and refuses ID collisions. The last 20 deletions survive app restarts and are included in validated encrypted backups.
+- Device tests: notification opt-in/denial and Settings recovery, quiet background delivery, notification tap after app unlock, grouped due dates, bill editing/payment/deletion cancellation, time-zone change, and deleted-entry restoration after restarting. Check narrow screens and large text for the Undo bar and settings.
