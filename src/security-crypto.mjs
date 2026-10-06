@@ -34,6 +34,10 @@ export function open(value, key, kind = 'vault') {
 export function validateBackup(data) {
   if (!data || data.schema !== 'payplace-manual-v1' || !data.finance || typeof data.finance !== 'object' || Array.isArray(data.finance)) throw new Error('This is not a PayPlace backup.');
   const f = data.finance;
+  if (f.deletedItems !== undefined && (!Array.isArray(f.deletedItems) || f.deletedItems.length > 20 || f.deletedItems.some(entry =>
+    !entry || !['bills', 'debts'].includes(entry.collection) || typeof entry.key !== 'string' ||
+    !entry.item || typeof entry.item.id !== 'string' || typeof entry.item.name !== 'string'
+  ))) throw new Error('Invalid recovery entries.');
   for (const field of ['bills', 'debts']) {
     if (!Array.isArray(f[field]) || f[field].length > 5000 || f[field].some(item => !item || typeof item !== 'object' || typeof item.id !== 'string' || typeof item.name !== 'string')) throw new Error('Invalid bill or debt data.');
   }
@@ -44,6 +48,11 @@ export function validateBackup(data) {
   }
   for (const [items, fields] of [[f.bills, ['amount']], [f.debts, ['balance', 'apr', 'minimum']]]) {
     for (const item of items) for (const field of fields) if (item[field] !== undefined && !isNumber(item[field])) throw new Error('Invalid bill or debt values.');
+  }
+  for (const entry of f.deletedItems || []) {
+    for (const field of entry.collection === 'bills' ? ['amount'] : ['balance', 'apr', 'minimum']) {
+      if (entry.item[field] !== undefined && !isNumber(entry.item[field])) throw new Error('Invalid recovery values.');
+    }
   }
   const profile = {};
   for (const field of profileFields) if (typeof data.profile?.[field] === 'string') profile[field] = data.profile[field];

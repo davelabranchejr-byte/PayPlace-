@@ -6,8 +6,10 @@ import Alert from './alert';
 import { useAppSecurity } from './AppSecurity';
 import { createBackup, restoreBackup } from './security-crypto.mjs';
 import { pickBackupFile, saveBackupFile } from './backup-files';
+import BillReminderSettings from './BillReminderSettings';
+import { deletedItems } from './deleted-items.mjs';
 
-export default function SecuritySettings({ visible, onClose, finance, profile, onRestore, recovery = false }) {
+export default function SecuritySettings({ visible, onClose, finance, profile, onRestore, recovery = false, onRemindersChange, reminderStatus, onUndoDeletion }) {
   const security = useAppSecurity();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -65,6 +67,16 @@ export default function SecuritySettings({ visible, onClose, finance, profile, o
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close security settings" disabled={busy} onPress={onClose}><Ionicons name="close-circle-outline" size={34} color="#0B1F40" /></TouchableOpacity>
           <Text style={s.title}>Security & backup</Text>
           <Text style={s.body}>Your money. Your place. Your control.</Text>
+          <Text style={s.body}>Basic security and recovery are free for everyone.</Text>
+          {!recovery && <BillReminderSettings settings={finance.billReminders} onChange={onRemindersChange} status={reminderStatus} styles={s} />}
+          {!recovery && <View style={s.card}>
+            <Text style={s.heading}>Recently deleted</Text>
+            <Text style={s.body}>Your last 20 deleted bills and debts stay here until you restore them or newer deletions replace them. They stay encrypted on this device and are included in your backup.</Text>
+            {deletedItems(finance).length === 0 ? <Text style={s.body}>Nothing to restore.</Text> : deletedItems(finance).map(entry => <View key={entry.key} style={{ borderTopWidth: 1, borderTopColor: '#DDE9F5', paddingVertical: 12 }}>
+              <Text style={s.label}>{entry.item.name}</Text><Text style={s.body}>{entry.collection === 'bills' ? 'Bill' : 'Debt'} • deleted {new Date(entry.deletedAt).toLocaleDateString()}</Text>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Restore ${entry.item.name}`} disabled={busy} style={s.outline} onPress={() => onUndoDeletion(entry.key)}><Text style={s.link}>Restore entry</Text></TouchableOpacity>
+            </View>)}
+          </View>}
           {!recovery && <View style={s.card}>
             <Text style={s.heading}>App lock</Text>
             <Text style={s.body}>{security.native ? 'Use your phone’s biometrics or device passcode. Lock on launch, after 30 seconds away, or after five minutes without activity.' : 'The browser version has no device authentication lock. Use the iPhone or Android app for this protection.'}</Text>
