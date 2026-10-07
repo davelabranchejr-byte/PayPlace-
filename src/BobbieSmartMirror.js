@@ -19,6 +19,7 @@ function Field({ label, value, onChangeText, placeholder, money = false, ...prop
     <Text style={s.label}>{label}</Text>
     <TextInput accessibilityLabel={label} value={value} onChangeText={onChangeText}
       placeholder={placeholder} placeholderTextColor="#86788A" style={s.input}
+      onBlur={money ? () => { const amount = parseAmount(value); if (amount !== null) onChangeText(amount.toFixed(2)); } : undefined}
       keyboardType={money ? "decimal-pad" : "default"} maxLength={money ? 18 : 120} {...props} />
   </View>;
 }
@@ -85,7 +86,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
             <TouchableOpacity testID="close-smart-mirror" accessibilityRole="button" accessibilityLabel="Close Bobbie's smart mirror"
               style={s.close} onPress={() => setVisible(false)}><Ionicons name="close" size={25} color="#493349" /></TouchableOpacity>
           </View>
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.scroll}>
+          <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={s.scroll}>
             <View style={s.roomFrame}><Image source={room} style={s.room} resizeMode="contain"
               accessibilityLabel="Bobbie's approved Cher-inspired bedroom, wigs on white cat mannequins, and gold mirror showing the back of her head" /></View>
             <View style={s.mirror}>
@@ -196,7 +197,7 @@ const s = StyleSheet.create({
   visitLink: { color: "#FFD696", fontSize: 13, fontWeight: "800", marginTop: 10 },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: 1, borderColor: "#EACDA4" },
   title: { color: "#493349", fontSize: 26, fontWeight: "800", marginTop: 3 },
-  close: { width: 46, height: 46, alignItems: "center", justifyContent: "center", borderRadius: 23, backgroundColor: "#F5E3E9" },
+  close: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 24, backgroundColor: "#F5E3E9" },
   scroll: { padding: 16, paddingBottom: 40 },
   roomFrame: { height: 280, borderWidth: 4, borderColor: "#CCA466", borderRadius: 30, overflow: "hidden", backgroundColor: "#F9DFCC", marginBottom: 16 },
   room: { width: "100%", height: "100%" },

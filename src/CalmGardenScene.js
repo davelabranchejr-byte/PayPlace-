@@ -18,7 +18,7 @@ function BackyardScene() {
   }, []);
   return (
     <View style={s.scene}>
-      <Image source={isNight ? night : sunset} style={StyleSheet.absoluteFillObject} resizeMode="cover"
+      <Image source={isNight ? night : sunset} style={[StyleSheet.absoluteFillObject, s.artwork]} resizeMode="cover"
         accessibilityLabel={isNight
           ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
           : "Annie's fenced backyard at sunset, with birds and butterflies among the flowers"} />
@@ -117,5 +117,6 @@ export default function CalmGardenScene({ pearl }) {
 }
 
 const s = StyleSheet.create({
+  artwork: { width: "100%", height: "100%" },
   scene: { width: "100%", height: "100%", overflow: "hidden", backgroundColor: "#183A35" },
 });

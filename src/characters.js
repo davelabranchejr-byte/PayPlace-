@@ -28,7 +28,7 @@ export const portraits = Object.freeze({
 export const CHARACTER_LOCK = Object.freeze({
   version: "2026-10-03-annie-canonical",
   bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
-  westley: Object.freeze({ species: "white West Highland Terrier" }),
+  westley: Object.freeze({ species: "white West Highland Terrier", fixed: ["face", "white fur", "pointed Westie ears", "body proportions"] }),
   tate: Object.freeze({
     species: "tan Chihuahua",
     fixed: ["Chihuahua identity", "oversized ears", "long goofy tongue"],
