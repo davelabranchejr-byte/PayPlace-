@@ -19,7 +19,7 @@ test.before(async () => {
   const sandbox = { React, useState: React.useState, useEffect: React.useEffect,
     ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
       'SafeAreaView', 'KeyboardAvoidingView', 'PayPlaceBrand', 'CharacterArtwork',
-      'ConstructionNotice', 'EmailVerification', 'Ionicons'].map(name => [name, name])),
+      'ConstructionNotice', 'EmailVerification', 'Ionicons', 'AcornSquare'].map(name => [name, name])),
     styles: {}, palette: {}, portraits: {}, greatAnnieHero: {}, imageSource: value => value,
     Platform: { OS: 'ios' }, Alert: { alert: () => {} }, ...progress, ...contact, module: { exports: {} } };
   vm.runInNewContext(code + '\nmodule.exports = { OnboardingFlow, ONBOARDING_STEPS };', sandbox);
