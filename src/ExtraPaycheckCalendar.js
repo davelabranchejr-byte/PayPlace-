@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ExtraPaycheckChapoScene from "./ExtraPaycheckChapoScene";
+import ExtraPaycheckCelebration from "./ExtraPaycheckCelebration";
+import { celebrationKey, firstUncelebratedExtra } from "./paycheck-celebration.mjs";
 import { buildCalendar, dateKey, readDate, suggestedSplit } from "./paycheck-calendar.mjs";
 import { parseAmount } from "./smart-mirror.mjs";
 
@@ -22,6 +24,10 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
   const [bonus, setBonus] = useState({ date: "", amount: "", label: "Bonus check" });
   const [split, setSplit] = useState({});
   const [notice, setNotice] = useState("");
+  const [celebration, setCelebration] = useState(null);
+  const scrollRef = useRef(null);
+  const planY = useRef(0);
+  const scrollToPlan = useRef(false);
   const { events, settings, configured } = useMemo(() => buildCalendar(finance, month), [finance, month]);
   const event = events.find(item => item.id === selected);
   const saved = event && finance.extraPaycheckPlans?.[event.id];
@@ -31,6 +37,23 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
     setSplit(event ? (saved?.split || suggestedSplit(event.amount, upcomingTotal)) : {});
   }, [selectedKey, event?.amount, saved, upcomingTotal]);
   const extras = events.filter(item => item.extra);
+  useEffect(() => {
+    if (!visible) { setCelebration(null); return; }
+    const next = firstUncelebratedExtra(events, finance.extraPaycheckCelebrations, dateKey(new Date()));
+    if (next && !celebration) setCelebration(next);
+  }, [visible, events, finance.extraPaycheckCelebrations, celebration]);
+  function finishCelebration(plan) {
+    if (!onAction({ type: "celebrationSeen", key: celebrationKey(celebration) })) return;
+    if (plan) {
+      scrollToPlan.current = true;
+      setSelected(celebration.id); setBonusOpen(false);
+      if (event?.id === celebration.id) {
+        scrollRef.current?.scrollTo({ y: Math.max(0, planY.current - 12), animated: true });
+        scrollToPlan.current = false;
+      }
+    }
+    setCelebration(null);
+  }
   const firstWeekday = month.getDay();
   const days = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
   const cells = Array.from({ length: Math.ceil((firstWeekday + days) / 7) * 7 }, (_, i) => i - firstWeekday + 1);
@@ -46,11 +69,11 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
       setBonusOpen(false); setBonus({ date: "", amount: "", label: "Bonus check" }); setNotice("Extra check added to your calendar.");
     }
   }
-  return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+  return <Modal visible={visible} animationType="slide" onRequestClose={() => celebration ? finishCelebration(false) : onClose()}>
     <SafeAreaView style={s.safe}>
-      <KeyboardAvoidingView style={s.safe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={s.safe} accessibilityElementsHidden={!!celebration} importantForAccessibility={celebration ? "no-hide-descendants" : "auto"} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={s.header}><View style={{ flex: 1 }}><Text style={s.eyebrow}>PAYPLACE PAID FEATURES · BETA PREVIEW</Text><Text style={s.title}>Extra Paycheck Calendar</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close extra paycheck calendar" style={s.close} onPress={onClose}><Ionicons name="close" size={26} color="#17213C" /></TouchableOpacity></View>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+      <ScrollView ref={scrollRef} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Text style={s.body}>See your paydays, spot an extra check, and give it a plan before Chapo fills his BellyBox cart.</Text>
         <View style={s.scene}><ExtraPaycheckChapoScene /></View>
         <Text style={s.note}>Included for beta testing. This preview does not start a subscription or charge you.</Text>
@@ -68,12 +91,18 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
             const extra = checks.some(item => item.extra);
             return <TouchableOpacity key={i} accessibilityRole="button" accessibilityLabel={`${key}${checks.length ? `, ${checks.map(item => item.label).join(", ")}` : ", no paycheck"}`} disabled={!checks.length} onPress={() => { setSelected(checks.find(item => item.extra)?.id || checks[0].id); setBonusOpen(false); }} style={[s.cell, checks.length > 0 && s.payCell, extra && s.extraCell, event?.date === key && s.selectedCell]}><Text style={s.day}>{day}</Text><Text style={s.marker}>{extra ? "★" : checks.length ? "●" : ""}</Text></TouchableOpacity>;
           })}</View>
-          <Text style={s.note}>{extras.length ? `${extras.length} extra check${extras.length === 1 ? "" : "s"} · ${dollars(extras.reduce((sum, item) => sum + item.amount, 0))} estimated` : "No extra checks this month."}</Text>
+          <View style={extras.length > 0 && s.extraSummary}>
+            <Text style={s.note}>{extras.length ? `★ ${extras.length} extra check${extras.length === 1 ? "" : "s"} · ${dollars(extras.reduce((sum, item) => sum + item.amount, 0))} estimated` : "No extra checks this month."}</Text>
+            {extras.length > 0 && <Button label="Celebrate with Chapo" secondary onPress={() => setCelebration(extras[0])} />}
+          </View>
           <Text style={s.note}>Dates and amounts are estimates from your pay rhythm. Extra means a third biweekly check or fifth weekly check in a month, plus bonuses you add. Your bills still need covering.</Text>
           {settings.kind === "semi" && <Text style={s.note}>Twice-monthly paydays repeat on two calendar days. Set the second day (1–31; 31 means month end) in Budget if your employer uses a different schedule.</Text>}
         </View>
         {events.length > 0 && <View style={s.card}><Text style={s.subtitle}>This month’s checks</Text>{events.map(item => <TouchableOpacity accessibilityRole="button" key={item.id} onPress={() => { setSelected(item.id); setBonusOpen(false); }} style={[s.check, item.extra && { backgroundColor: "#FFF2BA" }]}><Text style={s.label}>{item.extra ? "★ " : ""}{item.label} · {readDate(item.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</Text><Text style={s.body}>{dollars(item.amount)}{finance.extraPaycheckPlans?.[item.id] ? " · Plan saved" : ""}</Text></TouchableOpacity>)}</View>}
-        {event && <View style={s.card}>
+        {event && <View style={s.card} onLayout={({ nativeEvent }) => {
+          planY.current = nativeEvent.layout.y;
+          if (scrollToPlan.current) { scrollRef.current?.scrollTo({ y: Math.max(0, planY.current - 12), animated: true }); scrollToPlan.current = false; }
+        }}>
           <Text style={s.subtitle}>{event.label} · {dollars(event.amount)}</Text><Text style={s.note}>{event.date}</Text>
           {event.amount > 0 ? <><Text style={s.body}>Cover catch-up bills, push debt, protect a buffer, then keep a little guilt-free joy. Adjust each part to fit your life.</Text>{savingsChanged && <Text style={s.warning}>Your paycheck estimate changed. Review and save this plan again.</Text>}{Object.entries(parts).map(([key, label]) => <Field key={key} label={label} money value={split[key] ?? "0"} onChangeText={value => { setSplit(current => ({ ...current, [key]: value })); setNotice(""); }} />)}<Text style={[s.label, { marginTop: 14, color: allocated > event.amount ? "#9F2525" : "#3A6A47" }]}>{dollars(Math.abs(event.amount - allocated))} {allocated > event.amount ? "over the check amount" : "left to assign"}</Text><Button label="Save this check’s plan" onPress={() => { if (onAction({ type: "split", event, values: split })) setNotice("Plan saved. Your balance and bills have not changed."); }} /><Text style={s.note}>Saving is planning only. It does not move money, pay bills, or add the check to Safe to Spend.</Text></> : <><Text style={s.body}>Add your paycheck amount in Budget to plan this check.</Text><Button label="Edit paycheck amount" onPress={onBudget} /></>}
           {event.type === "bonus" && <Button label="Remove this bonus check" secondary onPress={() => { onAction({ type: "removeBonus", id: event.id }); setSelected(""); }} />}
@@ -84,12 +113,14 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
         <Button label="Done" onPress={onClose} />
       </ScrollView>
       </KeyboardAvoidingView>
+      {celebration && <ExtraPaycheckCelebration key={celebration.id} event={celebration} onPlan={() => finishCelebration(true)} onDismiss={() => finishCelebration(false)} />}
     </SafeAreaView>
   </Modal>;
 }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFF9E8" }, header: { padding: 18, flexDirection: "row", alignItems: "center", gap: 8 }, content: { padding: 18, paddingTop: 0, paddingBottom: 40 },
   eyebrow: { color: "#5935B5", fontSize: 11, fontWeight: "900", marginBottom: 7 }, title: { color: "#17213C", fontSize: 25, fontWeight: "900" }, close: { padding: 10, minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }, body: { color: "#394860", fontSize: 15, lineHeight: 22 }, note: { color: "#536077", fontSize: 13, lineHeight: 19, marginTop: 10 },
+  extraSummary: { backgroundColor: "#FFF2BA", borderRadius: 16, padding: 12, marginTop: 10 },
   card: { backgroundColor: "white", padding: 16, borderRadius: 24, borderColor: "#E7DDFC", borderWidth: 1, marginTop: 16 }, subtitle: { fontSize: 20, fontWeight: "900", color: "#17213C", marginTop: 8, marginBottom: 8 }, scene: { height: 190, borderRadius: 22, overflow: "hidden", marginTop: 14 },
   row: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }, legend: { color: "#5935B5", marginVertical: 12, fontWeight: "700" }, grid: { flexDirection: "row", flexWrap: "wrap" }, weekday: { width: "14.2857%", textAlign: "center", fontSize: 11, color: "#536077", paddingVertical: 8 },
   cell: { width: "14.2857%", minHeight: 52, borderWidth: 2, borderColor: "transparent", borderRadius: 10, alignItems: "center", justifyContent: "center" }, payCell: { backgroundColor: "#EDE5FF" }, extraCell: { backgroundColor: "#FFD65E" }, selectedCell: { borderColor: "#5935B5" }, day: { fontSize: 15, fontWeight: "800", color: "#17213C" }, marker: { fontSize: 13, height: 17, color: "#5935B5" },

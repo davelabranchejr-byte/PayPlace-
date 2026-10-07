@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
 import { MASCOT_LORE } from "./data/mascotLore";
@@ -19,9 +19,12 @@ export const FAMILY_STORIES = [
     "His portrait belongs here among the family photographs, a reminder that being chosen can change everything."
   ] },
   { id: "westley", ...MASCOT_LORE.westley, promise: MASCOT_LORE.westley.emotionalPromise, paragraphs: [
-    "Westley is the family's Chaos Coach: a fluffy white Westie with kind eyes, a reassuring expression, and an old soul at just three years old. Gentle, thoughtful, and protective, he wants every neighbor to feel safe.",
-    "He takes things literally and is adorably easy to shock. When Tate explains that he once lived in the woods without clothes, Westley can hardly believe it: ‘WHAT?!’ Fur, he insists, is not an outfit.",
-    "His welcome is a wet nose print against the screen, followed by a warm ‘Welcome home.’ His humor is never cruel; he offers a soft landing when life feels overwhelming."
+    "Westley had six homes in one year. The sixth became home.",
+    "Before he was the family's Chaos Coach, Westley needed people who would help him feel safe. This real rescue post captures the beginning of his journey toward care, recovery, and a home.",
+    "At first, fear came out as snarling and snapping. When Em approached, Westley did not yet know that he could trust her.",
+    "With patience, gentle head scratches, and careful grooming, Em helped him feel safer. These illustrations tell that part of his real story.",
+    "Today, Westley has a family and a place to belong. His gentle PayPlace welcome comes from that journey: a soft landing for anyone who feels overwhelmed.",
+    "Westley’s story proves that sometimes it takes more than one try to find where you belong … a home. You’re here now. Welcome home."
   ] },
   { id: "tate", ...MASCOT_LORE.tate, promise: MASCOT_LORE.tate.emotionalPromise, paragraphs: [
     "Tate is a tiny Chihuahua with oversized ears and a fearless heart. At sixteen, he still acts like the youngest sibling: joyful, affectionate, and certain that every ordinary moment is a grand adventure.",
@@ -72,8 +75,16 @@ export default function FamilyWall({ onSelect }) {
   </View>;
 }
 
+
+const westleyMemories = {
+  1: { source: require("../assets/characters/westley-rescue-post.jpg"), ratio: 710 / 1536, caption: "Westley’s real rescue post · Westie Rescue of the Mid-Atlantic · January 8, 2023", label: "The original rescue post showing Westley before his bath and grooming, with his foster care and recovery update" },
+  2: { source: require("../assets/characters/westley-frightened-with-em.jpg"), ratio: 1122 / 1402, caption: "Learning to feel safe · An illustrated moment from Westley’s story", label: "An illustration of frightened Westley snarling as Em patiently offers a gentle hand" },
+  3: { source: require("../assets/characters/westley-trusting-em.jpg"), ratio: 1122 / 1402, caption: "A little trust, one gentle moment at a time · Illustrated", label: "An illustration of Westley accepting Em’s gentle head scratches while she carefully grooms him" },
+};
+
 export function CharacterStory({ person, onBack }) {
-  return <ScrollView style={s.screen} contentContainerStyle={s.story}>
+  const [enlarged, setEnlarged] = useState(null);
+  return <><ScrollView style={s.screen} contentContainerStyle={s.story}>
     <TouchableOpacity style={s.back} onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to the family wall">
       <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.backText}>Back to the family wall</Text>
     </TouchableOpacity>
@@ -83,13 +94,38 @@ export function CharacterStory({ person, onBack }) {
       <Text style={s.title} accessibilityRole="header">{person.name}</Text>
       <Text style={s.storyRole}>{person.role}</Text>
       <Text style={s.promise}>“{person.promise}”</Text>
-      {person.paragraphs.map((paragraph, i) => <Text key={i} style={s.paragraph}>{paragraph}</Text>)}
+      {person.paragraphs.map((paragraph, i) => {
+        const memory = person.id === "westley" ? westleyMemories[i] : null;
+        return <View key={i}>
+          <Text style={[s.paragraph, person.id === "westley" && i === 0 && s.storyOpening, person.id === "westley" && i === person.paragraphs.length - 1 && s.storyClosing]}>{paragraph}</Text>
+          {memory && <View style={s.memory}>
+            <Pressable accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
+              <Image source={memory.source} resizeMode="contain" style={{ width: "100%", aspectRatio: memory.ratio }} accessibilityLabel={memory.label} />
+            </Pressable>
+            <Text style={s.caption}>{memory.caption}</Text>
+            <Text style={s.imageHint}>Tap for a closer look.</Text>
+          </View>}
+        </View>;
+      })}
     </View>
     <TouchableOpacity style={s.done} onPress={onBack} accessibilityRole="button"><Text style={s.doneText}>Back to the family wall</Text></TouchableOpacity>
-  </ScrollView>;
+  </ScrollView>
+    <Modal visible={!!enlarged} animationType="fade" onRequestClose={() => setEnlarged(null)}>
+      <SafeAreaView style={s.viewer}>
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close image and return to Westley’s story" onPress={() => setEnlarged(null)} style={s.viewerClose}><Ionicons name="close" size={26} color="#FFFFFF" /><Text style={s.viewerCloseText}>Back to Westley’s story</Text></TouchableOpacity>
+        {enlarged && <><Image source={enlarged.source} style={s.viewerImage} resizeMode="contain" accessibilityLabel={enlarged.label} /><Text style={s.viewerCaption}>{enlarged.caption}</Text></>}
+      </SafeAreaView>
+    </Modal>
+  </>;
 }
 
 const s = StyleSheet.create({
+  storyOpening: { color: "#173557", fontSize: 22, lineHeight: 30, fontWeight: "900" },
+  storyClosing: { color: "#5935B5", fontSize: 19, lineHeight: 28, fontWeight: "800", padding: 15, borderRadius: 18, backgroundColor: "#EEE6FF" },
+  memory: { marginTop: 16, borderRadius: 18, overflow: "hidden", backgroundColor: "#FFF8EA" },
+  caption: { color: "#536077", fontSize: 13, lineHeight: 20, padding: 12, paddingBottom: 4 },
+  imageHint: { color: "#5935B5", fontSize: 12, fontWeight: "800", padding: 12, paddingTop: 0 },
+  viewer: { flex: 1, backgroundColor: "#173557" }, viewerClose: { flexDirection: "row", alignItems: "center", gap: 10, padding: 15, minHeight: 50 }, viewerCloseText: { color: "#FFFFFF", fontSize: 15, fontWeight: "800" }, viewerImage: { flex: 1, width: "100%" }, viewerCaption: { color: "#FFFFFF", fontSize: 14, lineHeight: 21, padding: 18 },
   wall: { backgroundColor: "#FFF8EA", borderRadius: 28, marginTop: 16, borderWidth: 1, borderColor: "#D9BD87", overflow: "hidden" },
   heading: { padding: 18 },
   eyebrow: { color: "#B25B4A", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
