@@ -3,10 +3,10 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View 
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
 import { MASCOT_LORE } from "./data/mascotLore";
+import PawprintMemory from "./PawprintMemory";
 import { FAMILY_PORTRAITS, FAMILY_WALL_SIZE, portraitFrameStyle, familyGallerySize } from "./family-wall-layout.mjs";
 
 const familyWallArtwork = require("../assets/characters/annie-family-wall.jpg");
-const pawprintGarden = require("../assets/characters/westley-tate-pawprint-garden.jpg");
 const storyPortraits = Object.fromEntries(Object.entries(FAMILY_PORTRAITS).map(([id, detail]) => [
   id, { source: familyWallArtwork, ...FAMILY_WALL_SIZE, crop: detail.crop, label: detail.label },
 ]));
@@ -68,16 +68,7 @@ export default function FamilyWall({ onSelect }) {
       />)}
     </View>
     </View>
-    <View style={s.gardenSection}>
-      <Text style={s.eyebrow}>MADE WITH REAL PAWS</Text>
-      <Text style={s.gardenTitle} accessibilityRole="header">Westley & Tate’s paw-print garden</Text>
-      <View style={s.gardenFrame}>
-        <Image testID="pawprint-garden-artwork" source={pawprintGarden} style={s.gardenImage} resizeMode="contain"
-          accessibilityLabel="Original paw-print flower artwork by Westley and Tate, made at Em’s boarding and grooming in May 2026. Westley’s prints are orange and Tate’s are blue." />
-      </View>
-      <Text style={s.gardenCaption}>Made for Daddy at Em’s boarding and grooming.</Text>
-      <Text style={s.gardenSignature}>Westley: orange · Tate: blue · May 2026</Text>
-    </View>
+    <PawprintMemory />
   </View>;
 }
 
@@ -110,12 +101,6 @@ const s = StyleSheet.create({
   galleryImage: { width: "100%", height: "100%" },
   portraitTarget: { position: "absolute", borderRadius: 12, borderWidth: 3, borderColor: "transparent" },
   portraitPressed: { backgroundColor: "rgba(255, 239, 166, 0.18)", borderColor: "#FFE89B" },
-  gardenSection: { padding: 18, alignItems: "center" },
-  gardenTitle: { color: "#173557", fontSize: 20, fontWeight: "800", textAlign: "center", marginTop: 6 },
-  gardenFrame: { width: "100%", maxWidth: 420, marginTop: 14, padding: 8, borderRadius: 8, backgroundColor: "#8A5636", borderWidth: 3, borderColor: "#633B24" },
-  gardenImage: { width: "100%", aspectRatio: 3 / 4, backgroundColor: "#FFFDF8" },
-  gardenCaption: { color: "#526177", fontSize: 14, lineHeight: 20, textAlign: "center", marginTop: 12 },
-  gardenSignature: { color: "#78543B", fontSize: 13, fontWeight: "700", textAlign: "center", marginTop: 5 },
   screen: { flex: 1, backgroundColor: "#F8F3E8" },
   story: { padding: 18, paddingBottom: 40, alignSelf: "center", width: "100%", maxWidth: 720 },
   back: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 48, marginBottom: 14 },

@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import ExtraPaycheckChapoScene from "./ExtraPaycheckChapoScene";
 import { buildCalendar, dateKey, readDate, suggestedSplit } from "./paycheck-calendar.mjs";
+import { parseAmount } from "./smart-mirror.mjs";
 
 const dollars = value => `$${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const parts = { bills: "Catch-up bills", debt: "Debt", buffer: "Buffer", joy: "Guilt-free joy" };
@@ -10,7 +11,9 @@ function Button({ label, onPress, secondary, disabled }) {
   return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} disabled={disabled} onPress={onPress} style={[s.button, secondary && s.secondary, disabled && { opacity: 0.4 }]}><Text style={[s.buttonText, secondary && { color: "#5935B5" }]}>{label}</Text></TouchableOpacity>;
 }
 function Field({ label, value, onChangeText, money }) {
-  return <View style={{ marginTop: 12 }}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} style={s.input} value={String(value)} onChangeText={onChangeText} keyboardType={money ? "decimal-pad" : "default"} /></View>;
+  return <View style={{ marginTop: 12 }}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} style={s.input} value={String(value)} onChangeText={onChangeText}
+    onBlur={money ? () => { const amount = parseAmount(value); if (amount !== null) onChangeText(amount.toFixed(2)); } : undefined}
+    keyboardType={money ? "decimal-pad" : "default"} /></View>;
 }
 export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAction, onBudget, upcomingTotal }) {
   const [month, setMonth] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1, 12));
@@ -45,8 +48,9 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
   }
   return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
     <SafeAreaView style={s.safe}>
+      <KeyboardAvoidingView style={s.safe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={s.header}><View style={{ flex: 1 }}><Text style={s.eyebrow}>PAYPLACE PAID FEATURES · BETA PREVIEW</Text><Text style={s.title}>Extra Paycheck Calendar</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close extra paycheck calendar" style={s.close} onPress={onClose}><Ionicons name="close" size={26} color="#17213C" /></TouchableOpacity></View>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Text style={s.body}>See your paydays, spot an extra check, and give it a plan before Chapo fills his BellyBox cart.</Text>
         <View style={s.scene}><ExtraPaycheckChapoScene /></View>
         <Text style={s.note}>Included for beta testing. This preview does not start a subscription or charge you.</Text>
@@ -79,12 +83,13 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
         {!!notice && <Text accessibilityLiveRegion="polite" style={s.success}>{notice}</Text>}
         <Button label="Done" onPress={onClose} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   </Modal>;
 }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFF9E8" }, header: { padding: 18, flexDirection: "row", alignItems: "center", gap: 8 }, content: { padding: 18, paddingTop: 0, paddingBottom: 40 },
-  eyebrow: { color: "#5935B5", fontSize: 11, fontWeight: "900", marginBottom: 7 }, title: { color: "#17213C", fontSize: 25, fontWeight: "900" }, close: { padding: 10 }, body: { color: "#394860", fontSize: 15, lineHeight: 22 }, note: { color: "#536077", fontSize: 13, lineHeight: 19, marginTop: 10 },
+  eyebrow: { color: "#5935B5", fontSize: 11, fontWeight: "900", marginBottom: 7 }, title: { color: "#17213C", fontSize: 25, fontWeight: "900" }, close: { padding: 10, minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }, body: { color: "#394860", fontSize: 15, lineHeight: 22 }, note: { color: "#536077", fontSize: 13, lineHeight: 19, marginTop: 10 },
   card: { backgroundColor: "white", padding: 16, borderRadius: 24, borderColor: "#E7DDFC", borderWidth: 1, marginTop: 16 }, subtitle: { fontSize: 20, fontWeight: "900", color: "#17213C", marginTop: 8, marginBottom: 8 }, scene: { height: 190, borderRadius: 22, overflow: "hidden", marginTop: 14 },
   row: { flexDirection: "row", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }, legend: { color: "#5935B5", marginVertical: 12, fontWeight: "700" }, grid: { flexDirection: "row", flexWrap: "wrap" }, weekday: { width: "14.2857%", textAlign: "center", fontSize: 11, color: "#536077", paddingVertical: 8 },
   cell: { width: "14.2857%", minHeight: 52, borderWidth: 2, borderColor: "transparent", borderRadius: 10, alignItems: "center", justifyContent: "center" }, payCell: { backgroundColor: "#EDE5FF" }, extraCell: { backgroundColor: "#FFD65E" }, selectedCell: { borderColor: "#5935B5" }, day: { fontSize: 15, fontWeight: "800", color: "#17213C" }, marker: { fontSize: 13, height: 17, color: "#5935B5" },
