@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
 import { MASCOT_LORE } from "./data/mascotLore";
-import { FAMILY_PORTRAITS, FAMILY_WALL_SIZE, portraitFrameStyle } from "./family-wall-layout.mjs";
+import { FAMILY_PORTRAITS, FAMILY_WALL_SIZE, portraitFrameStyle, familyGallerySize } from "./family-wall-layout.mjs";
 
 const familyWallArtwork = require("../assets/characters/annie-family-wall.jpg");
+const pawprintGarden = require("../assets/characters/westley-tate-pawprint-garden.jpg");
 const storyPortraits = Object.fromEntries(Object.entries(FAMILY_PORTRAITS).map(([id, detail]) => [
   id, { source: familyWallArtwork, ...FAMILY_WALL_SIZE, crop: detail.crop, label: detail.label },
 ]));
@@ -45,14 +46,17 @@ export const FAMILY_STORIES = [
 ];
 
 export default function FamilyWall({ onSelect }) {
+  const [availableWidth, setAvailableWidth] = useState(0);
+  const gallerySize = familyGallerySize(availableWidth);
   return <View style={s.wall}>
     <View style={s.heading}>
       <Text style={s.eyebrow}>THE FAMILY WALL</Text>
       <Text style={s.title} accessibilityRole="header">This home has stories</Text>
       <Text style={s.hint}>You're inside Annie. Tap any framed portrait to read their full story.</Text>
     </View>
-    <View style={s.gallery}>
-      <Image source={familyWallArtwork} style={StyleSheet.absoluteFillObject} resizeMode="contain" accessible={false} />
+    <View style={s.galleryBoundary} onLayout={({ nativeEvent: { layout } }) => setAvailableWidth(layout.width)}>
+    <View testID="family-gallery" style={[s.gallery, gallerySize]}>
+      <Image testID="family-gallery-artwork" source={familyWallArtwork} style={[StyleSheet.absoluteFillObject, s.galleryImage]} resizeMode="contain" accessible={false} />
       {FAMILY_STORIES.map(person => <Pressable
         key={person.id}
         testID={`family-portrait-${person.id}`}
@@ -62,6 +66,17 @@ export default function FamilyWall({ onSelect }) {
         accessibilityHint={`Opens ${person.name}'s story. You can return to this wall afterwards.`}
         onPress={() => onSelect(person)}
       />)}
+    </View>
+    </View>
+    <View style={s.gardenSection}>
+      <Text style={s.eyebrow}>MADE WITH REAL PAWS</Text>
+      <Text style={s.gardenTitle} accessibilityRole="header">Westley & Tate’s paw-print garden</Text>
+      <View style={s.gardenFrame}>
+        <Image testID="pawprint-garden-artwork" source={pawprintGarden} style={s.gardenImage} resizeMode="contain"
+          accessibilityLabel="Original paw-print flower artwork by Westley and Tate, made at Em’s boarding and grooming in May 2026. Westley’s prints are orange and Tate’s are blue." />
+      </View>
+      <Text style={s.gardenCaption}>Made for Daddy at Em’s boarding and grooming.</Text>
+      <Text style={s.gardenSignature}>Westley: orange · Tate: blue · May 2026</Text>
     </View>
   </View>;
 }
@@ -89,9 +104,18 @@ const s = StyleSheet.create({
   eyebrow: { color: "#B25B4A", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
   title: { color: "#173557", fontSize: 25, fontWeight: "900", marginTop: 5 },
   hint: { color: "#526177", fontSize: 14, lineHeight: 20, marginTop: 6 },
-  gallery: { width: "100%", aspectRatio: FAMILY_WALL_SIZE.width / FAMILY_WALL_SIZE.height, position: "relative", backgroundColor: "#7D4527" },
+  galleryBoundary: { width: "100%", alignItems: "center", backgroundColor: "#7D4527" },
+  gallery: { position: "relative", flexShrink: 0, backgroundColor: "#7D4527" },
+  // Native Image otherwise keeps the asset's intrinsic dimensions despite its absolute edges.
+  galleryImage: { width: "100%", height: "100%" },
   portraitTarget: { position: "absolute", borderRadius: 12, borderWidth: 3, borderColor: "transparent" },
   portraitPressed: { backgroundColor: "rgba(255, 239, 166, 0.18)", borderColor: "#FFE89B" },
+  gardenSection: { padding: 18, alignItems: "center" },
+  gardenTitle: { color: "#173557", fontSize: 20, fontWeight: "800", textAlign: "center", marginTop: 6 },
+  gardenFrame: { width: "100%", maxWidth: 420, marginTop: 14, padding: 8, borderRadius: 8, backgroundColor: "#8A5636", borderWidth: 3, borderColor: "#633B24" },
+  gardenImage: { width: "100%", aspectRatio: 3 / 4, backgroundColor: "#FFFDF8" },
+  gardenCaption: { color: "#526177", fontSize: 14, lineHeight: 20, textAlign: "center", marginTop: 12 },
+  gardenSignature: { color: "#78543B", fontSize: 13, fontWeight: "700", textAlign: "center", marginTop: 5 },
   screen: { flex: 1, backgroundColor: "#F8F3E8" },
   story: { padding: 18, paddingBottom: 40, alignSelf: "center", width: "100%", maxWidth: 720 },
   back: { flexDirection: "row", alignItems: "center", gap: 8, minHeight: 48, marginBottom: 14 },

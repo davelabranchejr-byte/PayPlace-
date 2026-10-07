@@ -41,6 +41,7 @@ import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
+import BelongingQuilt, { AcornSquare, QuiltDetail } from "./src/BelongingQuilt";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
@@ -1892,10 +1893,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
           <View style={styles.quiltGiftGlow} />
           <View style={styles.quiltGiftCard}>
             <Text style={styles.quiltGiftEyebrow}>THE BELONGING QUILT</Text>
-            <View style={styles.quiltSquare}>
-              <Ionicons name="leaf" size={54} color="#C98A24" />
-              <Text style={styles.quiltSquareLabel}>YOUR FIRST SQUARE</Text>
-            </View>
+            <AcornSquare />
             <Text style={styles.quiltGiftTitle}>An acorn, just for beginning.</Text>
             <Text style={styles.quiltGiftDialogue}>“Around here, everyone gets their first quilt square the day they arrive.”</Text>
             <Text style={styles.quiltGiftQuestion}>“But I haven’t earned this.”</Text>
@@ -2052,8 +2050,9 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
   return (
     <>
-      <Modal visible={foyerOpen} animationType="fade" transparent={false} onRequestClose={() => foyerStage === "story" ? setFoyerStage("home") : closeFoyer()}>
+      <Modal visible={foyerOpen} animationType="fade" transparent={false} onRequestClose={() => ["story", "quilt"].includes(foyerStage) ? setFoyerStage("home") : closeFoyer()}>
         <SafeAreaView style={styles.foyerSafe}>
+          {foyerStage === "quilt" && <QuiltDetail onBack={() => setFoyerStage("home")} />}
           {foyerStage === "story" && familyMember && (
             <CharacterStory person={familyMember} onBack={() => setFoyerStage("home")} />
           )}
@@ -2088,6 +2087,8 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
                 setFamilyMember(person);
                 setFoyerStage("story");
               }} />
+
+              <BelongingQuilt onOpen={() => setFoyerStage("quilt")} />
 
               <View style={styles.foyerMessageCard}>
                 <Ionicons name="heart" size={25} color="#FF6E83" />
