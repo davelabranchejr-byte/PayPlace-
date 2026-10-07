@@ -46,6 +46,7 @@ import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
+import TesterFeedback from "./src/TesterFeedback";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
@@ -2686,6 +2687,7 @@ function HomeScreen({
 
         <Ionicons name="chevron-forward" size={20} color={palette.teal} />
       </TouchableOpacity>
+      <TesterFeedback />
     </ScrollView>
   );
 }
