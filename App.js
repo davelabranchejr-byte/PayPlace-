@@ -12,7 +12,7 @@
 */
 
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   Modal,
@@ -39,6 +39,7 @@ import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import ConstructionNotice from "./src/ConstructionNotice";
 import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
+import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
@@ -698,7 +699,7 @@ const pearlCategoryOrder = ['westley','tate','bobbie','chapo','together'];
 const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
-// Welcome, leaf brushing, door, and foyer share Dave's original canonical Annie.
+// Welcome, red door, and foyer share Dave's original canonical Annie.
 const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
@@ -1178,6 +1179,9 @@ function PayPlaceApp() {
   const [loaded, setLoaded] = useState(false);
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingSession, setOnboardingSession] = useState(0);
+  const onboardingFinalizing = useRef(false);
+  const onboardingSaveWarning = useRef(false);
   const [onboardingAnswers, setOnboardingAnswers] = useState({
     name: "",
     email: "",
@@ -1217,7 +1221,7 @@ function PayPlaceApp() {
         if (savedOnboarding && active) {
           const parsedOnboarding = JSON.parse(savedOnboarding);
           setOnboardingAnswers((current) => ({ ...current, ...parsedOnboarding }));
-          setOnboardingComplete(Boolean(parsedOnboarding.completed) && hasVerifiedContact(parsedOnboarding));
+          setOnboardingComplete(canEnterNeighborhood(parsedOnboarding));
         }
 
         if (saved && active) {
@@ -1256,6 +1260,20 @@ function PayPlaceApp() {
       Alert.alert("Your changes are not saved yet", "PayPlace could not save this update. Keep the app open and try again, or create an encrypted backup from Security & backup.");
     });
   }, [finance, loaded]);
+
+  const saveOnboardingProgress = useCallback((profile) => {
+    // A queued draft must never overwrite a completed profile. Vault writes are
+    // serialized; completion is enqueued after earlier progress writes.
+    if (onboardingFinalizing.current) return;
+    setOnboardingAnswers(profile);
+    ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(profile)).then(() => {
+      onboardingSaveWarning.current = false;
+    }).catch(() => {
+      if (onboardingSaveWarning.current) return;
+      onboardingSaveWarning.current = true;
+      Alert.alert("Your answers are not saved yet", "Keep PayPlace open and try again. Your previous saved progress has not been replaced.");
+    });
+  }, []);
 
   const currentBudget = useMemo(() => mirrorBudget(finance), [finance]);
   const upcomingTotal = currentBudget.bills;
@@ -1534,6 +1552,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   async function replayAnnieOnboarding() {
     try {
       await ProtectedStorage.removeItem(ONBOARDING_KEY);
+      onboardingFinalizing.current = false;
+      setOnboardingSession(current => current + 1);
       setOnboardingAnswers({
         name: "",
         email: "",
@@ -1556,25 +1576,30 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       Alert.alert("Confirm your place", "Enter the security code sent to your email before continuing.");
       return;
     }
-    const completedAnswers = { ...answers, completed: true, completedAt: new Date().toISOString() };
+    const completedAnswers = completedProfile(answers);
+    onboardingFinalizing.current = true;
     try {
       await ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
       setOnboardingAnswers(completedAnswers);
       setOnboardingComplete(true);
     } catch (error) {
+      onboardingFinalizing.current = false;
       Alert.alert("Almost there", "PayPlace could not save onboarding yet. Please try again.");
+      throw error;
     }
   }
 
   async function restorePlan(data) {
     const restoredFinance = { ...starterFinance, ...data.finance, billReminders: { ...data.finance.billReminders, enabled: false } };
-    const restoredProfile = { ...data.profile, completed: false };
+    const recoveredProfile = restoredProfile(data.profile, ONBOARDING_STEPS.length);
     await ProtectedStorage.replaceAll({
       [STORAGE_KEY]: JSON.stringify(restoredFinance),
-      [ONBOARDING_KEY]: JSON.stringify(restoredProfile),
+      [ONBOARDING_KEY]: JSON.stringify(recoveredProfile),
     });
     setFinance(restoredFinance);
-    setOnboardingAnswers(restoredProfile);
+    onboardingFinalizing.current = false;
+    setOnboardingSession(current => current + 1);
+    setOnboardingAnswers(recoveredProfile);
     setOnboardingComplete(false);
     setStorageError(false);
     setLoaded(true); setOnboardingLoaded(true);
@@ -1606,7 +1631,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   if (!onboardingComplete) {
     return (
       <>
-        <OnboardingFlow initialAnswers={onboardingAnswers} onComplete={finishOnboarding} />
+        <OnboardingFlow key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </>
@@ -1785,10 +1810,13 @@ const ONBOARDING_STEPS = [
   },
 ];
 
-function OnboardingFlow({ initialAnswers, onComplete }) {
-  const [welcomeStage, setWelcomeStage] = useState(initialAnswers.completed ? "email" : "annie");
-  const [stepIndex, setStepIndex] = useState(0);
+function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
+  const [welcomeStage, setWelcomeStage] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stage);
+  const [stepIndex, setStepIndex] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stepIndex);
   const [answers, setAnswers] = useState(initialAnswers);
+  useEffect(() => {
+    onProgress(onboardingDraft(answers, welcomeStage, stepIndex));
+  }, [answers, welcomeStage, stepIndex, onProgress]);
   const step = ONBOARDING_STEPS[stepIndex];
   const value = answers[step.key] || "";
   const isLast = stepIndex === ONBOARDING_STEPS.length - 1;
@@ -1848,7 +1876,10 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
     return <SafeAreaView style={styles.onboardingSafe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <EmailVerification answers={answers} onVerified={onComplete} />
+          <EmailVerification answers={answers} onDraftChange={draft => setAnswers(current => ({ ...current, ...draft }))} onVerified={onComplete} />
+          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to your quilt" style={styles.onboardingBackButton} onPress={() => setWelcomeStage("quilt")}>
+            <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back</Text>
+          </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>;
@@ -1874,9 +1905,12 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
               <Text style={styles.quiltNoteSignature}>Love, Annie 🌳</Text>
             </View>
             <Text style={styles.quiltGiftFooter}>Annie quietly stitches the matching half into the neighborhood quilt. Your place is here now.</Text>
-            <TouchableOpacity style={styles.quiltGiftButton} onPress={() => setWelcomeStage("email")}>
+            <TouchableOpacity accessibilityRole="button" style={styles.quiltGiftButton} onPress={() => { if (hasVerifiedContact(answers)) onComplete(answers).catch(() => {}); else setWelcomeStage("email"); }}>
               <Text style={styles.quiltGiftButtonText}>Enter the neighborhood</Text>
               <Ionicons name="home" size={20} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to your answers" style={styles.onboardingBackButton} onPress={() => { setStepIndex(ONBOARDING_STEPS.length - 1); setWelcomeStage("questions"); }}>
+              <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -1922,6 +1956,7 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
               </View>
             ) : (
               <TextInput
+                accessibilityLabel={step.question}
                 value={value}
                 onChangeText={(text) => setAnswers((current) => ({ ...current, [step.key]: text }))}
                 placeholder={step.placeholder}
@@ -1936,13 +1971,11 @@ function OnboardingFlow({ initialAnswers, onComplete }) {
           </View>
 
           <View style={styles.onboardingButtons}>
-            {stepIndex > 0 ? (
-              <TouchableOpacity style={styles.onboardingBackButton} onPress={() => setStepIndex((current) => current - 1)}>
+              <TouchableOpacity accessibilityRole="button" style={styles.onboardingBackButton} onPress={() => stepIndex > 0 ? setStepIndex((current) => current - 1) : setWelcomeStage("annie")}>
                 <Ionicons name="arrow-back" size={20} color={palette.ink} />
                 <Text style={styles.onboardingBackText}>Back</Text>
               </TouchableOpacity>
-            ) : <View />}
-            <TouchableOpacity style={[styles.onboardingNextButton, { backgroundColor: canContinue ? step.accent : "#CBD5E1" }]} onPress={next}>
+            <TouchableOpacity accessibilityRole="button" disabled={!canContinue} style={[styles.onboardingNextButton, { backgroundColor: canContinue ? step.accent : "#CBD5E1" }]} onPress={next}>
               <Text style={styles.onboardingNextText}>{isLast ? "Meet Annie" : "Next"}</Text>
               <Ionicons name={isLast ? "leaf" : "arrow-forward"} size={20} color="white" />
             </TouchableOpacity>
@@ -2024,37 +2057,12 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
           {foyerStage === "story" && familyMember && (
             <CharacterStory person={familyMember} onBack={() => setFoyerStage("home")} />
           )}
-          {foyerStage === "leaves" && (
-            <TouchableOpacity style={styles.foyerArrival} activeOpacity={0.96} onPress={() => setFoyerStage("door")}>
-              <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
-              <View style={styles.foyerArrivalShade} />
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
-                <Ionicons name="close" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
-              <View style={styles.leafCurtain}>
-                <Ionicons name="leaf" size={74} color="#DFF7C8" style={{ transform: [{ rotate: "-18deg" }] }} />
-                <Ionicons name="leaf" size={92} color="#A9DD91" style={{ transform: [{ rotate: "26deg" }] }} />
-                <Ionicons name="leaf" size={68} color="#72BD72" style={{ transform: [{ rotate: "-42deg" }] }} />
-                <Ionicons name="leaf" size={84} color="#CBEBAE" style={{ transform: [{ rotate: "44deg" }] }} />
-              </View>
-              <View style={styles.foyerArrivalCopy}>
-                <Text style={styles.foyerArrivalEyebrow}>GREAT ANNIE IS WAITING</Text>
-                <Text style={styles.foyerArrivalTitle}>Brush the leaves aside</Text>
-                <Text style={styles.foyerArrivalText}>There is always a way home.</Text>
-                <View style={styles.foyerTapPill}>
-                  <Ionicons name="hand-left" size={17} color="#FFFFFF" />
-                  <Text style={styles.foyerTapPillText}>Tap to brush</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-          )}
-
           {foyerStage === "door" && (
             <View style={styles.redDoorScene}>
               <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
                 <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               </TouchableOpacity>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={styles.foyerCloseButton} onPress={closeFoyer}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={[styles.foyerCloseButton, { minWidth: 48, minHeight: 48 }]} onPress={closeFoyer}>
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               <View style={styles.doorSceneCopy} pointerEvents="none">
@@ -2067,7 +2075,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
           {foyerStage === "home" && (
             <ScrollView style={styles.foyerHome} contentContainerStyle={styles.foyerHomeContent}>
-              <TouchableOpacity style={styles.foyerHomeClose} onPress={closeFoyer}>
+              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie’s foyer" style={[styles.foyerHomeClose, { minWidth: 48, minHeight: 48 }]} onPress={closeFoyer}>
                 <Ionicons name="close" size={23} color={palette.ink} />
               </TouchableOpacity>
               <View style={styles.foyerArch}>
@@ -3338,6 +3346,7 @@ function BudgetScreen({
         <InputField
           label="Current bank balance"
           value={String(finance.balance)}
+          currency
           keyboardType="decimal-pad"
           onChangeText={(text) => updateNumber("balance", text)}
         />
@@ -3345,6 +3354,7 @@ function BudgetScreen({
         <InputField
           label="Next paycheck amount"
           value={String(finance.nextPaycheck)}
+          currency
           keyboardType="decimal-pad"
           onChangeText={(text) => updateNumber("nextPaycheck", text)}
         />
@@ -3381,6 +3391,7 @@ function BudgetScreen({
         <InputField
           label="Daily allowance"
           value={String(finance.allowance)}
+          currency
           keyboardType="decimal-pad"
           onChangeText={(text) => updateNumber("allowance", text)}
         />
@@ -3388,6 +3399,7 @@ function BudgetScreen({
         <InputField
           label="Emergency buffer"
           value={String(finance.buffer)}
+          currency
           keyboardType="decimal-pad"
           onChangeText={(text) => updateNumber("buffer", text)}
         />
@@ -3991,10 +4003,27 @@ function InputField({
   value,
   onChangeText,
   placeholder,
+  currency = false,
   keyboardType = "default",
   multiline = false,
   numberOfLines = 1,
 }) {
+  // Keep unfinished money text ("123." or "123.0") while saving its numeric value.
+  // Converting the displayed value on each keystroke removes the decimal point.
+  const [moneyDraft, setMoneyDraft] = useState(() => currency
+    ? cleanNumber(value).toFixed(2) : String(value ?? ""));
+  useEffect(() => {
+    if (!currency) return;
+    setMoneyDraft((draft) => cleanNumber(draft) === cleanNumber(value)
+      ? draft : cleanNumber(value).toFixed(2));
+  }, [currency, value]);
+
+  function changeMoney(text) {
+    if (!/^\d*(?:\.\d{0,2})?$/.test(text)) return;
+    setMoneyDraft(text);
+    onChangeText(text);
+  }
+
   return (
     <View style={styles.inputWrap}>
       <Text style={styles.inputLabel}>{label}</Text>
@@ -4008,8 +4037,10 @@ function InputField({
             paddingTop: 18,
           },
         ]}
-        value={value}
-        onChangeText={onChangeText}
+        value={currency ? moneyDraft : value}
+        onChangeText={currency ? changeMoney : onChangeText}
+        onBlur={currency ? () => setMoneyDraft(cleanNumber(moneyDraft).toFixed(2)) : undefined}
+        accessibilityLabel={label}
         placeholder={placeholder}
         placeholderTextColor="#9AA3B2"
         keyboardType={keyboardType}
@@ -4031,16 +4062,7 @@ function EmptyCard({ text }) {
 
 const styles = StyleSheet.create({
   foyerSafe: { flex: 1, backgroundColor: "#F8F3E8" },
-  foyerArrival: { flex: 1, overflow: "hidden", backgroundColor: "#173D35" },
   foyerArrivalImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
-  foyerArrivalShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(7, 28, 25, 0.44)" },
-  leafCurtain: { ...StyleSheet.absoluteFillObject, flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-around", paddingHorizontal: 18, paddingTop: 40, opacity: 0.92 },
-  foyerArrivalCopy: { position: "absolute", left: 24, right: 24, bottom: 54, alignItems: "center" },
-  foyerArrivalEyebrow: { color: "#DFF7C8", fontSize: 11, fontWeight: "900", letterSpacing: 1.8 },
-  foyerArrivalTitle: { color: "#FFFFFF", fontSize: 34, lineHeight: 39, fontWeight: "900", textAlign: "center", marginTop: 8 },
-  foyerArrivalText: { color: "rgba(255,255,255,0.88)", fontSize: 16, lineHeight: 23, fontWeight: "700", textAlign: "center", marginTop: 8 },
-  foyerTapPill: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(122,92,230,0.92)", borderRadius: 999, paddingHorizontal: 17, paddingVertical: 11, marginTop: 20 },
-  foyerTapPillText: { color: "#FFFFFF", fontWeight: "900" },
   redDoorScene: { flex: 1, backgroundColor: "#244E3D", alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
   doorSceneCopy: { position: "absolute", left: 20, right: 20, bottom: 24, alignItems: "center", backgroundColor: "rgba(16, 48, 36, 0.94)", borderRadius: 22, padding: 15 },
   foyerCloseButton: { position: "absolute", top: 18, right: 18, width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(0,0,0,0.22)", alignItems: "center", justifyContent: "center", zIndex: 5 },
@@ -6042,7 +6064,7 @@ const styles = StyleSheet.create({
   annieWelcomeBody: { fontSize: 17, lineHeight: 25, color: palette.muted, marginBottom: 18 },
   annieWelcomePrompt: { fontSize: 20, fontWeight: "800", color: palette.ink, marginBottom: 12 },
   annieWelcomeChoices: { gap: 10 },
-  annieWelcomeChoice: { flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1.5, borderColor: "#D7E7DF", backgroundColor: "#F8FCFA", borderRadius: 16, paddingVertical: 13, paddingHorizontal: 14 },
+  annieWelcomeChoice: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1.5, borderColor: "#D7E7DF", backgroundColor: "#F8FCFA", borderRadius: 16, paddingVertical: 13, paddingHorizontal: 14 },
   annieWelcomeChoiceSelected: { borderColor: palette.coral, backgroundColor: "#FFF2EF" },
   annieWelcomeChoiceText: { flex: 1, fontSize: 15, fontWeight: "700", color: palette.ink },
   annieWelcomeButton: { marginTop: 18, backgroundColor: "#3D7A62", borderRadius: 18, paddingVertical: 15, paddingHorizontal: 18, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 10 },
@@ -6072,14 +6094,14 @@ const styles = StyleSheet.create({
   onboardingQuestion: { fontSize: 27, lineHeight: 32, color: palette.ink, fontWeight: "900", marginTop: 18 },
   onboardingHelper: { fontSize: 15, lineHeight: 22, color: palette.muted, marginTop: 8, marginBottom: 16 },
   onboardingChoices: { gap: 10 },
-  onboardingChoice: { minHeight: 54, borderWidth: 2, borderColor: palette.border, borderRadius: 16, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "white" },
+  onboardingChoice: { minHeight: 54, paddingVertical: 12, borderWidth: 2, borderColor: palette.border, borderRadius: 16, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: "white" },
   onboardingChoiceText: { flex: 1, color: palette.muted, fontSize: 15, fontWeight: "800" },
   onboardingInput: { minHeight: 56, borderWidth: 2, borderRadius: 16, paddingHorizontal: 16, fontSize: 17, color: palette.ink, backgroundColor: "#FBFDFF" },
   onboardingInputMultiline: { minHeight: 130, paddingTop: 14, textAlignVertical: "top" },
-  onboardingButtons: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 18 },
-  onboardingBackButton: { flexDirection: "row", alignItems: "center", gap: 7, paddingVertical: 14, paddingHorizontal: 8 },
+  onboardingButtons: { flexDirection: "row", flexWrap: "wrap", gap: 12, alignItems: "center", justifyContent: "space-between", marginTop: 18 },
+  onboardingBackButton: { minHeight: 48, minWidth: 64, flexDirection: "row", alignItems: "center", gap: 7, paddingVertical: 14, paddingHorizontal: 8 },
   onboardingBackText: { color: palette.ink, fontWeight: "900" },
-  onboardingNextButton: { minHeight: 54, borderRadius: 18, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
+  onboardingNextButton: { minHeight: 54, flexShrink: 1, borderRadius: 18, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   onboardingNextText: { color: "white", fontSize: 16, fontWeight: "900" },
   firstLetterPreview: { marginTop: 18, padding: 16, borderRadius: 18, backgroundColor: "#FFF7ED", borderWidth: 1, borderColor: "#FED7AA", alignItems: "center" },
   firstLetterTitle: { marginTop: 6, fontSize: 16, fontWeight: "900", color: palette.ink },
@@ -6105,4 +6127,3 @@ const styles = StyleSheet.create({
   },
 
 });
-
