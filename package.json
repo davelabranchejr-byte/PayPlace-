@@ -4,6 +4,7 @@
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
+    "test": "node --test tests/*.test.mjs tests/*.test.cjs",
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
@@ -11,7 +12,8 @@
     "build": "node scripts/build.mjs",
     "db:generate": "drizzle-kit generate",
     "test:banking": "node tests/banking.test.mjs",
-    "test:mirror": "node --test tests/smart-mirror.test.mjs"
+    "test:mirror": "node --test tests/smart-mirror.test.mjs",
+    "test:budget": "node --test tests/budget-money-input.test.cjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.0",
@@ -39,6 +41,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "drizzle-kit": "^0.31.11"
+    "drizzle-kit": "^0.31.11",
+    "react-test-renderer": "19.1.0"
   }
 }
