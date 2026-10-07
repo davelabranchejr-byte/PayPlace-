@@ -709,8 +709,8 @@ const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const extraPaycheckDogsGraphic = portraits.together;
 const safeSpendPetStoreGraphic = portraits.together;
 
-const addBillTateGraphic = portraits.tate;
-const importBillsWestleyGraphic = portraits.westley;
+const addBillTateGraphic = require("./assets/characters/bills-tate-convertible.jpg");
+const importBillsWestleyGraphic = require("./assets/characters/sample-bills-westley-mailman.png");
 const manualModeDriveGraphic = require("./assets/characters/manual-mode-tate-convertible.png");
 
 const overwhelmedWestleyGraphic = require("./assets/characters/overwhelmed-westley-cozy.jpg");
@@ -3127,7 +3127,7 @@ const importDemoBills = () => {
             source={imageSource(addBillTateGraphic)}
             style={styles.billActionImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.tate.label}
+            accessibilityLabel="Tate driving his blue PayPlace convertible with his long goofy tongue in the breeze"
           />
           <View style={styles.billActionImageBadge}>
             <Ionicons name="create" size={15} color={palette.ink} />
@@ -3152,7 +3152,7 @@ const importDemoBills = () => {
     source={imageSource(importBillsWestleyGraphic)}
     style={styles.billActionImage}
     resizeMode="contain"
-    accessibilityLabel={portraits.westley.label}
+    accessibilityLabel="Westley the mailman with pointed Westie ears and a large PayPlace sack of sample bills"
   />
   <View style={styles.billActionImageBadge}>
     <Ionicons name="shield-checkmark" size={15} color={palette.ink} />
@@ -4981,9 +4981,13 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 8 },
   },
   addBillImageFrame: {
+    height: undefined,
+    aspectRatio: 4 / 3,
     borderColor: "#D8CCFF",
   },
   importBillImageFrame: {
+    height: undefined,
+    aspectRatio: 4 / 3,
     borderColor: "#BDEFE8",
   },
   billActionImage: {
