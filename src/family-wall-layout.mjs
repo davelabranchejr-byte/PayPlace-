@@ -2,6 +2,11 @@
 // Keep the image uncropped so each portrait stays aligned with its tap target.
 export const FAMILY_WALL_SIZE = Object.freeze({ width: 1024, height: 1536 });
 
+export function familyGallerySize(availableWidth) {
+  const width = Number.isFinite(availableWidth) ? Math.min(540, Math.max(0, availableWidth)) : 0;
+  return { width, height: width * FAMILY_WALL_SIZE.height / FAMILY_WALL_SIZE.width };
+}
+
 export const FAMILY_PORTRAITS = Object.freeze({
   daddy: { frame: [351, 88, 370, 522], crop: [395, 153, 290, 389], label: "Daddy in his teal PayPlace hoodie" },
   westley: { frame: [28, 210, 318, 400], crop: [88, 276, 218, 265], label: "Westley in his teal crayon-and-paw frame" },
