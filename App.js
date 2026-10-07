@@ -49,6 +49,8 @@ import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import TesterFeedback from "./src/TesterFeedback";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
+import DebtMethodComparison from "./src/DebtMethodComparison";
+import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const approvedClothedCharacterArtwork = portraits.together;
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
@@ -706,6 +708,7 @@ const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
 const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
+const mixedBuddyGraphic = require("./assets/characters/debt-mixed-snowplow.png");
 const extraPaycheckDogsGraphic = portraits.together;
 const safeSpendPetStoreGraphic = portraits.together;
 
@@ -862,6 +865,7 @@ const starterFinance = {
   autopilotOn: false,
   overwhelmedCount: 0,
   payoffMode: "snowball",
+  mixedQuickWinId: null,
   bills: [
 
   {
@@ -1115,15 +1119,15 @@ function getTellMeWhatToDoPlan({ finance, upcomingTotal, debtDueTotal, safeToSpe
   }
 
   if (hasDebts && debtDueTotal > 0 && safeToSpend > buffer * 0.5) {
-    const mode = finance.payoffMode === "avalanche" ? "Avalanche" : "Snowball";
+    const mode = finance.payoffMode === "mixed" ? "Mixed" : finance.payoffMode === "avalanche" ? "Avalanche" : "Snowball";
     return {
       title: `${mode} is your next focus`,
       body: "You have some breathing room. Aim extra money at the debt plan so the progress becomes visible instead of evaporating.",
       targetTab: "Debt",
       actionLabel: "Open Debt",
-      accentColor: finance.payoffMode === "avalanche" ? palette.avalancheDark : palette.snowballDark,
-      tintColor: finance.payoffMode === "avalanche" ? palette.avalancheSoft : palette.snowballSoft,
-      icon: finance.payoffMode === "avalanche" ? "triangle" : "ellipse",
+      accentColor: finance.payoffMode === "mixed" ? palette.purple : finance.payoffMode === "avalanche" ? palette.avalancheDark : palette.snowballDark,
+      tintColor: finance.payoffMode === "mixed" ? palette.lavender : finance.payoffMode === "avalanche" ? palette.avalancheSoft : palette.snowballSoft,
+      icon: finance.payoffMode === "mixed" ? "shuffle" : finance.payoffMode === "avalanche" ? "triangle" : "ellipse",
       steps: [
         `Stay in ${mode} mode unless you intentionally switch.`,
         "Pay minimums on everything.",
@@ -1234,7 +1238,7 @@ function PayPlaceApp() {
             ...parsed,
             bills: Array.isArray(parsed.bills) ? parsed.bills : starterFinance.bills,
             debts: Array.isArray(parsed.debts) ? parsed.debts : starterFinance.debts,
-            payoffMode: parsed.payoffMode === "avalanche" ? "avalanche" : "snowball",
+            payoffMode: normalizeStrategy(parsed.payoffMode),
           });
         }
         if (active) setStorageError(false);
@@ -1320,6 +1324,7 @@ function PayPlaceApp() {
       let next = finance;
       if (action.type === "bonus") next = addBonus(finance, action.entry);
       if (action.type === "split") next = saveSplit(finance, action.event, action.values);
+      if (action.type === "celebrationSeen") next = { ...finance, extraPaycheckCelebrations: { ...(finance.extraPaycheckCelebrations || {}), [action.key]: true } };
       if (action.type === "removeBonus") {
         const plans = { ...(finance.extraPaycheckPlans || {}) };
         delete plans[action.id];
@@ -1493,7 +1498,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       return;
     }
 
-    setFinance((current) => ({
+    setFinance((current) => initializeMixedTarget({
       ...current,
       debts: [
         ...current.debts,
@@ -1524,10 +1529,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   function setPayoffMode(mode) {
-    setFinance((current) => ({
-      ...current,
-      payoffMode: mode,
-    }));
+    setFinance(current => selectStrategy(current, mode));
   }
 
   function handleOverwhelmed() {
@@ -1695,6 +1697,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <DebtScreen
             debts={finance.debts}
             payoffMode={finance.payoffMode}
+            mixedQuickWinId={finance.mixedQuickWinId}
             setPayoffMode={setPayoffMode}
             addDebt={addDebt}
             payDebt={payDebt}
@@ -2641,10 +2644,10 @@ function HomeScreen({
         <QuickCard
           icon="trending-down"
           label="Debt Plan"
-          value={finance.payoffMode === "avalanche" ? "Avalanche" : "Snowball"}
+          value={finance.payoffMode === "mixed" ? "Mixed" : finance.payoffMode === "avalanche" ? "Avalanche" : "Snowball"}
           sub={`${money(debtDueTotal)} minimums`}
-          tone={finance.payoffMode === "avalanche" ? palette.avalancheDark : palette.snowballDark}
-          tint={finance.payoffMode === "avalanche" ? palette.avalancheSoft : palette.snowballSoft}
+          tone={finance.payoffMode === "mixed" ? palette.purple : finance.payoffMode === "avalanche" ? palette.avalancheDark : palette.snowballDark}
+          tint={finance.payoffMode === "mixed" ? palette.lavender : finance.payoffMode === "avalanche" ? palette.avalancheSoft : palette.snowballSoft}
           onPress={() => switchTab("Debt")}
         />
         <QuickCard
@@ -3431,7 +3434,7 @@ function BudgetScreen({
   );
 }
 
-function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, deleteDebt }) {
+function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3439,20 +3442,12 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
     minimum: "",
   });
 
-  const mode = payoffMode === "avalanche" ? "avalanche" : "snowball";
-
-  const sortedDebts = [...debts].sort((a, b) => {
-    if (mode === "snowball") {
-      return Number(a.balance || 0) - Number(b.balance || 0);
-    }
-
-    return Number(b.apr || 0) - Number(a.apr || 0);
-  });
-
+  const mode = normalizeStrategy(payoffMode);
+  const sortedDebts = orderDebts(debts, mode, mixedQuickWinId);
   const targetDebt = sortedDebts[0];
-
-  const modeColor = mode === "snowball" ? palette.snowballDark : palette.avalancheDark;
-  const modeSoft = mode === "snowball" ? palette.snowballSoft : palette.avalancheSoft;
+  const mixedQuickWin = mode === "mixed" && targetDebt?.id === mixedQuickWinId;
+  const modeColor = mode === "mixed" ? palette.purple : mode === "snowball" ? palette.snowballDark : palette.avalancheDark;
+  const modeSoft = mode === "mixed" ? palette.lavender : mode === "snowball" ? palette.snowballSoft : palette.avalancheSoft;
 
   function submitDebt() {
     addDebt(newDebt);
@@ -3464,8 +3459,8 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
       <SectionTitle
         title="Debt Plan"
         subtitle={
-          mode === "snowball"
-            ? "Snowball mode: smallest balance first for quick wins."
+          mode === "mixed" ? "Mixed mode: one quick win, then highest interest first."
+            : mode === "snowball" ? "Snowball mode: smallest balance first for quick wins."
             : "Avalanche mode: highest APR first to attack interest."
         }
       />
@@ -3474,35 +3469,19 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
         <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
 
         <View style={styles.payoffModeRow}>
-          <TouchableOpacity
-            style={[
-              styles.payoffModeButton,
-              { borderColor: palette.snowball, backgroundColor: palette.snowballSoft },
-              mode === "snowball" && styles.payoffModeButtonActive,
-            ]}
-            onPress={() => setPayoffMode("snowball")}
-          >
-            <Ionicons name="ellipse" size={24} color={palette.snowballDark} />
-            <Text style={[styles.payoffModeTitle, { color: palette.snowballDark }]}>
-              Snowball
-            </Text>
-            <Text style={styles.payoffModeSub}>Smallest balance first</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.payoffModeButton,
-              { borderColor: palette.avalanche, backgroundColor: palette.avalancheSoft },
-              mode === "avalanche" && styles.payoffModeButtonActive,
-            ]}
-            onPress={() => setPayoffMode("avalanche")}
-          >
-            <Ionicons name="triangle" size={24} color={palette.avalancheDark} />
-            <Text style={[styles.payoffModeTitle, { color: palette.avalancheDark }]}>
-              Avalanche
-            </Text>
-            <Text style={styles.payoffModeSub}>Highest APR first</Text>
-          </TouchableOpacity>
+          {[
+            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", icon: "ellipse", color: palette.snowballDark, tint: palette.snowballSoft },
+            { id: "mixed", title: "Mixed", subtitle: "Best of both", icon: "shuffle", color: palette.purple, tint: palette.lavender },
+            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", icon: "triangle", color: palette.avalancheDark, tint: palette.avalancheSoft },
+          ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
+            accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
+            accessibilityState={{ selected: mode === option.id }}
+            style={[styles.payoffModeButton, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
+            onPress={() => setPayoffMode(option.id)}>
+            <Ionicons name={option.icon} size={24} color={option.color} />
+            <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
+            <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
+          </TouchableOpacity>)}
         </View>
       </View>
 
@@ -3510,13 +3489,13 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
 
       <View style={[styles.methodTipCard, { borderColor: modeColor + "55" }]}>
         <Ionicons
-          name={mode === "snowball" ? "happy" : "flash"}
+          name={mode === "mixed" ? "shuffle" : mode === "snowball" ? "happy" : "flash"}
           size={20}
           color={modeColor}
         />
         <Text style={styles.methodTipText}>
-          {mode === "snowball"
-            ? "Snowball is for momentum: smallest debt first, quick progress, less avoidance."
+          {mode === "mixed" ? "Mixed starts with one small win, then follows Avalanche. Your quick-win target is saved with your plan."
+            : mode === "snowball" ? "Snowball is for momentum: smallest debt first, quick progress, less avoidance."
             : "Avalanche is for interest: highest APR first, strongest long-term math."}
         </Text>
       </View>
@@ -3533,8 +3512,9 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
           </Text>
           <Text style={styles.recommendationTitle}>{targetDebt.name}</Text>
           <Text style={styles.recommendationText}>
-            {mode === "snowball"
-              ? `${targetDebt.name} is the smallest target. Pay minimums everywhere, then throw extra money here so you can get a fast payoff win.`
+            {mixedQuickWin ? `${targetDebt.name} is your saved quick-win target. Keep paying minimums everywhere; after this balance reaches zero, Mixed follows the highest APR.`
+              : mode === "mixed" ? `Your quick-win stage is complete. ${targetDebt.name} is now the highest-APR target. Keep paying minimums everywhere and aim extra money here.`
+              : mode === "snowball" ? `${targetDebt.name} is the smallest target. Pay minimums everywhere, then throw extra money here so you can get a fast payoff win.`
               : `${targetDebt.name} has the highest APR. Pay minimums everywhere, then throw extra money here so interest has fewer places to snack on your cash.`}
           </Text>
         </View>
@@ -3659,15 +3639,16 @@ function DebtScreen({ debts, payoffMode, setPayoffMode, addDebt, payDebt, delete
 
 function DebtBuddyScene({ mode }) {
   const isSnowball = mode === "snowball";
-  const sceneTitle = isSnowball ? "Snowball method" : "Avalanche method";
-  const sceneBody = isSnowball
+  const isMixed = mode === "mixed";
+  const sceneTitle = isMixed ? "Mixed method" : isSnowball ? "Snowball method" : "Avalanche method";
+  const sceneBody = isMixed ? "Best of both: a quick win to get moving, then focus on interest. Bobbie may have caused the avalanche." : isSnowball
     ? "Smallest balance first. Fast wins. Your brain gets proof that the plan is working."
     : "Highest APR first. Less interest. Tiny chihuahua panic, grown-up math.";
 
-  const graphicUri = isSnowball ? snowballBuddyGraphic : avalancheBuddyGraphic;
+  const graphicUri = isMixed ? mixedBuddyGraphic : isSnowball ? snowballBuddyGraphic : avalancheBuddyGraphic;
   const graphicSource = imageSource(graphicUri);
-  const heroColor = isSnowball ? palette.snowballDark : palette.avalancheDark;
-  const heroTint = isSnowball ? palette.snowballSoft : palette.avalancheSoft;
+  const heroColor = isMixed ? palette.purple : isSnowball ? palette.snowballDark : palette.avalancheDark;
+  const heroTint = isMixed ? palette.lavender : isSnowball ? palette.snowballSoft : palette.avalancheSoft;
   const bullets = isSnowball
     ? [
         {
@@ -3722,14 +3703,14 @@ function DebtBuddyScene({ mode }) {
           ]}
         >
           <Ionicons
-            name={isSnowball ? "ellipse" : "triangle"}
+            name={isMixed ? "shuffle" : isSnowball ? "ellipse" : "triangle"}
             size={24}
             color={heroColor}
           />
         </View>
         <View style={styles.flexOne}>
           <Text style={[styles.debtBuddyKicker, { color: heroColor }]}>
-            {isSnowball ? "QUICK WINS" : "INTEREST ATTACK"}
+            {isMixed ? "BEST OF BOTH" : isSnowball ? "QUICK WINS" : "INTEREST ATTACK"}
           </Text>
           <Text style={styles.debtBuddyTitle}>{sceneTitle}</Text>
           <Text style={styles.debtBuddyBody}>{sceneBody}</Text>
@@ -3739,18 +3720,18 @@ function DebtBuddyScene({ mode }) {
       <View
         style={[
           styles.debtBuddyImageFrame,
-
+          isMixed && { height: undefined, aspectRatio: 1122 / 1402 },
         ]}
       >
         <CharacterArtwork
           source={graphicSource}
           style={styles.debtBuddyImage}
           resizeMode="contain"
-          accessibilityLabel={isSnowball ? portraits.westley.label : portraits.tate.label}
+          accessibilityLabel={isMixed ? "Glamorous Bobbie drives the PayPlace snowplow with Chapo enjoying steaming cocoa and a cookie; Tate rides the avalanche while Westley throws snowballs from his fort in a snowsuit" : isSnowball ? portraits.westley.label : portraits.tate.label}
         />
       </View>
 
-      <View style={styles.methodCard}>
+      {isMixed ? <DebtMethodComparison /> : <View style={styles.methodCard}>
         {bullets.map((item) => (
           <View key={item.title} style={styles.methodBulletRow}>
             <View style={[styles.methodBallBullet, { backgroundColor: item.color }]} />
@@ -3760,7 +3741,7 @@ function DebtBuddyScene({ mode }) {
             </View>
           </View>
         ))}
-      </View>
+      </View>}
     </View>
   );
 }
@@ -5410,12 +5391,14 @@ const styles = StyleSheet.create({
   },
   payoffModeRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    gap: 7,
   },
   payoffModeButton: {
-    width: "48.5%",
-    borderRadius: 20,
-    padding: 14,
+    flex: 1,
+    minWidth: 0,
+    borderRadius: 16,
+    paddingHorizontal: 6,
+    paddingVertical: 14,
     borderWidth: 2,
   },
   payoffModeButtonActive: {
@@ -5427,7 +5410,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   payoffModeTitle: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: "900",
     marginTop: 6,
   },
