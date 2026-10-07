@@ -3720,7 +3720,7 @@ function DebtBuddyScene({ mode }) {
       <View
         style={[
           styles.debtBuddyImageFrame,
-          isMixed && { height: undefined, aspectRatio: 1122 / 1402 },
+          isMixed ? { aspectRatio: 1122 / 1402 } : { height: 280 },
         ]}
       >
         <CharacterArtwork
@@ -5826,7 +5826,6 @@ const styles = StyleSheet.create({
   },
   debtBuddyImageFrame: {
     width: "100%",
-    height: 280,
     borderRadius: 24,
     borderWidth: 3,
     borderColor: "rgba(255,255,255,0.95)",
@@ -6117,3 +6116,4 @@ const styles = StyleSheet.create({
   },
 
 });
+
