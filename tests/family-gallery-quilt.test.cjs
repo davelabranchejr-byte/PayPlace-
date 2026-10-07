@@ -14,7 +14,7 @@ function load(file, imports, exports) {
   const code = babel.transformSync(source, { configFile: false, babelrc: false,
     plugins: [[require('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]] }).code;
   const sandbox = { React, useState: React.useState, require: () => 1,
-    ...Object.fromEntries(['Image','View','Text','ScrollView','TouchableOpacity','Pressable','Ionicons','CharacterArtwork'].map(k => [k,k])),
+    ...Object.fromEntries(['Image','View','Text','TextInput','ScrollView','TouchableOpacity','Pressable','Ionicons','CharacterArtwork','PawprintMemory','Modal','SafeAreaView'].map(k => [k,k])),
     StyleSheet: { create: x => x, absoluteFillObject: { position:'absolute',top:0,left:0,right:0,bottom:0 } },
     ...imports, module:{exports:{}} };
   vm.runInNewContext(code + '\nmodule.exports = {' + exports.join(',') + '};', sandbox);
@@ -63,4 +63,61 @@ test('quilt uses approved stitched acorn art and opens/returns from its detailed
   await act(()=>r.update(React.createElement(AcornSquare)));
   assert.equal(r.root.findByType('CharacterArtwork').props.source.crop.length,4);
   await act(()=>r.unmount());
+});
+
+test('approved combined paw-print wall opens uncropped and closes by button or system Back', async () => {
+  const {PawprintMemory}=load('PawprintMemory.js',{},['PawprintMemory']);
+  const png=fs.readFileSync(path.join(__dirname,'../assets/characters/em-pawprint-memory-wall.png'));
+  const width=png.readUInt32BE(16),height=png.readUInt32BE(20);
+  let r;
+  await act(()=>{r=create(React.createElement(PawprintMemory));});
+  try {
+    const preview=r.root.findByProps({testID:'pawprint-memory-preview'});
+    assert.equal(r.root.findByType('Modal').props.visible,false);
+    await act(()=>preview.props.onPress());
+    assert.equal(r.root.findByType('Modal').props.visible,true);
+    const small=r.root.findByProps({testID:'pawprint-garden-artwork'});
+    const full=r.root.findByProps({testID:'pawprint-memory-full'});
+    for(const img of [small,full]) {
+      assert.equal(img.props.resizeMode,'contain');
+      assert.equal(flatten(img.props.style).width,'100%');
+      assert.equal(flatten(img.props.style).height,'100%');
+    }
+    for(const frame of [preview,r.root.findByProps({testID:'pawprint-memory-full-frame'})]) {
+      const style=Array.isArray(frame.props.style)||typeof frame.props.style==='object'
+        ? frame.props.style : frame.props.style({pressed:false});
+      assert.equal(flatten(style).aspectRatio,width/height);
+    }
+    assert.equal(small.props.source,full.props.source);
+    await act(()=>r.root.findByProps({testID:'pawprint-memory-close'}).props.onPress());
+    assert.equal(r.root.findByType('Modal').props.visible,false);
+    await act(()=>preview.props.onPress());
+    await act(()=>r.root.findByType('Modal').props.onRequestClose());
+    assert.equal(r.root.findByType('Modal').props.visible,false);
+  } finally { await act(()=>r.unmount()); }
+});
+
+test('calendar and mirror money fields keep partial cents editable and format valid amounts on blur', async () => {
+  const {parseAmount}=await import('../src/smart-mirror.mjs');
+  for(const file of ['ExtraPaycheckCalendar.js','BobbieSmartMirror.js']) {
+    const {Field}=load(file,{parseAmount, Platform:{select:()=> 'cursive'}, useEffect:React.useEffect,useRef:React.useRef},['Field']);
+    let value='',r;
+    const render=()=>React.createElement(Field,{label:'Test amount',money:true,value,
+      onChangeText:text=>{value=text;r.update(render());}});
+    await act(()=>{r=create(render());});
+    try {
+      for(const text of ['123.','123.0','123.05','.05','123.10']) {
+        await act(()=>r.root.findByType('TextInput').props.onChangeText(text));
+        assert.equal(value,text);
+      }
+      await act(()=>r.root.findByType('TextInput').props.onBlur());
+      assert.equal(value,'123.10');
+      await act(()=>r.root.findByType('TextInput').props.onChangeText('.05'));
+      await act(()=>r.root.findByType('TextInput').props.onBlur());
+      assert.equal(value,'0.05');
+      await act(()=>r.root.findByType('TextInput').props.onChangeText('invalid'));
+      await act(()=>r.root.findByType('TextInput').props.onBlur());
+      assert.equal(value,'invalid');
+    } finally { await act(()=>r.unmount()); }
+  }
 });
