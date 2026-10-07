@@ -6,7 +6,7 @@ const logo = require("../assets/branding/payplace-icon.png");
 
 export default function PayPlaceBrand({ compact = false, light = false, style }) {
   const primary = light ? "#FFFFFF" : "#173557";
-  const accent = light ? "#B7FFF0" : "#6754C5";
+  const accent = light ? "#B7FFF0" : "#0CB7A7";
 
   return (
     <View style={[s.wrap, compact && s.compactWrap, style]}>
@@ -21,7 +21,7 @@ export default function PayPlaceBrand({ compact = false, light = false, style })
           Pay<Text style={{ color: accent }}>Place</Text>
         </Text>
         <Text style={[s.tagline, compact && s.compactTagline, { color: primary }]}>
-          Money without Shame.
+          Money without shame.
         </Text>
       </View>
     </View>
