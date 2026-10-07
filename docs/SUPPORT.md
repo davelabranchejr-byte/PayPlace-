@@ -17,14 +17,16 @@ GitHub issues are public. Do not post bank details, balances, account numbers, p
 
 ## Common questions
 
-**Do I need an account?** You can choose “Just visiting? Take a look around” to enter guest mode. The current iPhone release stores entries on your device and does not create an online account.
+**Do I need an account?** Onboarding asks you to verify your email. Your budget stays encrypted on this device; verification does not synchronize it to a cloud account. Once onboarding is completed and saved, normal relaunches return to your neighborhood after any enabled device lock.
 
 **Can I connect my bank?** Bank linking through Plaid is an upcoming paid Premium feature. It is not active in this release. Manual entry is available now.
 
-**Where are the character stories?** On Home, tap Annie's welcome button, brush aside the leaves, and tap her red door. Tap a family portrait to read its background.
+**Where are the character stories?** On Home, open Annie’s welcome and tap her red door. Tap a family portrait to read its background. Em’s paw-print picture is on that same wall; tap it for a larger view. The Belonging Quilt is below the gallery.
 
 **Why do the starting numbers look like examples?** The neighborhood starts with sample entries. Replace them with your own information before relying on the calculations. Safe to Spend is an estimate based on what you enter, and may omit expenses you have not recorded.
 
-**Can PayPlace recover my information?** The current app has no remote account or synchronization service. Local entries and any device backups are controlled by your device and Apple settings.
+**Can PayPlace recover my information?** Use Security & backup to create a password-protected backup file. You need both the file and its password to restore it. Restore asks you to verify email and opt into letters/reminders again. PayPlace cannot remotely retrieve your local budget or reset a forgotten backup password.
+
+**Where can I leave beta feedback?** Home has “Help make the neighborhood better” with testing tips and a public GitHub feedback draft. On iPhone, you can also use TestFlight’s Send Beta Feedback. No budget data is automatically added to a feedback draft.
 
 [Read the PayPlace Privacy Policy](PRIVACY.md).
