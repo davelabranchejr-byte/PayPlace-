@@ -1,4 +1,4 @@
-name: Build iPhone locally and upload to Apple
+name: Build with Xcode and upload directly to Apple
 
 on:
   workflow_dispatch:
@@ -13,38 +13,136 @@ concurrency:
 jobs:
   release:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
-      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      CI: '1'
+      FASTLANE_SKIP_UPDATE_CHECK: '1'
+      FASTLANE_HIDE_CHANGELOG: '1'
+      APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
+      APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
+      APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+      APP_STORE_CONNECT_API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
     steps:
-      - name: Verify Expo authentication is configured
+      - name: Verify Apple signing and upload credentials
         run: |
-          if [ -z "$EXPO_TOKEN" ]; then
-            echo '::error::Add the EXPO_TOKEN repository secret before running this release.'
-            exit 1
-          fi
+          missing=0
+          for name in APPLE_DISTRIBUTION_CERTIFICATE_BASE64 APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD APPLE_PROVISIONING_PROFILE_BASE64 APP_STORE_CONNECT_API_KEY_BASE64 APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing repository secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
       - name: Install dependencies and run checks
         run: |
           npm ci
           npm test
-      - name: Check Apple build tools
+          gem install fastlane cocoapods --no-document
+      - name: Generate the native Xcode project
+        # Local open-source generator only; no EAS service or Expo account.
         run: |
-          xcodebuild -version
-          pod --version
-          fastlane --version
-      - name: Build signed iPhone release on this Mac
-        run: npx --yes eas-cli@latest build --local --non-interactive --platform ios --profile production --output "$RUNNER_TEMP/PayPlace.ipa"
-      - name: Upload signed release to Apple
-        run: npx --yes eas-cli@latest submit --non-interactive --platform ios --profile production --path "$RUNNER_TEMP/PayPlace.ipa" --wait
+          npx expo prebuild --platform ios --no-install
+          cd ios
+          pod install
+      - name: Archive with Xcode and upload to TestFlight
+        run: |
+          mkdir -p fastlane
+          cat > fastlane/Fastfile <<'RUBY'
+          require 'base64'
+          require 'json'
+          require 'securerandom'
+          require 'fileutils'
+          require 'open3'
+          require 'shellwords'
+          require 'plist'
+          require 'time'
+
+          default_platform(:ios)
+          platform :ios do
+            lane :release do
+              bundle_id = 'com.davelabranchejr.payplace'
+              root = ENV.fetch('GITHUB_WORKSPACE')
+              temporary = File.join(ENV.fetch('RUNNER_TEMP'), 'payplace-signing')
+              FileUtils.mkdir_p(temporary, mode: 0700)
+              certificate = File.join(temporary, 'distribution.p12')
+              profile_path = File.join(temporary, 'distribution.mobileprovision')
+              keychain = File.join(temporary, 'release.keychain-db')
+              installed_profile = nil
+              begin
+                File.write(certificate, Base64.strict_decode64(ENV.fetch('APPLE_DISTRIBUTION_CERTIFICATE_BASE64').gsub(/\s/, '')), mode: 'wb', perm: 0600)
+                File.write(profile_path, Base64.strict_decode64(ENV.fetch('APPLE_PROVISIONING_PROFILE_BASE64').gsub(/\s/, '')), mode: 'wb', perm: 0600)
+                decoded, status = Open3.capture2('security', 'cms', '-D', '-i', profile_path)
+                UI.user_error!('Cannot decode Apple provisioning profile') unless status.success?
+                profile = Plist.parse_xml(decoded)
+                team_id = profile.fetch('TeamIdentifier').first
+                uuid = profile.fetch('UUID')
+                entitlement = profile.fetch('Entitlements')
+                prefix = profile.fetch('ApplicationIdentifierPrefix').first
+                UI.user_error!('Profile must match PayPlace bundle identifier') unless entitlement['application-identifier'] == "#{prefix}.#{bundle_id}"
+                UI.user_error!('Use an App Store distribution profile') if profile['ProvisionedDevices'] || profile['ProvisionsAllDevices'] || entitlement['get-task-allow']
+                UI.user_error!('Provisioning profile has expired') if Time.parse(profile.fetch('ExpirationDate').to_s) <= Time.now
+                UI.user_error!('Invalid profile UUID') unless uuid.match?(/\A[0-9A-F-]{36}\z/i)
+                installed_profile = File.expand_path("~/Library/MobileDevice/Provisioning Profiles/#{uuid}.mobileprovision")
+                FileUtils.mkdir_p(File.dirname(installed_profile))
+                FileUtils.cp(profile_path, installed_profile)
+                File.chmod(0600, installed_profile)
+
+                password = SecureRandom.hex(32)
+                create_keychain(path: keychain, password: password, unlock: true, timeout: 7200, require_create: true)
+                import_certificate(certificate_path: certificate, certificate_password: ENV.fetch('APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD'), keychain_path: keychain, keychain_password: password, log_output: false)
+                api_key = app_store_connect_api_key(
+                  key_id: ENV.fetch('APP_STORE_CONNECT_API_KEY_ID'),
+                  issuer_id: ENV.fetch('APP_STORE_CONNECT_ISSUER_ID'),
+                  key_content: ENV.fetch('APP_STORE_CONNECT_API_KEY_BASE64').gsub(/\s/, ''),
+                  is_key_content_base64: true, in_house: false
+                )
+                version = JSON.parse(File.read(File.join(root, 'app.json'))).fetch('expo').fetch('version')
+                # Apple owns this build counter; no Expo version service is used.
+                latest = latest_testflight_build_number(api_key: api_key, app_identifier: bundle_id, version: version, initial_build_number: 23)
+                project = File.join(root, 'ios/PayPlace.xcodeproj')
+                increment_build_number(build_number: latest + 1, xcodeproj: project)
+                update_code_signing_settings(
+                  path: project, targets: ['PayPlace'], build_configurations: ['Release'],
+                  use_automatic_signing: false, team_id: team_id,
+                  code_sign_identity: 'Apple Distribution', profile_uuid: uuid
+                )
+                ipa = build_app(
+                  workspace: File.join(root, 'ios/PayPlace.xcworkspace'), scheme: 'PayPlace',
+                  configuration: 'Release', destination: 'generic/platform=iOS',
+                  output_directory: ENV.fetch('RUNNER_TEMP'), output_name: 'PayPlace.ipa',
+                  archive_path: File.join(ENV.fetch('RUNNER_TEMP'), 'PayPlace.xcarchive'),
+                  export_method: 'app-store', export_team_id: team_id,
+                  xcargs: "OTHER_CODE_SIGN_FLAGS=#{Shellwords.escape("--keychain #{keychain}")}",
+                  export_options: { signingStyle: 'manual', signingCertificate: 'Apple Distribution', provisioningProfiles: { bundle_id => uuid }, manageAppVersionAndBuildNumber: false }
+                )
+                upload_to_testflight(api_key: api_key, app_identifier: bundle_id, apple_id: '6793296732', ipa: ipa, skip_waiting_for_build_processing: true)
+                File.open(ENV.fetch('GITHUB_STEP_SUMMARY'), 'a') do |summary|
+                  summary.puts("Uploaded PayPlace #{version} (#{latest + 1}) to Apple. Apple processing and tester availability still need checking.")
+                end
+              ensure
+                system('security', 'delete-keychain', keychain) if File.exist?(keychain)
+                FileUtils.rm_f(installed_profile) if installed_profile
+                FileUtils.rm_rf(temporary)
+              end
+            end
+          end
+          RUBY
+          fastlane ios release
       - name: Save signed release artifact
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: PayPlace-iPhone-release
           path: ${{ runner.temp }}/PayPlace.ipa
+          if-no-files-found: error
           retention-days: 7
