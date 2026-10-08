@@ -15,6 +15,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  Image,
   Modal,
   KeyboardAvoidingView,
   Platform,
@@ -36,7 +37,6 @@ import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
-import ConstructionNotice from "./src/ConstructionNotice";
 import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
@@ -46,13 +46,16 @@ import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
+import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
+import useSubscriptionReminders from "./src/useSubscriptionReminders";
+import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
-const approvedClothedCharacterArtwork = portraits.together;
+const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
 const payplaceLogo = require("./assets/branding/payplace-icon.png");
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
@@ -833,6 +836,15 @@ const palette = {
   avalancheDark: "#0891B2",
 };
 
+const cardThemes = {
+  gold: { background: palette.gold, border: "#D09A00", text: palette.ink },
+  coral: { background: "#FF8585", border: "#CF4747", text: palette.ink },
+  sky: { background: "#8CDEFF", border: "#1484AF", text: palette.ink },
+  purple: { background: palette.purple, border: "#C5BBFF", text: "#FFFFFF" },
+  mint: { background: palette.mintBright, border: "#087E70", text: palette.ink },
+  teal: { background: palette.teal, border: "#087E70", text: palette.ink },
+};
+
 const DEMO_IMPORTED_BILLS = [
   {
     id: "bill_001",
@@ -1178,6 +1190,7 @@ function PayPlaceApp() {
   const [storageError, setStorageError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
+  const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   const [finance, setFinance] = useState(starterFinance);
   const [calmIndex, setCalmIndex] = useState(0);
@@ -1201,6 +1214,13 @@ function PayPlaceApp() {
   });
   const reminderStatus = useBillReminders(finance.bills, finance.billReminders, loaded && !storageError,
     () => setTab("Bills"));
+  const subscriptions = useMemo(() => subscriptionCases(finance), [finance.subscriptions]);
+  const subscriptionReminderStatus = useSubscriptionReminders(subscriptions, finance.subscriptionReminders,
+    loaded && onboardingComplete && !storageError, () => setDetectiveVisible(true));
+  function updateDetective(action) {
+    try { setFinance(updateSubscription(finance, action)); return true; }
+    catch (error) { Alert.alert("A little detective check", error.message); return false; }
+  }
   const recentDeleted = deletedItems(finance);
   function changeReminders(options) {
     setFinance(current => ({ ...current, billReminders: options }));
@@ -1594,7 +1614,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function restorePlan(data) {
-    const restoredFinance = { ...starterFinance, ...data.finance, billReminders: { ...data.finance.billReminders, enabled: false } };
+    const restoredFinance = { ...starterFinance, ...data.finance, billReminders: { ...data.finance.billReminders, enabled: false }, subscriptionReminders: { enabled: false } };
     const recoveredProfile = restoredProfile(data.profile, ONBOARDING_STEPS.length);
     await ProtectedStorage.replaceAll({
       [STORAGE_KEY]: JSON.stringify(restoredFinance),
@@ -1668,6 +1688,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             replayAnnieOnboarding={replayAnnieOnboarding}
             onMirrorAction={updateMirror}
             onExtraPaycheckAction={updateExtraPaycheck}
+            onDetective={() => setDetectiveVisible(true)}
           />
         )}
 
@@ -1724,6 +1745,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
         <BottomNav current={tab} switchTab={setTab} />
+        <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
+          finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
+          reminderStatus={subscriptionReminderStatus}
+          onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </KeyboardAvoidingView>
@@ -1850,7 +1875,6 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
           <CharacterArtwork source={imageSource(greatAnnieHero)} style={styles.annieWelcomeImage} resizeMode="contain" />
           <View style={styles.annieWelcomeShade} />
           <View style={styles.annieWelcomeCard}>
-            <View style={{ marginBottom: 18 }}><ConstructionNotice /></View>
             <Text style={styles.annieWelcomeEyebrow}>GREAT ANNIE OAK TREE</Text>
             <Text style={styles.annieWelcomeTitle}>There you are.</Text>
             <Text style={styles.annieWelcomeBody}>“Every new neighbor eventually finds their way here. Sit with me for a minute, sweetheart.”</Text>
@@ -2018,8 +2042,7 @@ function Header({ onSecurity }) {
       <Text style={styles.tagline} numberOfLines={1} adjustsFontSizeToFit>
         Money without shame.
       </Text>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        <Text style={{ color: "#8B5816", fontSize: 11, fontWeight: "800", flexShrink: 1 }}>SMART MIRROR UPDATE · EARLY PREVIEW</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 5 }}>
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
     </View>
@@ -2027,19 +2050,24 @@ function Header({ onSecurity }) {
 }
 
 
-function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
+function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("door");
   const [familyMember, setFamilyMember] = useState(null);
   const day = getNeighborhoodDay();
   const poster = NEIGHBORHOOD_POSTERS[day % NEIGHBORHOOD_POSTERS.length];
+  const posterSource = imageSource(poster.image);
+  const posterDimensions = posterSource?.crop
+    ? { width: posterSource.crop[2], height: posterSource.crop[3] }
+    : Image.resolveAssetSource(posterSource);
+  const posterAspectRatio = posterDimensions.width / posterDimensions.height;
   const greeting = NEIGHBORHOOD_GREETING[day % NEIGHBORHOOD_GREETING.length];
 
   const places = [
-    { label: "Post Office", tab: "Bills", icon: "mail", color: "#FF7F73", note: "Bills" },
-    { label: "Budget Studio", tab: "Budget", icon: "color-palette", color: "#19A9D8", note: "Plan" },
-    { label: "Debt Climb", tab: "Debt", icon: "flag", color: "#7A5CE6", note: "Payoff" },
-    { label: "Calm Porch", tab: "Calm", icon: "leaf", color: "#16B89F", note: "Breathe" },
+    { label: "Post Office", tab: "Bills", image: require("./assets/characters/nav-post-office.png"), theme: cardThemes.coral, note: "Bills" },
+    { label: "Budget Studio", tab: "Budget", image: require("./assets/characters/nav-budget-studio.png"), theme: cardThemes.sky, note: "Plan" },
+    { label: "Debt Climb", tab: "Debt", image: require("./assets/characters/nav-debt-climb.png"), theme: cardThemes.purple, note: "Payoff" },
+    { label: "Calm Garden", tab: "Calm", image: require("./assets/characters/nav-calm-garden.png"), theme: cardThemes.mint, note: "Breathe" },
   ];
 
   const openFoyer = () => {
@@ -2113,15 +2141,10 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
       <View style={styles.neighborhoodHero}>
         <CharacterArtwork source={neighborhoodScene} style={styles.heroArtwork} resizeMode="contain" accessibilityLabel="PayPlace's treehouse neighborhood around Annie and her red stained-glass door" />
-        <View style={styles.heroEdgeShade} />
-
-        <TouchableOpacity style={styles.annieChip} onPress={openFoyer} activeOpacity={0.88}>
-          <Ionicons name="leaf" size={13} color="#FFFFFF" />
-          <Text style={styles.annieChipText}>Welcome Home • Tap Annie's red door</Text>
-        </TouchableOpacity>
+        <View style={styles.heroEdgeShade} pointerEvents="none" />
 
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
-          style={[styles.heroHotspot, { left: "40%", top: "58%", width: "12%", height: "25%" }]} onPress={openFoyer} />
+          style={[styles.heroHotspot, styles.annieDoorHotspot]} activeOpacity={0.6} onPress={openFoyer} />
 
         <TouchableOpacity
           accessibilityRole="button"
@@ -2143,16 +2166,19 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
         />
         <TouchableOpacity
           accessibilityRole="button"
-          accessibilityLabel="Open the Calm Porch"
+          accessibilityLabel="Open the Calm Garden"
           style={[styles.heroHotspot, styles.calmHotspot]}
           onPress={() => switchTab("Calm")}
         />
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open the Subscription Detective Clubhouse, Premium feature"
+          style={[styles.heroHotspot, { left: "78%", top: "33%", width: "17%", height: "23%", minWidth: 48, minHeight: 48 }]}
+          onPress={onDetective} />
       </View>
 
       <View style={styles.heroCaptionRow}>
         <View style={styles.heroCaptionCopy}>
           <Text style={styles.heroCaptionTitle}>The porch light is on</Text>
-          <Text style={styles.heroCaptionText}>{greeting} Tap a treehouse to explore.</Text>
+          <Text style={styles.heroCaptionText}>{greeting} Tap Annie’s red door to come inside, or a treehouse to explore.</Text>
         </View>
         <Ionicons name="sparkles" size={20} color={palette.purple} />
       </View>
@@ -2174,20 +2200,24 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
             <Text style={styles.neighborhoodEyebrow}>TREEHOUSE MAP</Text>
             <Text style={styles.neighborhoodSectionTitle}>Where are we heading?</Text>
           </View>
-          <Ionicons name="map" size={25} color={palette.purple} />
+        </View>
+        <View style={styles.neighborhoodNavigationFrame}>
+          <CharacterArtwork source={require("./assets/characters/neighborhood-navigation-mascots.png")} style={styles.neighborhoodNavigationArtwork} resizeMode="contain" accessibilityLabel="Westley checks a compass, Tate studies a map, Daddy uses GPS, Bobbie unrolls MapQuest directions, and Chapo snacks along the route" />
         </View>
         <View style={styles.placeGrid}>
           {places.map((place) => (
             <TouchableOpacity
               key={place.label}
-              style={[styles.placeButton, { backgroundColor: place.color + "16", borderColor: place.color + "44" }]}
+              accessibilityRole="button"
+              accessibilityLabel={`Open ${place.label}`}
+              style={[styles.placeButton, { backgroundColor: place.theme.background, borderColor: place.theme.border }]}
               onPress={() => switchTab(place.tab)}
             >
-              <View style={[styles.placeIcon, { backgroundColor: place.color }]}>
-                <Ionicons name={place.icon} size={19} color="white" />
+              <View style={styles.placeArtworkFrame}>
+                <CharacterArtwork source={place.image} style={styles.placeArtwork} resizeMode="contain" accessible={false} />
               </View>
-              <Text style={styles.placeLabel}>{place.label}</Text>
-              <Text style={[styles.placeNote, { color: place.color }]}>{place.note}</Text>
+              <Text style={[styles.placeLabel, { color: place.theme.text }]}>{place.label}</Text>
+              <Text style={[styles.placeNote, { color: place.theme.text }]}>{place.note}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -2195,8 +2225,8 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily }) {
 
       <View style={[styles.dailyPosterCard, { backgroundColor: poster.soft, borderColor: poster.accent + "55" }]}>
         <View style={styles.posterTape} />
-        <View style={styles.posterImageWrap}>
-          <CharacterArtwork source={imageSource(poster.image)} style={styles.posterImage} resizeMode="contain" />
+        <View style={[styles.posterImageWrap, { aspectRatio: posterAspectRatio }]}>
+          <CharacterArtwork source={posterSource} style={styles.posterImage} resizeMode="contain" accessibilityLabel={`${poster.mascot} — today's PayPlace poster`} />
         </View>
         <View style={styles.posterCopy}>
           <Text style={[styles.posterMascot, { color: poster.accent }]}>TODAY’S POSTER • {poster.mascot.toUpperCase()}</Text>
@@ -2226,6 +2256,7 @@ function HomeScreen({
   replayAnnieOnboarding,
   onMirrorAction,
   onExtraPaycheckAction,
+  onDetective,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2289,8 +2320,7 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <View style={{ marginBottom: 14 }}><ConstructionNotice /></View>
-      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} />
+      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onDetective={onDetective} />
       <TouchableOpacity style={styles.visitAnnieButton} onPress={replayAnnieOnboarding}>
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
@@ -2571,22 +2601,24 @@ function HomeScreen({
         </Text>
       </View>
 
+      <SubscriptionDetectiveEntry onOpen={onDetective} />
+
       <TouchableOpacity style={styles.plaidPlanCard} onPress={showExtraPaycheckPlan} accessibilityRole="button">
-        <View style={styles.plaidIcon}><Ionicons name="calendar" size={20} color={palette.ink} /></View>
+        <View style={styles.plaidIcon}><Ionicons name="calendar" size={20} color="white" /></View>
         <View style={styles.flexOne}>
-          <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800", marginBottom: 5 }}>PAID FEATURES · BETA PREVIEW</Text>
+          <Text style={styles.plaidEyebrow}>PAID FEATURES · BETA PREVIEW</Text>
           <Text style={styles.plaidTitle}>Extra Paycheck Calendar</Text>
           <Text style={styles.plaidText}>See regular paydays and highlighted extra checks, add bonuses, and save a plan for bills, debt, your buffer, and joy.</Text>
         </View>
         <Ionicons name="chevron-forward" size={20} color={palette.purple} />
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.plaidPlanCard} onPress={showPlaidPlan}>
+      <TouchableOpacity style={[styles.plaidPlanCard, { backgroundColor: cardThemes.mint.background, borderColor: cardThemes.mint.border }]} onPress={showPlaidPlan}>
         <View style={styles.plaidIcon}>
-          <Ionicons name="link" size={20} color={palette.ink} />
+          <Ionicons name="link" size={20} color="white" />
         </View>
         <View style={styles.flexOne}>
-          <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800", marginBottom: 5 }}>COMING SOON · PREMIUM</Text>
+          <Text style={styles.plaidEyebrow}>COMING SOON · PREMIUM</Text>
           <Text style={styles.plaidTitle}>Bank linking</Text>
           <Text style={styles.plaidText}>
             A planned paid feature: link your bank through Plaid and review your accounts. Manual entry is available now.
@@ -2595,12 +2627,12 @@ function HomeScreen({
         <Ionicons name="chevron-forward" size={20} color={palette.purple} />
       </TouchableOpacity>
 
-      <View style={styles.plaidPlanCard}>
+      <View style={[styles.plaidPlanCard, { backgroundColor: cardThemes.coral.background, borderColor: cardThemes.coral.border }]}>
         <View style={styles.plaidIcon}>
-          <Ionicons name="chatbubble-ellipses" size={20} color={palette.ink} />
+          <Ionicons name="chatbubble-ellipses" size={20} color="white" />
         </View>
         <View style={styles.flexOne}>
-          <Text style={{ color: palette.purple, fontSize: 12, fontWeight: "800", marginBottom: 5 }}>COMING SOON · PREMIUM</Text>
+          <Text style={styles.plaidEyebrow}>COMING SOON · PREMIUM</Text>
           <Text style={styles.plaidTitle}>Text-message security codes</Text>
           <Text style={styles.plaidText}>
             A planned paid option: receive your sign-in code by text. Email verification and Annie’s welcome email remain included.
@@ -2615,57 +2647,51 @@ function HomeScreen({
 
       <View style={styles.grid}>
         <QuickCard
-          icon="calendar"
+          artwork={require("./assets/characters/snapshot-next-paycheck.png")}
           label="Next Paycheck"
           value={money(finance.nextPaycheck)}
           sub={`${daysUntilPayday} days away`}
-          tone={palette.snowballDark}
-          tint={palette.snowballSoft}
+          theme={cardThemes.sky}
           onPress={() => switchTab("Budget")}
         />
         <QuickCard
-          icon="sparkles"
+          artwork={require("./assets/characters/snapshot-extra-check.png")}
           label="Extra Check"
           value={extraPaycheckInfo.hasExtra ? extraPaycheckInfo.extraDateLabel : "Radar"}
           sub={extraPaycheckInfo.hasExtra ? extraPaycheckInfo.monthLabel : "Set pay rhythm"}
-          tone={palette.coralDark}
-          tint={palette.blush}
+          theme={cardThemes.coral}
           onPress={showExtraPaycheckPlan}
         />
         <QuickCard
-          icon="receipt"
+          artwork={require("./assets/characters/snapshot-upcoming-bills-billiam.png")}
           label="Upcoming Bills"
           value={money(upcomingTotal)}
           sub={`${unpaidBills.length} unpaid bill${unpaidBills.length === 1 ? "" : "s"}`}
-          tone={palette.goldDark}
-          tint="#FFF4BC"
+          theme={cardThemes.gold}
           onPress={() => switchTab("Bills")}
         />
         <QuickCard
-          icon="trending-down"
+          artwork={require("./assets/characters/snapshot-debt-plan.png")}
           label="Debt Plan"
           value={finance.payoffMode === "mixed" ? "Mixed" : finance.payoffMode === "avalanche" ? "Avalanche" : "Snowball"}
           sub={`${money(debtDueTotal)} minimums`}
-          tone={finance.payoffMode === "mixed" ? palette.purple : finance.payoffMode === "avalanche" ? palette.avalancheDark : palette.snowballDark}
-          tint={finance.payoffMode === "mixed" ? palette.lavender : finance.payoffMode === "avalanche" ? palette.avalancheSoft : palette.snowballSoft}
+          theme={finance.payoffMode === "mixed" ? cardThemes.purple : cardThemes.sky}
           onPress={() => switchTab("Debt")}
         />
         <QuickCard
-          icon="speedometer"
+          artwork={require("./assets/characters/snapshot-credit-score.png")}
           label="Credit Score"
           value={creditScoreValue}
           sub={`${creditScoreStatus} • Manual for now`}
-          tone={palette.purple}
-          tint={palette.lavender}
+          theme={cardThemes.purple}
           onPress={() => switchTab("Budget")}
         />
         <QuickCard
-          icon="leaf"
+          artwork={require("./assets/characters/snapshot-calm-reset.png")}
           label="Calm"
           value="Reset"
           sub="Money stress help"
-          tone={palette.mintDark}
-          tint={palette.aqua}
+          theme={cardThemes.mint}
           onPress={() => switchTab("Calm")}
         />
       </View>
@@ -2680,7 +2706,7 @@ function HomeScreen({
 
       <TouchableOpacity style={styles.nextActionCard} onPress={() => switchTab("Bills")}>
         <View style={styles.nextActionIcon}>
-          <Ionicons name="checkmark" size={20} color="white" />
+          <Ionicons name="checkmark" size={20} color={palette.ink} />
         </View>
 
         <View style={styles.flexOne}>
@@ -2688,7 +2714,7 @@ function HomeScreen({
           <Text style={styles.nextActionText}>{nextAction}</Text>
         </View>
 
-        <Ionicons name="chevron-forward" size={20} color={palette.teal} />
+        <Ionicons name="chevron-forward" size={20} color={palette.ink} />
       </TouchableOpacity>
       <TesterFeedback />
     </ScrollView>
@@ -2813,7 +2839,7 @@ const importDemoBills = () => {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills" subtitle="Add, pay, review, or delete bills." />
+      <SectionTitle title="Bills" subtitle="Add, pay, review, or delete bills." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
 
 {selectedReviewBill && (
   <Modal
@@ -3315,15 +3341,11 @@ function BudgetScreen({
           ]}
         >
           <CharacterArtwork
-            source={approvedClothedCharacterArtwork}
+            source={artStudioArtwork}
             style={styles.budgetHeroDogsImage}
             resizeMode="contain"
-            accessibilityLabel={portraits.together.label}
+            accessibilityLabel="PayPlace art studio: Bobbie designs clothes, Daddy shapes clay, Westley paints, Tate develops film, and Chapo bakes cookies"
           />
-          <View style={styles.budgetHeroImageBadge}>
-            <Ionicons name="sparkles" size={15} color={palette.ink} />
-            <Text style={styles.budgetHeroImageBadgeText}>Plan the fun</Text>
-          </View>
         </View>
 
         <View style={styles.safeMiniGrid}>
@@ -3458,6 +3480,8 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SectionTitle
         title="Debt Plan"
+        artwork={require("./assets/characters/header-debt-bobbie-tate.png")}
+        artworkLabel="Bobbie and Tate plan their next step up the debt climb"
         subtitle={
           mode === "mixed" ? "Mixed mode: one quick win, then highest interest first."
             : mode === "snowball" ? "Snowball mode: smallest balance first for quick wins."
@@ -3855,18 +3879,20 @@ function BottomNav({ current, switchTab }) {
   );
 }
 
-function QuickCard({ icon, label, value, sub, tone, tint, onPress }) {
+function QuickCard({ artwork, label, value, sub, theme, onPress }) {
   return (
     <TouchableOpacity
-      style={[styles.quickCard, { borderColor: tone + "55" }]}
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}. ${sub}`}
+      style={[styles.quickCard, { backgroundColor: theme.background, borderColor: theme.border }]}
       onPress={onPress}
     >
-      <View style={[styles.quickIcon, { backgroundColor: tint }]}>
-        <Ionicons name={icon} size={24} color={tone} />
+      <View style={styles.quickArtworkFrame}>
+        <CharacterArtwork source={artwork} style={styles.quickArtwork} resizeMode="contain" accessible={false} />
       </View>
-      <Text style={styles.quickLabel}>{label}</Text>
-      <Text style={styles.quickValue} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.55}>{value}</Text>
-      <Text style={styles.quickSub}>{sub}</Text>
+      <Text style={[styles.quickLabel, { color: theme.text }]}>{label}</Text>
+      <Text style={[styles.quickValue, { color: theme.text }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.55}>{value}</Text>
+      <Text style={[styles.quickSub, { color: theme.text }]}>{sub}</Text>
     </TouchableOpacity>
   );
 }
@@ -3922,11 +3948,11 @@ function BillRow({ bill }) {
   const paid = bill.status === "Paid";
 
   return (
-    <View style={styles.billRow}>
+    <View style={[styles.billRow, paid && { backgroundColor: cardThemes.mint.background, borderColor: cardThemes.mint.border }]}>
       <View
         style={[
           styles.billDot,
-          { backgroundColor: paid ? palette.teal : palette.gold },
+          { backgroundColor: paid ? "#087E70" : palette.ink },
         ]}
       />
 
@@ -3973,10 +3999,17 @@ function BillRow({ bill }) {
   );
 }
 
-function SectionTitle({ title, subtitle }) {
+function SectionTitle({ title, subtitle, artwork, artworkLabel }) {
   return (
     <View style={styles.sectionTitle}>
-      <Text style={styles.sectionHeading}>{title}</Text>
+      {artwork ? (
+        <View style={styles.sectionHeadingRow}>
+          <Text style={[styles.sectionHeading, styles.flexOne]}>{title}</Text>
+          <View style={styles.sectionArtworkFrame}>
+            <CharacterArtwork source={artwork} style={styles.sectionArtwork} resizeMode="contain" accessibilityLabel={artworkLabel} />
+          </View>
+        </View>
+      ) : <Text style={styles.sectionHeading}>{title}</Text>}
       <Text style={styles.sectionSubtitle}>{subtitle}</Text>
     </View>
   );
@@ -4082,13 +4115,12 @@ const styles = StyleSheet.create({
   foyerEnterButtonText: { color: "#FFFFFF", fontSize: 16, fontWeight: "900" },
   neighborhoodHero: {
     aspectRatio: 1672 / 941,
-    borderRadius: 34,
+    marginHorizontal: -20,
+    borderRadius: 20,
     marginTop: 4,
     marginBottom: 10,
     overflow: "hidden",
     backgroundColor: "#153F35",
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
     shadowColor: "#153557",
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -4103,28 +4135,23 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(5, 18, 28, 0.02)",
   },
-  annieChip: {
-    position: "absolute",
-    top: 13,
-    left: 13,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: "rgba(11, 65, 58, 0.82)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.72)",
-  },
-  annieChipText: {
-    color: "#FFFFFF",
-    fontSize: 11,
-    fontWeight: "900",
-  },
   heroHotspot: {
     position: "absolute",
     backgroundColor: "transparent",
+  },
+  annieDoorHotspot: {
+    left: "39.5%",
+    top: "57%",
+    width: "13%",
+    height: "27%",
+    minWidth: 48,
+    minHeight: 48,
+    borderWidth: 2,
+    borderColor: "rgba(255, 220, 126, 0.85)",
+    borderTopLeftRadius: 48,
+    borderTopRightRadius: 48,
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
   },
   postOfficeHotspot: {
     left: "20%",
@@ -4176,12 +4203,12 @@ const styles = StyleSheet.create({
   gentleLimitCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: palette.mintBright,
     borderRadius: 24,
     padding: 16,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "#087E70",
     shadowColor: "#153557",
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -4193,14 +4220,14 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: palette.teal,
+    backgroundColor: "#087E70",
     marginRight: 13,
   },
   gentleLimitLabel: {
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 1.25,
-    color: palette.teal,
+    color: palette.ink,
   },
   gentleLimitValue: {
     fontSize: 24,
@@ -4212,16 +4239,16 @@ const styles = StyleSheet.create({
   gentleLimitSub: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#617286",
+    color: palette.ink,
     marginTop: 2,
   },
   neighborhoodPlacesCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: palette.teal,
     borderRadius: 28,
     padding: 17,
     marginBottom: 18,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "#087E70",
   },
   neighborhoodSectionHead: {
     flexDirection: "row",
@@ -4229,11 +4256,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 13,
   },
+  neighborhoodNavigationFrame: { width: "100%", aspectRatio: 3, marginBottom: 14 },
+  neighborhoodNavigationArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   neighborhoodEyebrow: {
     fontSize: 10,
     fontWeight: "900",
     letterSpacing: 1.3,
-    color: palette.teal,
+    color: palette.ink,
   },
   neighborhoodSectionTitle: {
     fontSize: 19,
@@ -4254,14 +4283,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 12,
   },
-  placeIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-  },
+  placeArtworkFrame: { width: "100%", aspectRatio: 1, marginBottom: 8 },
+  placeArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   placeLabel: {
     fontSize: 14,
     fontWeight: "900",
@@ -4275,10 +4298,9 @@ const styles = StyleSheet.create({
   dailyPosterCard: {
     borderRadius: 22,
     borderWidth: 2,
-    padding: 12,
+    padding: 16,
     marginBottom: 18,
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: "stretch",
     overflow: "hidden",
   },
   posterTape: {
@@ -4292,40 +4314,38 @@ const styles = StyleSheet.create({
     zIndex: 5,
   },
   posterImageWrap: {
-    width: 78,
-    height: 78,
+    width: "100%",
     borderRadius: 18,
     overflow: "hidden",
     backgroundColor: "#FFFFFF",
     borderWidth: 3,
     borderColor: "#FFFFFF",
-    flexShrink: 0,
+    marginBottom: 16,
   },
   posterImage: {
+    ...StyleSheet.absoluteFillObject,
     width: "100%",
     height: "100%",
   },
   posterCopy: {
-    flex: 1,
-    paddingLeft: 12,
     paddingVertical: 2,
     justifyContent: "center",
   },
   posterMascot: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: "900",
     letterSpacing: 1,
   },
   posterQuote: {
-    fontSize: 18,
-    lineHeight: 21,
+    fontSize: 22,
+    lineHeight: 27,
     fontWeight: "900",
     color: palette.ink,
     marginTop: 4,
   },
   posterSub: {
-    fontSize: 12,
-    lineHeight: 17,
+    fontSize: 14,
+    lineHeight: 20,
     color: palette.muted,
     fontWeight: "700",
     marginTop: 6,
@@ -4341,7 +4361,7 @@ const styles = StyleSheet.create({
   },
   posterBrandText: {
     color: "white",
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: "900",
     marginLeft: 4,
   },
@@ -4592,7 +4612,7 @@ const styles = StyleSheet.create({
   },
   budgetHeroImageFrame: {
     width: "100%",
-    height: 138,
+    aspectRatio: 3 / 2,
     borderRadius: 24,
     overflow: "hidden",
     marginTop: 16,
@@ -4607,29 +4627,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 10 },
   },
-  budgetHeroDogsImage: {
-    width: "92%",
-    height: "92%",
-  },
-  budgetHeroImageBadge: {
-    position: "absolute",
-    left: 12,
-    bottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.88)",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.95)",
-  },
-  budgetHeroImageBadgeText: {
-    color: palette.ink,
-    fontSize: 12,
-    fontWeight: "900",
-    marginLeft: 6,
-  },
+  budgetHeroDogsImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   safeMiniGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -5096,9 +5094,9 @@ const styles = StyleSheet.create({
   },
   plaidPlanCard: {
     marginTop: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: palette.gold,
     borderWidth: 1.4,
-    borderColor: palette.border,
+    borderColor: "#D09A00",
     borderRadius: 22,
     padding: 14,
     flexDirection: "row",
@@ -5108,7 +5106,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 16,
-    backgroundColor: palette.gold,
+    backgroundColor: palette.purple,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -5119,16 +5117,20 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   plaidText: {
-    color: palette.muted,
+    color: palette.ink,
     fontSize: 12,
     lineHeight: 17,
     fontWeight: "700",
     marginTop: 2,
   },
+  plaidEyebrow: { color: "#30206F", fontSize: 12, fontWeight: "800", marginBottom: 5 },
   sectionTitle: {
     marginTop: 26,
     marginBottom: 12,
   },
+  sectionHeadingRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  sectionArtworkFrame: { width: "38%", maxWidth: 132, aspectRatio: 1 },
+  sectionArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   sectionHeading: {
     fontSize: 26,
     fontWeight: "900",
@@ -5147,20 +5149,13 @@ const styles = StyleSheet.create({
   },
   quickCard: {
     width: "48.5%",
-    backgroundColor: "rgba(255,255,255,0.94)",
     borderRadius: 24,
     padding: 16,
     borderWidth: 1.4,
     marginBottom: 12,
   },
-  quickIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
+  quickArtworkFrame: { width: "100%", aspectRatio: 1, marginBottom: 14 },
+  quickArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   quickLabel: {
     color: palette.muted,
     fontSize: 13,
@@ -5181,11 +5176,11 @@ const styles = StyleSheet.create({
   billRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: palette.card,
+    backgroundColor: palette.gold,
     borderRadius: 18,
     padding: 14,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "#D09A00",
     marginBottom: 10,
   },
   billDot: {
@@ -5200,7 +5195,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   billMeta: {
-    color: palette.muted,
+    color: palette.ink,
     fontSize: 13,
     marginTop: 3,
     fontWeight: "700",
@@ -5212,9 +5207,9 @@ const styles = StyleSheet.create({
   },
   nextActionCard: {
     marginTop: 8,
-    backgroundColor: palette.card,
+    backgroundColor: palette.teal,
     borderWidth: 1,
-    borderColor: palette.border,
+    borderColor: "#087E70",
     padding: 16,
     borderRadius: 22,
     flexDirection: "row",
@@ -5224,7 +5219,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 16,
-    backgroundColor: palette.teal,
+    backgroundColor: palette.gold,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -5235,7 +5230,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   nextActionText: {
-    color: palette.muted,
+    color: palette.ink,
     fontSize: 13,
     lineHeight: 18,
     marginTop: 2,
