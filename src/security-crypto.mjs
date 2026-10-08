@@ -2,6 +2,7 @@ import { gcm } from '@noble/ciphers/aes';
 import { bytesToHex, hexToBytes, utf8ToBytes, bytesToUtf8 } from '@noble/ciphers/utils';
 import { pbkdf2Async } from '@noble/hashes/pbkdf2';
 import { sha256 } from '@noble/hashes/sha256';
+import { saveSubscription } from './subscription-detective.mjs';
 
 export const BACKUP_ITERATIONS = 600000;
 export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
@@ -34,6 +35,20 @@ export function open(value, key, kind = 'vault') {
 export function validateBackup(data) {
   if (!data || data.schema !== 'payplace-manual-v1' || !data.finance || typeof data.finance !== 'object' || Array.isArray(data.finance)) throw new Error('This is not a PayPlace backup.');
   const f = data.finance;
+  if (f.subscriptions !== undefined) {
+    if (!Array.isArray(f.subscriptions) || f.subscriptions.length > 5000) throw new Error('Invalid subscription cases.');
+    const ids = new Set();
+    for (const item of f.subscriptions) {
+      if (!item || typeof item.id !== 'string' || typeof item.name !== 'string' || ids.has(item.id) ||
+        ['renewalDate', 'frequency', 'status'].some(key => typeof item[key] !== 'string') ||
+        ['billId', 'manageUrl', 'trialEnds'].some(key => item[key] !== undefined && typeof item[key] !== 'string') ||
+        (item.anchorDay !== undefined && (!Number.isInteger(item.anchorDay) || item.anchorDay < 1 || item.anchorDay > 31))) throw new Error('Invalid subscription cases.');
+      ids.add(item.id);
+      // Deleted linked bills remain a valid historical reference; all other fields
+      // receive the same validation as a newly entered case, including URL scheme.
+      saveSubscription({ bills: [], subscriptions: [] }, { ...item, billId: '' });
+    }
+  }
   if (f.deletedItems !== undefined && (!Array.isArray(f.deletedItems) || f.deletedItems.length > 20 || f.deletedItems.some(entry =>
     !entry || !['bills', 'debts'].includes(entry.collection) || typeof entry.key !== 'string' ||
     !entry.item || typeof entry.item.id !== 'string' || typeof entry.item.name !== 'string'

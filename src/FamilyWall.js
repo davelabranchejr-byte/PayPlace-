@@ -99,8 +99,8 @@ export function CharacterStory({ person, onBack }) {
         return <View key={i}>
           <Text style={[s.paragraph, person.id === "westley" && i === 0 && s.storyOpening, person.id === "westley" && i === person.paragraphs.length - 1 && s.storyClosing]}>{paragraph}</Text>
           {memory && <View style={s.memory}>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
-              <Image source={memory.source} resizeMode="contain" style={{ width: "100%", aspectRatio: memory.ratio }} accessibilityLabel={memory.label} />
+            <Pressable style={[s.memoryFrame, { aspectRatio: memory.ratio }]} accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
+              <Image source={memory.source} resizeMode="contain" style={s.memoryImage} accessibilityLabel={memory.label} />
             </Pressable>
             <Text style={s.caption}>{memory.caption}</Text>
             <Text style={s.imageHint}>Tap for a closer look.</Text>
@@ -123,6 +123,8 @@ const s = StyleSheet.create({
   storyOpening: { color: "#173557", fontSize: 22, lineHeight: 30, fontWeight: "900" },
   storyClosing: { color: "#5935B5", fontSize: 19, lineHeight: 28, fontWeight: "800", padding: 15, borderRadius: 18, backgroundColor: "#EEE6FF" },
   memory: { marginTop: 16, borderRadius: 18, overflow: "hidden", backgroundColor: "#FFF8EA" },
+  memoryFrame: { width: "100%", overflow: "hidden" },
+  memoryImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   caption: { color: "#536077", fontSize: 13, lineHeight: 20, padding: 12, paddingBottom: 4 },
   imageHint: { color: "#5935B5", fontSize: 12, fontWeight: "800", padding: 12, paddingTop: 0 },
   viewer: { flex: 1, backgroundColor: "#173557" }, viewerClose: { flexDirection: "row", alignItems: "center", gap: 10, padding: 15, minHeight: 50 }, viewerCloseText: { color: "#FFFFFF", fontSize: 15, fontWeight: "800" }, viewerImage: { flex: 1, width: "100%" }, viewerCaption: { color: "#FFFFFF", fontSize: 14, lineHeight: 21, padding: 18 },

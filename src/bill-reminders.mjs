@@ -40,13 +40,13 @@ export function planBillReminders(bills, options, now = new Date()) {
 }
 
 // Adapter injection keeps reconciliation testable without a simulator.
-export async function reconcileReminders(plan, api) {
+export async function reconcileReminders(plan, api, prefix = REMINDER_PREFIX) {
   const scheduled = await api.scheduled();
   const wanted = new Set(plan.reminders.map(item => item.identifier));
   const existing = new Set(scheduled.map(item => item.identifier));
-  for (const item of scheduled) if (item.identifier.startsWith(REMINDER_PREFIX) && !wanted.has(item.identifier)) await api.cancel(item.identifier);
+  for (const item of scheduled) if (item.identifier.startsWith(prefix) && !wanted.has(item.identifier)) await api.cancel(item.identifier);
   for (const item of await api.presented()) {
-    if (item.identifier.startsWith(REMINDER_PREFIX) && !wanted.has(item.identifier)) await api.dismiss(item.identifier);
+    if (item.identifier.startsWith(prefix) && !wanted.has(item.identifier)) await api.dismiss(item.identifier);
   }
   for (const item of plan.reminders) if (!existing.has(item.identifier)) await api.schedule(item);
   return plan.reminders.length;
