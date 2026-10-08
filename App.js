@@ -44,12 +44,14 @@ import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BelongingQuilt, { AcornSquare, QuiltDetail } from "./src/BelongingQuilt";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
+import useNeighborhoodArtwork from "./src/useNeighborhoodArtwork";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
+import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
@@ -1191,6 +1193,7 @@ function PayPlaceApp() {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
+  const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   const [finance, setFinance] = useState(starterFinance);
   const [calmIndex, setCalmIndex] = useState(0);
@@ -1199,6 +1202,7 @@ function PayPlaceApp() {
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [onboardingSession, setOnboardingSession] = useState(0);
+  const [revisitingAnnie, setRevisitingAnnie] = useState(false);
   const onboardingFinalizing = useRef(false);
   const onboardingSaveWarning = useRef(false);
   const [onboardingAnswers, setOnboardingAnswers] = useState({
@@ -1574,25 +1578,13 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function replayAnnieOnboarding() {
-    try {
-      await ProtectedStorage.removeItem(ONBOARDING_KEY);
-      onboardingFinalizing.current = false;
-      setOnboardingSession(current => current + 1);
-      setOnboardingAnswers({
-        name: "",
-        email: "",
-        goal: "",
-        moneyFeeling: "",
-        challenge: "",
-        payFrequency: "",
-        connectBank: "Later",
-        notes: "",
-        arrivalReason: "",
-      });
-      setOnboardingComplete(false);
-    } catch (error) {
-      Alert.alert("Could not reopen onboarding", "Please try again.");
-    }
+    setOnboardingSession(current => current + 1);
+    setRevisitingAnnie(true);
+  }
+
+  function leaveAnnieVisit() {
+    setRevisitingAnnie(false);
+    setTab("Home");
   }
 
   async function finishOnboarding(answers) {
@@ -1606,6 +1598,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       await ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
       setOnboardingAnswers(completedAnswers);
       setOnboardingComplete(true);
+      setRevisitingAnnie(false);
     } catch (error) {
       onboardingFinalizing.current = false;
       Alert.alert("Almost there", "PayPlace could not save onboarding yet. Please try again.");
@@ -1652,10 +1645,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     );
   }
 
-  if (!onboardingComplete) {
+  if (!onboardingComplete || revisitingAnnie) {
     return (
       <>
-        <OnboardingFlow key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} />
+        <OnboardingFlow key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} onExit={revisitingAnnie ? leaveAnnieVisit : undefined} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </>
@@ -1689,6 +1682,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onMirrorAction={updateMirror}
             onExtraPaycheckAction={updateExtraPaycheck}
             onDetective={() => setDetectiveVisible(true)}
+            onSavings={() => setSavingsVisible(true)}
           />
         )}
 
@@ -1745,6 +1739,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
         <BottomNav current={tab} switchTab={setTab} />
+        <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
+          onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
           reminderStatus={subscriptionReminderStatus}
@@ -1840,13 +1836,17 @@ const ONBOARDING_STEPS = [
   },
 ];
 
-function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
-  const [welcomeStage, setWelcomeStage] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stage);
+function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit }) {
+  const [welcomeStage, setWelcomeStage] = useState(() => onExit ? "annie" : onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stage);
   const [stepIndex, setStepIndex] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stepIndex);
   const [answers, setAnswers] = useState(initialAnswers);
   useEffect(() => {
-    onProgress(onboardingDraft(answers, welcomeStage, stepIndex));
-  }, [answers, welcomeStage, stepIndex, onProgress]);
+    // Revisit drafts stay local; leaving or restarting keeps the completed profile.
+    if (!onExit) onProgress(onboardingDraft(answers, welcomeStage, stepIndex));
+  }, [answers, welcomeStage, stepIndex, onProgress, onExit]);
+  const exitButton = onExit ? <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Home" style={styles.onboardingBackButton} onPress={onExit}>
+    <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back to Home</Text>
+  </TouchableOpacity> : null;
   const step = ONBOARDING_STEPS[stepIndex];
   const value = answers[step.key] || "";
   const isLast = stepIndex === ONBOARDING_STEPS.length - 1;
@@ -1875,6 +1875,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
           <CharacterArtwork source={imageSource(greatAnnieHero)} style={styles.annieWelcomeImage} resizeMode="contain" />
           <View style={styles.annieWelcomeShade} />
           <View style={styles.annieWelcomeCard}>
+            {exitButton}
             <Text style={styles.annieWelcomeEyebrow}>GREAT ANNIE OAK TREE</Text>
             <Text style={styles.annieWelcomeTitle}>There you are.</Text>
             <Text style={styles.annieWelcomeBody}>“Every new neighbor eventually finds their way here. Sit with me for a minute, sweetheart.”</Text>
@@ -1906,6 +1907,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
           <EmailVerification answers={answers} onDraftChange={draft => setAnswers(current => ({ ...current, ...draft }))} onVerified={onComplete} />
+          {exitButton}
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to your quilt" style={styles.onboardingBackButton} onPress={() => setWelcomeStage("quilt")}>
             <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back</Text>
           </TouchableOpacity>
@@ -1920,6 +1922,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
         <ScrollView contentContainerStyle={styles.quiltGiftScroll}>
           <View style={styles.quiltGiftGlow} />
           <View style={styles.quiltGiftCard}>
+            {exitButton}
             <Text style={styles.quiltGiftEyebrow}>THE BELONGING QUILT</Text>
             <AcornSquare />
             <Text style={styles.quiltGiftTitle}>An acorn, just for beginning.</Text>
@@ -1949,6 +1952,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete }) {
       <KeyboardAvoidingView style={styles.onboardingSafe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
          <ScrollView contentContainerStyle={styles.onboardingScroll} keyboardShouldPersistTaps="handled">
   <PayPlaceBrand style={styles.onboardingBrandRow} />
+          {exitButton}
 
           <View style={styles.onboardingProgressTrack}>
             <View style={[styles.onboardingProgressFill, { width: `${((stepIndex + 1) / ONBOARDING_STEPS.length) * 100}%`, backgroundColor: step.accent }]} />
@@ -2257,6 +2261,7 @@ function HomeScreen({
   onMirrorAction,
   onExtraPaycheckAction,
   onDetective,
+  onSavings,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2696,6 +2701,10 @@ function HomeScreen({
         />
       </View>
 
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Savings Goals" style={{ backgroundColor: palette.lavender, borderRadius: 24, overflow: "hidden", marginTop: 18, marginBottom: 18 }} onPress={onSavings}>
+        <CharacterArtwork source={require("./assets/characters/savings-goals-button-chapo.png")} resizeMode="contain" style={{ width: "100%", aspectRatio: 3 / 2 }} accessible={false} />
+        <View style={{ padding: 18 }}><Text style={styles.nextActionTitle}>Savings Goals</Text><Text style={styles.nextActionText}>Give your dreams a place to grow. →</Text></View>
+      </TouchableOpacity>
       <SectionTitle title="Coming Up" subtitle="Bills before payday." />
 
       {finance.bills.length === 0 ? (
@@ -3323,6 +3332,8 @@ function BudgetScreen({
       <SectionTitle
         title="Budget"
         subtitle="Update your money numbers. This is the cockpit."
+        artwork={require("./assets/characters/header-budget-daddy-chapo.png")}
+        artworkLabel="Daddy plans a colorful budget while Chapo adds a coin to their savings jar"
       />
 
       <View style={styles.safeSpendCard}>
@@ -3771,9 +3782,10 @@ function DebtBuddyScene({ mode }) {
 }
 
 function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, categoryOrder, selectCategory }) {
-  
+  const neighborhood = useNeighborhoodArtwork();
   const collection = collections[category];
   return (
+    <View style={styles.screen}>
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <View style={styles.storyHero}>
         <View style={styles.storyHeroIcon}>
@@ -3782,6 +3794,9 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
         <View style={styles.flexOne}>
           <Text style={styles.storyEyebrow}>NEIGHBORHOOD STORIES • CALM GARDEN</Text>
           <Text style={styles.storyHeroTitle}>Take a breath. You’re home.</Text>
+        </View>
+        <View style={styles.sectionArtworkFrame}>
+          <CharacterArtwork source={require("./assets/characters/header-calm-bobbie-yoga.png")} style={styles.sectionArtwork} resizeMode="contain" accessibilityLabel="Bobbie rests in a peaceful yoga pose on a coral mat" />
         </View>
       </View>
 
@@ -3826,11 +3841,16 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
 
       <Text style={styles.storyCountNote}>You tapped overwhelmed {count} time{count === 1 ? "" : "s"}. No judgment. We’re still here.</Text>
 
-      <TouchableOpacity style={styles.ghostButton} onPress={goHome}>
-        <Text style={styles.ghostButtonText}>Back to the neighborhood</Text>
-        <Ionicons name="home" size={18} color={palette.purple} />
-      </TouchableOpacity>
     </ScrollView>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to the neighborhood" accessibilityHint="Returns to Home" style={styles.neighborhoodReturnBanner} onPress={goHome}>
+        <CharacterArtwork source={neighborhood.source} style={styles.neighborhoodReturnArtwork} resizeMode="contain" accessible={false} />
+        <View style={styles.neighborhoodReturnLabel}>
+          <Ionicons name="arrow-back" size={19} color="white" />
+          <Text style={styles.neighborhoodReturnText}>Back to the neighborhood</Text>
+          <Ionicons name={neighborhood.isNight ? "moon" : "sunny"} size={18} color={palette.yellow} />
+        </View>
+      </TouchableOpacity>
+    </View>
   );
 }
 
@@ -4492,6 +4512,10 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
+  neighborhoodReturnBanner: { width: "100%", backgroundColor: "#153F35" },
+  neighborhoodReturnArtwork: { width: "100%", aspectRatio: 1672 / 941 },
+  neighborhoodReturnLabel: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 10, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: palette.purple },
+  neighborhoodReturnText: { flexShrink: 1, color: "white", fontSize: 16, fontWeight: "900", textAlign: "center" },
   content: {
     paddingHorizontal: 20,
     paddingBottom: 150,
