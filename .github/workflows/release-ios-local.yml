@@ -7,6 +7,14 @@ on:
         description: Check the native build without Apple signing or uploading
         type: boolean
         default: false
+      signing_only:
+        description: Archive a signed release without uploading to Apple
+        type: boolean
+        default: false
+      build_number:
+        description: Build number for a signing-only archive
+        type: string
+        default: '24'
 
 permissions:
   contents: read
@@ -23,6 +31,8 @@ jobs:
       CI: '1'
       FASTLANE_SKIP_UPDATE_CHECK: '1'
       FASTLANE_HIDE_CHANGELOG: '1'
+      PAYPLACE_SIGNING_ONLY: ${{ inputs.signing_only }}
+      PAYPLACE_BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DISTRIBUTION_CERTIFICATE_BASE64: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }}
       APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD }}
       APPLE_PROVISIONING_PROFILE_BASE64: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
@@ -34,7 +44,11 @@ jobs:
         if: ${{ !inputs.validate_only }}
         run: |
           missing=0
-          for name in APPLE_DISTRIBUTION_CERTIFICATE_BASE64 APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD APPLE_PROVISIONING_PROFILE_BASE64 APP_STORE_CONNECT_API_KEY_BASE64 APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID; do
+          required=(APPLE_DISTRIBUTION_CERTIFICATE_BASE64 APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD APPLE_PROVISIONING_PROFILE_BASE64)
+          if [ "$PAYPLACE_SIGNING_ONLY" != 'true' ]; then
+            required+=(APP_STORE_CONNECT_API_KEY_BASE64 APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID)
+          fi
+          for name in "${required[@]}"; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing repository secret: $name"
               missing=1
@@ -119,17 +133,26 @@ jobs:
                 password = SecureRandom.hex(32)
                 create_keychain(path: keychain, password: password, unlock: true, timeout: 7200, require_create: true)
                 import_certificate(certificate_path: certificate, certificate_password: ENV.fetch('APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD'), keychain_path: keychain, keychain_password: password, log_output: false)
-                api_key = app_store_connect_api_key(
+                signing_only = ENV['PAYPLACE_SIGNING_ONLY'] == 'true'
+                api_key = unless signing_only
+                  app_store_connect_api_key(
                   key_id: ENV.fetch('APP_STORE_CONNECT_API_KEY_ID'),
                   issuer_id: ENV.fetch('APP_STORE_CONNECT_ISSUER_ID'),
                   key_content: ENV.fetch('APP_STORE_CONNECT_API_KEY_BASE64').gsub(/\s/, ''),
-                  is_key_content_base64: true, in_house: false
-                )
+                    is_key_content_base64: true, in_house: false
+                  )
+                end
                 version = JSON.parse(File.read(File.join(root, 'app.json'))).fetch('expo').fetch('version')
                 # Apple owns this build counter; no Expo version service is used.
-                latest = latest_testflight_build_number(api_key: api_key, app_identifier: bundle_id, version: version, initial_build_number: 23)
+                build_number = if signing_only
+                  requested = ENV.fetch('PAYPLACE_BUILD_NUMBER')
+                  UI.user_error!('Build number must be a positive integer') unless requested.match?(/\A[1-9][0-9]*\z/)
+                  requested.to_i
+                else
+                  latest_testflight_build_number(api_key: api_key, app_identifier: bundle_id, version: version, initial_build_number: 23) + 1
+                end
                 project = File.join(root, 'ios/PayPlace.xcodeproj')
-                increment_build_number(build_number: latest + 1, xcodeproj: project)
+                increment_build_number(build_number: build_number, xcodeproj: project)
                 update_code_signing_settings(
                   path: project, targets: ['PayPlace'], build_configurations: ['Release'],
                   use_automatic_signing: false, team_id: team_id,
@@ -144,9 +167,13 @@ jobs:
                   xcargs: "OTHER_CODE_SIGN_FLAGS=#{Shellwords.escape("--keychain #{keychain}")}",
                   export_options: { signingStyle: 'manual', signingCertificate: 'Apple Distribution', provisioningProfiles: { bundle_id => uuid }, manageAppVersionAndBuildNumber: false }
                 )
-                upload_to_testflight(api_key: api_key, app_identifier: bundle_id, apple_id: '6793296732', ipa: ipa, skip_waiting_for_build_processing: true)
+                upload_to_testflight(api_key: api_key, app_identifier: bundle_id, apple_id: '6793296732', ipa: ipa, skip_waiting_for_build_processing: true) unless signing_only
                 File.open(ENV.fetch('GITHUB_STEP_SUMMARY'), 'a') do |summary|
-                  summary.puts("Uploaded PayPlace #{version} (#{latest + 1}) to Apple. Apple processing and tester availability still need checking.")
+                  if signing_only
+                    summary.puts("Signed PayPlace #{version} (#{build_number}) with Xcode. IPA saved as an artifact; no build uploaded to Apple.")
+                  else
+                    summary.puts("Uploaded PayPlace #{version} (#{build_number}) to Apple. Apple processing and tester availability still need checking.")
+                  end
                 end
               ensure
                 system('security', 'delete-keychain', keychain) if File.exist?(keychain)
