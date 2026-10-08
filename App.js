@@ -4512,9 +4512,9 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
   },
-  neighborhoodReturnBanner: { width: "100%", backgroundColor: "#153F35" },
-  neighborhoodReturnArtwork: { width: "100%", aspectRatio: 1672 / 941 },
-  neighborhoodReturnLabel: { minHeight: 48, paddingHorizontal: 16, paddingVertical: 10, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, backgroundColor: palette.purple },
+  neighborhoodReturnBanner: { width: "100%", height: 72, flexDirection: "row", alignItems: "center", paddingHorizontal: 12, gap: 10, backgroundColor: "#153F35" },
+  neighborhoodReturnArtwork: { width: 92, height: 52 },
+  neighborhoodReturnLabel: { flex: 1, minHeight: 48, paddingVertical: 10, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10 },
   neighborhoodReturnText: { flexShrink: 1, color: "white", fontSize: 16, fontWeight: "900", textAlign: "center" },
   content: {
     paddingHorizontal: 20,
