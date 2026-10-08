@@ -1,0 +1,60 @@
+name: Submit signed Build 24 through Expo
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: payplace-ios-local-release
+  cancel-in-progress: false
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 796f4a7b2995875004ad8f014d547fbd4e1ae99e
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Check upload access
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Missing encrypted repository secret EXPO_TOKEN"
+            exit 1
+          fi
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '11571186620'
+          run-id: '37824474650'
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/payplace-upload
+          merge-multiple: true
+      - name: Verify the signed archive identity
+        env:
+          IPA_PATH: ${{ runner.temp }}/payplace-upload/PayPlace.ipa
+        run: |
+          python3 - <<'PY'
+          import os, plistlib, zipfile
+          with zipfile.ZipFile(os.environ["IPA_PATH"]) as archive:
+              names = [n for n in archive.namelist() if n.startswith("Payload/") and n.count("/") == 2 and n.endswith(".app/Info.plist")]
+              assert len(names) == 1, "Expected exactly one main app"
+              info = plistlib.loads(archive.read(names[0]))
+              assert info["CFBundleIdentifier"] == "com.davelabranchejr.payplace"
+              assert info["CFBundleShortVersionString"] == "1.0.0"
+              assert info["CFBundleVersion"] == "24"
+              print("Verified PayPlace 1.0.0 (24)")
+          PY
+      - name: Install project dependencies
+        run: npm ci
+      - name: Submit the existing signed archive
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          CI: '1'
+        run: npx --yes eas-cli@latest submit --platform ios --path "$RUNNER_TEMP/payplace-upload/PayPlace.ipa" --profile production --non-interactive --wait
+      - name: Record completed submission
+        run: echo 'Expo submission of signed PayPlace 1.0.0 (24) completed. Apple processing and tester availability still need checking.' >> "$GITHUB_STEP_SUMMARY"
