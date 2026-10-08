@@ -18,12 +18,12 @@ export default function SecurityLockScreen({ hidden, ready, busy, error, onUnloc
   return (
     <View style={styles.screen} accessibilityViewIsModal>
       <StatusBar style="light" />
-      <Image source={artwork} style={StyleSheet.absoluteFillObject} resizeMode="cover" blurRadius={24} accessible={false} />
+      <Image source={artwork} style={[StyleSheet.absoluteFillObject, styles.background]} resizeMode="cover" blurRadius={24} accessible={false} />
       <View style={[StyleSheet.absoluteFillObject, styles.tint]} pointerEvents="none" />
       <SafeAreaView style={styles.safe}>
         <View style={styles.stage} onLayout={({ nativeEvent: { layout } }) => setSize({ width: layout.width, height: layout.height })}>
-          <View style={frame}>
-            <Image source={artwork} style={StyleSheet.absoluteFillObject} resizeMode="contain"
+          <View style={[styles.artworkFrame, frame]}>
+            <Image source={artwork} style={[StyleSheet.absoluteFillObject, frame]} resizeMode="contain"
               accessibilityLabel="PayPlace. Money without Shame. Your place is protected. Unlock with Face ID, Touch ID, or your device passcode." />
             {!hidden && <TouchableOpacity
               accessibilityRole="button"
@@ -47,9 +47,11 @@ export default function SecurityLockScreen({ hidden, ready, busy, error, onUnloc
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#003F49' },
+  background: { width: '100%', height: '100%' },
   tint: { backgroundColor: 'rgba(0, 40, 46, 0.65)' },
   safe: { flex: 1 },
-  stage: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  stage: { flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  artworkFrame: { overflow: 'hidden' },
   button: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
   checking: { width: '94%', height: '80%', borderRadius: 999, backgroundColor: '#6B2CFF', alignItems: 'center', justifyContent: 'center' },
   checkingText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
