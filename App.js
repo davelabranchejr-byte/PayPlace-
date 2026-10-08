@@ -2702,7 +2702,9 @@ function HomeScreen({
       </View>
 
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Savings Goals" style={{ backgroundColor: palette.lavender, borderRadius: 24, overflow: "hidden", marginTop: 18, marginBottom: 18 }} onPress={onSavings}>
-        <CharacterArtwork source={require("./assets/characters/savings-goals-button-chapo.png")} resizeMode="contain" style={{ width: "100%", aspectRatio: 3 / 2 }} accessible={false} />
+        <View style={styles.savingsArtworkFrame}>
+          <CharacterArtwork source={require("./assets/characters/savings-goals-button-chapo.png")} resizeMode="contain" style={styles.savingsArtwork} accessible={false} />
+        </View>
         <View style={{ padding: 18 }}><Text style={styles.nextActionTitle}>Savings Goals</Text><Text style={styles.nextActionText}>Give your dreams a place to grow. →</Text></View>
       </TouchableOpacity>
       <SectionTitle title="Coming Up" subtitle="Bills before payday." />
@@ -4098,6 +4100,8 @@ function EmptyCard({ text }) {
 }
 
 const styles = StyleSheet.create({
+  savingsArtworkFrame: { width: "100%", height: 180, overflow: "hidden" },
+  savingsArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   foyerSafe: { flex: 1, backgroundColor: "#F8F3E8" },
   foyerArrivalImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   redDoorScene: { flex: 1, backgroundColor: "#244E3D", alignItems: "center", justifyContent: "center", paddingHorizontal: 24 },
