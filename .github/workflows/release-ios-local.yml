@@ -2,6 +2,11 @@ name: Build with Xcode and upload directly to Apple
 
 on:
   workflow_dispatch:
+    inputs:
+      validate_only:
+        description: Check the native build without Apple signing or uploading
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -26,6 +31,7 @@ jobs:
       APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
     steps:
       - name: Verify Apple signing and upload credentials
+        if: ${{ !inputs.validate_only }}
         run: |
           missing=0
           for name in APPLE_DISTRIBUTION_CERTIFICATE_BASE64 APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD APPLE_PROVISIONING_PROFILE_BASE64 APP_STORE_CONNECT_API_KEY_BASE64 APP_STORE_CONNECT_API_KEY_ID APP_STORE_CONNECT_ISSUER_ID; do
@@ -48,13 +54,26 @@ jobs:
           npm ci
           npm test
           gem install fastlane cocoapods --no-document
+      - name: Validate release script syntax
+        run: |
+          ruby -ryaml -e 'workflow = YAML.load_file(ARGV[0]); script = workflow.fetch("jobs").fetch("release").fetch("steps").find { |s| s["name"] == "Archive with Xcode and upload to TestFlight" }.fetch("run"); body = script.split("<<\x27RUBY\x27\n", 2).fetch(1).split("\nRUBY\n", 2).first; IO.popen(["ruby", "-c"], "w") { |io| io.write(body) }; exit($?.exitstatus)' .github/workflows/release-ios-local.yml
       - name: Generate the native Xcode project
         # Local open-source generator only; no EAS service or Expo account.
         run: |
           npx expo prebuild --platform ios --no-install
           cd ios
           pod install
+      - name: Compile the native release without signing
+        if: ${{ inputs.validate_only }}
+        run: |
+          if ! xcodebuild -workspace ios/PayPlace.xcworkspace -scheme PayPlace -configuration Release -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/PayPlace-validation" CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/payplace-native-build.log" 2>&1; then
+            tail -n 120 "$RUNNER_TEMP/payplace-native-build.log"
+            exit 1
+          fi
+          tail -n 20 "$RUNNER_TEMP/payplace-native-build.log"
+          echo 'Native Release build passed without signing. No build was uploaded to Apple.' >> "$GITHUB_STEP_SUMMARY"
       - name: Archive with Xcode and upload to TestFlight
+        if: ${{ !inputs.validate_only }}
         run: |
           mkdir -p fastlane
           cat > fastlane/Fastfile <<'RUBY'
@@ -139,10 +158,18 @@ jobs:
           RUBY
           fastlane ios release
       - name: Save signed release artifact
-        if: success()
+        if: ${{ success() && !inputs.validate_only }}
         uses: actions/upload-artifact@v4
         with:
           name: PayPlace-iPhone-release
           path: ${{ runner.temp }}/PayPlace.ipa
           if-no-files-found: error
+          retention-days: 7
+      - name: Save native validation log
+        if: ${{ always() && inputs.validate_only }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: PayPlace-native-validation-log
+          path: ${{ runner.temp }}/payplace-native-build.log
+          if-no-files-found: ignore
           retention-days: 7
