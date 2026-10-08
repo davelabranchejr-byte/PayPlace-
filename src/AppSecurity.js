@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { AppState, Modal, Platform, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppState, Image, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import { Ionicons } from '@expo/vector-icons';
@@ -87,11 +87,14 @@ export default function AppSecurity({ children }) {
   function touch() { lastInteraction.current = Date.now(); }
   const cover = (
     <SafeAreaView style={styles.lock} accessibilityViewIsModal>
+      <ScrollView contentContainerStyle={styles.lockContent} style={styles.lockScroll}>
+      <Image source={require('../assets/characters/lock-annie-fort-knox-family.png')} style={styles.lockArtwork} resizeMode="contain" accessibilityLabel="Daddy, Bobbie, Westley, Tate and Chapo secure Annie's red door and windows with shiny brass locks" />
       <Ionicons name="shield-checkmark" size={56} color="#0BB9AC" />
       <Text style={styles.title}>Your place is protected.</Text>
       <Text style={styles.body}>{hidden ? 'Your financial details stay out of view.' : 'Unlock with Face ID, Touch ID, or your device passcode.'}</Text>
       {!!error && <Text accessibilityRole="alert" style={styles.error}>{error}</Text>}
       {!hidden && ready && <TouchableOpacity accessibilityRole="button" disabled={busy} style={styles.button} onPress={unlock}><Text style={styles.buttonText}>{busy ? 'Checking…' : 'Unlock PayPlace'}</Text></TouchableOpacity>}
+      </ScrollView>
     </SafeAreaView>
   );
   return (
@@ -104,7 +107,10 @@ export default function AppSecurity({ children }) {
   );
 }
 const styles = StyleSheet.create({
-  lock: { flex: 1, backgroundColor: '#F5FBFF', alignItems: 'center', justifyContent: 'center', padding: 28 },
+  lock: { flex: 1, backgroundColor: '#F5FBFF' },
+  lockScroll: { flex: 1 },
+  lockContent: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: 28 },
+  lockArtwork: { width: '100%', maxWidth: 420, aspectRatio: 3 / 2, borderRadius: 24, marginBottom: 24 },
   title: { fontSize: 27, fontWeight: '800', color: '#0B1F40', textAlign: 'center', marginTop: 24 },
   body: { fontSize: 17, color: '#52647A', textAlign: 'center', lineHeight: 25, marginVertical: 18 },
   error: { color: '#A63744', textAlign: 'center', marginBottom: 18 },

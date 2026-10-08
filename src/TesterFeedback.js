@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 // Only release/platform details go into the draft. Never include the saved plan.
 const body = [
-  "PayPlace 1.0.0 · Build 19",
+  "PayPlace 1.0.0 · Build number (from TestFlight):",
   `Platform: ${Platform.OS}`,
   "Phone model and OS version:",
   "Screen or button:",
@@ -12,7 +12,7 @@ const body = [
   "What happened:",
   "Steps to reproduce (use fictional amounts):",
 ].join("\n\n");
-const feedbackURL = `https://github.com/davelabranchejr-byte/PayPlace-/issues/new?title=${encodeURIComponent("Build 19 beta feedback")}&body=${encodeURIComponent(body)}`;
+const feedbackURL = `https://github.com/davelabranchejr-byte/PayPlace-/issues/new?title=${encodeURIComponent("PayPlace beta feedback")}&body=${encodeURIComponent(body)}`;
 
 export default function TesterFeedback() {
   const [visible, setVisible] = useState(false);
@@ -28,6 +28,8 @@ export default function TesterFeedback() {
       <Ionicons name="chatbubble-ellipses-outline" size={22} color="#6754C5" />
       <Text style={s.entryText}>Help make the neighborhood better</Text>
     </Pressable>
+    <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain"
+      accessibilityLabel="Daddy gathers neighborhood ideas beside a purple suggestion box and a miniature treehouse village" />
     <Modal visible={visible} animationType="slide" onRequestClose={() => setVisible(false)}>
       <SafeAreaView style={s.safe}>
         <ScrollView contentContainerStyle={s.content}>
@@ -54,6 +56,7 @@ export default function TesterFeedback() {
 const s = StyleSheet.create({
   entry: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 48, padding: 16, marginTop: 18, borderRadius: 18, backgroundColor: "#F2ECFF" },
   entryText: { flex: 1, color: "#6754C5", fontSize: 15, fontWeight: "800" },
+  daddyArtwork: { width: "100%", aspectRatio: 3 / 2, marginTop: 12, borderRadius: 22, backgroundColor: "#F2ECFF" },
   safe: { flex: 1, backgroundColor: "#FFF8EA" },
   content: { padding: 20, paddingBottom: 40, width: "100%", maxWidth: 720, alignSelf: "center" },
   close: { alignSelf: "flex-end", width: 48, height: 48, alignItems: "center", justifyContent: "center", backgroundColor: "#F2ECFF", borderRadius: 24 },

@@ -3,6 +3,7 @@ import { bytesToHex, hexToBytes, utf8ToBytes, bytesToUtf8 } from '@noble/ciphers
 import { pbkdf2Async } from '@noble/hashes/pbkdf2';
 import { sha256 } from '@noble/hashes/sha256';
 import { saveSubscription } from './subscription-detective.mjs';
+import { validateSavingsGoal } from './savings-goals.mjs';
 
 export const BACKUP_ITERATIONS = 600000;
 export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
@@ -35,6 +36,15 @@ export function open(value, key, kind = 'vault') {
 export function validateBackup(data) {
   if (!data || data.schema !== 'payplace-manual-v1' || !data.finance || typeof data.finance !== 'object' || Array.isArray(data.finance)) throw new Error('This is not a PayPlace backup.');
   const f = data.finance;
+  if (f.savingsGoals !== undefined) {
+    if (!Array.isArray(f.savingsGoals) || f.savingsGoals.length > 100) throw new Error('Invalid savings goals.');
+    const ids = new Set();
+    for (const goal of f.savingsGoals) {
+      validateSavingsGoal(goal);
+      if (ids.has(goal.id)) throw new Error('Duplicate savings goal.');
+      ids.add(goal.id);
+    }
+  }
   if (f.subscriptions !== undefined) {
     if (!Array.isArray(f.subscriptions) || f.subscriptions.length > 5000) throw new Error('Invalid subscription cases.');
     const ids = new Set();
