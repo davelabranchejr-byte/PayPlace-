@@ -1,0 +1,50 @@
+name: Build iPhone locally and upload to Apple
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: payplace-ios-local-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - name: Verify Expo authentication is configured
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo '::error::Add the EXPO_TOKEN repository secret before running this release.'
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies and run checks
+        run: |
+          npm ci
+          npm test
+      - name: Check Apple build tools
+        run: |
+          xcodebuild -version
+          pod --version
+          fastlane --version
+      - name: Build signed iPhone release on this Mac
+        run: npx --yes eas-cli@latest build --local --non-interactive --platform ios --profile production --output "$RUNNER_TEMP/PayPlace.ipa"
+      - name: Upload signed release to Apple
+        run: npx --yes eas-cli@latest submit --non-interactive --platform ios --profile production --path "$RUNNER_TEMP/PayPlace.ipa" --wait
+      - name: Save signed release artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: PayPlace-iPhone-release
+          path: ${{ runner.temp }}/PayPlace.ipa
+          retention-days: 7
