@@ -20,6 +20,7 @@ const code = babel.transformSync([
   plugins: [[require('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]],
 }).code;
 const sandbox = {
+  require: asset => ({ uri: asset }),
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
     'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),

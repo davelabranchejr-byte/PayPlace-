@@ -26,6 +26,28 @@ test.before(async () => {
   flow = sandbox.module.exports;
 });
 
+test('Annie revisit exits from welcome and questions without overwriting the completed profile', async () => {
+  const profile = { name: 'Dave', completed: true, arrivalReason: 'I want less financial stress' };
+  let writes = 0, exits = 0, renderer;
+  await act(() => { renderer = create(React.createElement(flow.OnboardingFlow, {
+    initialAnswers: profile, onProgress: () => writes++, onComplete: async () => {}, onExit: () => exits++,
+  })); });
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node =>
+    node.findAllByType('Text').some(child => child.props.children === label));
+  try {
+    assert.ok(button('Sit with Annie'));
+    await act(() => button('Back to Home').props.onPress());
+    assert.equal(exits, 1);
+    await act(() => button('Sit with Annie').props.onPress());
+    await act(() => renderer.root.findByType('TextInput').props.onChangeText('Changed only during visit'));
+    await act(() => button('Back to Home').props.onPress());
+    assert.equal(exits, 2);
+    assert.equal(writes, 0);
+    assert.equal(profile.name, 'Dave');
+    assert.equal(profile.completed, true);
+  } finally { await act(() => renderer.unmount()); }
+});
+
 test('interrupted answers resume from encrypted storage at the exact question; Back retains edits', async () => {
   const records = new Map(); let key = null;
   const adapters = { storage: { getItem: async k => records.get(k) ?? null,
