@@ -1,6 +1,6 @@
 # PayPlace connected-finance plan
 
-Updated October 6, 2026. These are planned features, not active services.
+Updated October 8, 2026. Connected services and billing remain planned; manual paid-feature previews are available without charge during beta.
 
 Email security codes and Annie’s welcome email remain included. Text-message security is planned for Premium; the current release disables SMS.
 
@@ -43,3 +43,9 @@ Extra Paycheck is expanded into a calendar and placed under paid features. It is
 - Show saved plans and flag paycheck amount changes for review. Calendar estimates and saved plans do not increase the balance or Safe to Spend, mark bills paid, or move money.
 
 The current native source now contains this preview. It requires a new Expo/EAS iOS or Android binary before it appears in installed beta apps. This change does not publish the separate hosted Site.
+
+## Subscription Detective Clubhouse — Premium paid feature
+
+The October 8 update adds a working manual Clubhouse, included without charge during beta. It tracks subscriptions and trials, Keep/Review/Cancelled decisions, renewal dates, normalized yearly/monthly projections, and projected avoided costs. Optional local reminders are private and opt-in. Bobbie introduces the feature wearing her original handmade gown and tiara: “Oooh, premium like me!”
+
+Existing-bill links are references; they do not create duplicate bills, alter budget totals, or automatically synchronize payments. Cancelling must happen with the provider/app store. Cases persist in the encrypted finance vault and portable backups; restored reminders default off. Bank detection, verified paid access, purchase/restore/manage billing controls, and automatic cancellation remain unavailable. See `CLUBHOUSE_UPDATE.md` for implementation and tester checks.
