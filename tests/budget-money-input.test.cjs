@@ -23,7 +23,7 @@ const sandbox = {
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
     'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
-  styles: {}, palette: {}, approvedClothedCharacterArtwork: {}, portraits: { together: {} },
+  styles: {}, palette: {}, approvedClothedCharacterArtwork: {}, portraits: { together: {} }, artStudioArtwork: {},
   scheduleSettings: () => ({ kind: 'biweekly' }), module: { exports: {} },
 };
 vm.runInNewContext(code + '\nmodule.exports = { BudgetScreen, cleanNumber };', sandbox);
