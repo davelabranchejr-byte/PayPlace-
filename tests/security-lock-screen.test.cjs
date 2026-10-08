@@ -38,6 +38,17 @@ test('approved artwork and real button stay aligned and reachable on different s
       const stage = renderer.root.findAllByType('View').find(v => v.props.onLayout);
       await act(() => stage.props.onLayout({ nativeEvent: { layout: { width, height } } }));
       const frame = layout.fitLockArtwork(width, height);
+      // An absolute-positioned React Native Image still inherits its asset's
+      // intrinsic dimensions unless width/height are explicitly overridden.
+      // The original regression enlarged the 941 x 1672 asset on a phone.
+      const artwork = renderer.root.findAllByType('Image').find(v => v.props.resizeMode === 'contain');
+      const imageStyle = Object.assign({}, ...artwork.props.style);
+      assert.ok(Math.abs(imageStyle.width - frame.width) < 1e-10, 'image width must match its fitted frame');
+      assert.ok(Math.abs(imageStyle.height - frame.height) < 1e-10, 'image height must match its fitted frame');
+      const background = renderer.root.findAllByType('Image').find(v => v.props.resizeMode === 'cover');
+      const backgroundStyle = Object.assign({}, ...background.props.style);
+      assert.equal(backgroundStyle.width, '100%', 'background cannot use its intrinsic width');
+      assert.equal(backgroundStyle.height, '100%', 'background cannot use its intrinsic height');
       const button = renderer.root.findByType('TouchableOpacity');
       const bounds = button.props.style[1];
       assert.ok(frame.width <= width + 0.01 && frame.height <= height + 0.01);
