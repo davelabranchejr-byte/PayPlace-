@@ -2194,6 +2194,41 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective }) {
           style={[styles.heroHotspot, { left: "78%", top: "33%", width: "17%", height: "23%", minWidth: 48, minHeight: 48 }]}
           onPress={onDetective} />
       </View>
+      <TouchableOpacity
+  accessibilityRole="button"
+  accessibilityLabel="Open PayPlace Premium"
+  onPress={onPremium}
+  style={{
+    marginHorizontal: 20,
+    marginTop: 14,
+    marginBottom: 6,
+    paddingVertical: 16,
+    paddingHorizontal: 18,
+    borderRadius: 18,
+    backgroundColor: "#0f766e",
+  }}
+>
+  <Text
+    style={{
+      color: "#ffffff",
+      fontSize: 18,
+      fontWeight: "800",
+      textAlign: "center",
+    }}
+  >
+    PayPlace Premium
+  </Text>
+  <Text
+    style={{
+      color: "#ffffff",
+      fontSize: 13,
+      textAlign: "center",
+      marginTop: 4,
+    }}
+  >
+    Financial breathing room for real life.
+  </Text>
+</TouchableOpacity>
 
       <View style={styles.heroCaptionRow}>
         <View style={styles.heroCaptionCopy}>
