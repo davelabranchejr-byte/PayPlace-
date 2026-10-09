@@ -2277,6 +2277,7 @@ function HomeScreen({
   onMirrorAction,
   onExtraPaycheckAction,
   onDetective,
+  onPremium,
   onSavings,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
