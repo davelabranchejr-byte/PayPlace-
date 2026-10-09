@@ -48,6 +48,7 @@ import useNeighborhoodArtwork from "./src/useNeighborhoodArtwork";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
+import PremiumResilienceHub from "./src/PremiumResilienceHub";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
