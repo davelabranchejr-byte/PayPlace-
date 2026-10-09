@@ -75,7 +75,19 @@ export default function AppSecurity({ children }) {
     finally { authenticating.current = false; if (alive.current) setBusy(false); }
   }
   async function unlock() {
-    if (await authenticate()) { lockedRef.current = false; setLocked(false); setUnlockedOnce(true); }
+  if (authenticating.current || !ready) return;
+
+  const success = await authenticate();
+  if (!success || !alive.current) return;
+
+  await new Promise(resolve => setTimeout(resolve, 350));
+
+  if (!alive.current || AppState.currentState !== 'active') return;
+
+  lastInteraction.current = Date.now();
+  lockedRef.current = false;
+  setUnlockedOnce(true);
+  setLocked(false);
   }
   async function setAppLock(next) {
     if (!native || !(await authenticate(next ? 'Enable PayPlace app lock' : 'Turn off PayPlace app lock'))) return;
