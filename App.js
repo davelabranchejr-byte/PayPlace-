@@ -1194,6 +1194,15 @@ function PayPlaceApp() {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [premiumVisible, setPremiumVisible] = useState(false);
+  const [premiumState, setPremiumState] = useState({
+  lifeHappensTarget: 500,
+  lifeHappensBalance: 0,
+  paydayContribution: 20,
+  roundUpMultiplier: 1,
+  roundUpCap: 25,
+  roundUpPot: 0,
+  rebuildMode: false,
+});
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
@@ -1753,6 +1762,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   visible={premiumVisible}
   onClose={() => setPremiumVisible(false)}
   finance={finance}
+  premiumState={premiumState}
+  onPremiumStateChange={setPremiumState}
   onOpenBankConnections={() => {
     setPremiumVisible(false);
     setBankConnectionsVisible(true);
