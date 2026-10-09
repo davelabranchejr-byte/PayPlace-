@@ -1748,6 +1748,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           reminderStatus={subscriptionReminderStatus}
           onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
         {securityPanel}
+        <PremiumResilienceHub
+  visible={premiumVisible}
+  onClose={() => setPremiumVisible(false)}
+  finance={finance}
+  onOpenBankConnections={() => {
+    setPremiumVisible(false);
+    setBankConnectionsVisible(true);
+  }}
+  onOpenSubscriptions={() => {
+    setPremiumVisible(false);
+    setDetectiveVisible(true);
+  }}
+/>
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </KeyboardAvoidingView>
     </SafeAreaView>
