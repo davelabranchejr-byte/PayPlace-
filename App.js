@@ -1684,6 +1684,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onMirrorAction={updateMirror}
             onExtraPaycheckAction={updateExtraPaycheck}
             onDetective={() => setDetectiveVisible(true)}
+            onPremium={() => setPremiumVisible(true)}
             onSavings={() => setSavingsVisible(true)}
           />
         )}
