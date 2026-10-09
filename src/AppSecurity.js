@@ -82,7 +82,7 @@ export default function AppSecurity({ children }) {
 
   await new Promise(resolve => setTimeout(resolve, 350));
 
-  if (!alive.current || AppState.currentState !== 'active') return;
+  if (!alive.current) return;
 
   lastInteraction.current = Date.now();
   lockedRef.current = false;
