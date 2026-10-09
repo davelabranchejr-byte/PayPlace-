@@ -1193,6 +1193,7 @@ function PayPlaceApp() {
   const [storageError, setStorageError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
+  const [premiumVisible, setPremiumVisible] = useState(false);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
