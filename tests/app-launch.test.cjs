@@ -29,14 +29,14 @@ function appHarness(savedFinance = {}) {
   } };
   let resolveAuth, authCalls = 0;
   const ui = Object.fromEntries(['View', 'Text', 'TextInput', 'SafeAreaView', 'ScrollView', 'TouchableOpacity',
-    'Pressable', 'KeyboardAvoidingView', 'ActivityIndicator'].map(name => [name, name]));
+    'Pressable', 'KeyboardAvoidingView', 'ActivityIndicator', 'Switch'].map(name => [name, name]));
   const Image = props => React.createElement('Image', props);
   Image.resolveAssetSource = () => ({ width: 1536, height: 1024 });
   // Native Modal does not mount hidden content.
   const Modal = ({ visible, children, ...props }) => visible ? React.createElement('Modal', props, children) : null;
   Object.assign(ui, { Image, Modal, Platform: { OS: 'ios', select: values => values.ios ?? values.default }, AppState: appState,
     StyleSheet: { create: value => value, absoluteFillObject: { position: 'absolute' } },
-    Alert: { alert() {} }, Linking: { openURL: async () => {}, openSettings: async () => {} },
+    BackHandler: { addEventListener: () => ({ remove() {} }) }, Alert: { alert() {} }, Linking: { openURL: async () => {}, openSettings: async () => {} },
     AccessibilityInfo: { isReduceMotionEnabled: async () => true, addEventListener: () => ({ remove() {} }) },
     Animated: { Value: class { setValue() {} interpolate() { return 0; } }, Text: 'AnimatedText' },
   });
@@ -111,38 +111,105 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await act(() => harness.setAppState('active'));
     assert.ok(button('Open PayPlace Premium'), 'the neighborhood renders after unlock');
-    for (const title of ['Bills', 'Budget', 'Debt', 'Calm', 'Home']) {
+    for (const title of ['Bills', 'Budget', 'Debt', 'Calm', 'Premium', 'Home']) {
       const nav = renderer.root.find(node => node.type?.name === 'BottomNav');
       const target = nav.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(text => text.props.children === title));
       await act(() => target.props.onPress());
     }
     await act(() => button('Open PayPlace Premium').props.onPress());
-    const hub = renderer.root.find(node => node.type?.name === 'PremiumResilienceHub');
-    assert.equal(hub.props.visible, true);
-    for (const title of ['Round Up & Save', 'Life Happens Fund', 'Bill Shock Mode', "Help, I'm Falling Behind", 'Credit Center']) {
-      const card = hub.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(text => text.props.children === title));
-      assert.ok(card, `${title} is reachable`);
-      await act(() => card.props.onPress());
+    const hub = () => renderer.root.find(node => node.type?.name === 'PremiumResilienceHub');
+    const press = async label => { assert.ok(button(label), label); await act(() => button(label).props.onPress()); };
+    const toggle = async (label, value) => {
+      const target = renderer.root.findAllByType('Switch').find(node => node.props.accessibilityLabel === label);
+      assert.ok(target, label); await act(() => target.props.onValueChange(value));
+    };
+    const input = async (label, value) => {
+      const target = renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === label);
+      assert.ok(target, label); await act(() => target.props.onChangeText(value));
+    };
+    const nav = async title => press(`Open ${title} tab`);
+    assert.equal(hub().props.embedded, true);
+    for (const title of ['Round Up & Save', 'Life Happens Fund', 'Bill Shock Mode', 'Help, I’m Falling Behind', 'Automatic Money Watch', 'Credit Center']) {
+      await press(`Open ${title}`);
+      assert.equal(button('Open Round Up & Save'), undefined, 'feature opens a separate screen');
+      await press('Back to Premium');
     }
-    await act(() => hub.props.onPremiumStateChange({ ...hub.props.premiumState, lifeHappensBalance: 125, rebuildMode: true }));
-    assert.equal(harness.finance().premiumResilience.lifeHappensBalance, 125, 'Premium settings use the saved finance vault');
-    await act(() => hub.props.onOpenSubscriptions());
-    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0);
+    await press('Account connections & beta setup');
+    await press('Connect sample accounts');
+    await press('Back to Premium');
+    await press('Open Round Up & Save');
+    assert.equal(button('Simulate next purchase batch').props.disabled, true);
+    await toggle('Enable sample round-ups', true);
+    await input('Weekly round-up cap ($)', 'bad');
+    await press('Save round-up cap');
+    assert.equal(harness.finance().premiumResilience, undefined, 'invalid caps are not saved');
+    await input('Weekly round-up cap ($)', '1.50');
+    await press('Save round-up cap');
+    await press('Round-up multiplier 2 times');
+    await press('Simulate next purchase batch');
+    await press('Simulate next purchase batch');
+    assert.equal(harness.finance().premiumBeta.roundUpSaved, 1.5, 'multiple batches respect the saved cap');
+    await toggle('Enable sample round-ups', false);
+    assert.equal(button('Simulate next purchase batch').props.disabled, true);
+    await press('Back to Premium');
+    await press('Open Life Happens Fund');
+    await input('Life Happens target ($)', '120.00');
+    await input('Contribution per payday ($)', '50.00');
+    await press('Save fund preferences');
+    await toggle('Enable sample payday savings', true);
+    await press('Simulate next payday');
+    await press('Simulate next payday');
+    assert.equal(harness.finance().premiumBeta.sampleFund, 120, 'sample savings stop at the goal');
+    assert.equal(harness.finance().premiumResilience.lifeHappensBalance, 0, 'sample savings do not change the saved real cushion');
+    await press('Back to Premium');
+    await press('Open Bill Shock Mode');
+    await toggle('Use sample budget for this plan', true);
+    await input('Unexpected expense ($)', '300.25');
+    await press('Save Gentlest recovery plan');
+    assert.deepEqual(harness.finance().premiumBeta.savedRecovery, { choice: 'gentlest', expense: 300.25 });
+    await press('Back to Premium');
+    await press('Open Credit Center');
+    await press('Refresh sample credit score');
+    assert.equal(harness.finance().premiumBeta.creditRefreshes, 1);
+    await press('Back to Premium');
+    await press('Open Automatic Money Watch');
+    await press('Refresh sample watch feed');
+    await press('Open Subscription Detective');
     assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, true);
     await act(() => renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.onClose());
-    await act(() => button('Open PayPlace Premium').props.onPress());
-    await act(() => renderer.root.find(node => node.type?.name === 'PremiumResilienceHub').props.onOpenBankConnections());
+    assert.ok(button('Refresh sample watch feed'), 'closing Detective returns to the same premium feature');
+    await press('Back to Premium');
+    await press('Account connections & beta setup');
+    await press('View live bank-linking availability');
     assert.equal(renderer.root.find(node => node.type?.name === 'BankConnections').props.visible, true);
-    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0);
     await act(() => renderer.root.find(node => node.type?.name === 'BankConnections').props.onClose());
+    await press('Back to Premium');
+    await nav('Home');
+    const creditCard = renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel?.startsWith('Credit Score:'));
+    await act(() => creditCard.props.onPress());
+    assert.ok(button('Refresh sample credit score'), 'Home credit button goes directly to Credit Center');
+    await nav('Premium');
+    assert.ok(button('Open Round Up & Save'), 'Premium tab always opens the feature hub');
     await act(() => renderer.unmount());
     await act(async () => { renderer = create(React.createElement(harness.App)); });
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
-    await act(() => button('Open PayPlace Premium').props.onPress());
-    assert.equal(renderer.root.find(node => node.type?.name === 'PremiumResilienceHub').props.premiumState.lifeHappensBalance, 125);
-    await act(() => button('Close PayPlace Premium').props.onPress());
-    assert.ok(button('Open PayPlace Premium'), 'closing Premium returns to Home');
-    assert.equal(harness.finance().balance, 300, 'planning never changes real cash');
+    await nav('Premium');
+    assert.equal(hub().props.betaState.sampleFund, 120);
+    assert.equal(hub().props.betaState.roundUpEnabled, false);
+    assert.equal(hub().props.premiumState.roundUpCap, 1.5);
+    assert.equal(hub().props.betaState.creditRefreshes, 1, 'sample activity survives reopening');
+    await press('Account connections & beta setup');
+    await press('Disconnect sample accounts');
+    assert.equal(harness.finance().premiumBeta.fundEnabled, false);
+    await press('Reset sample activity');
+    assert.equal(harness.finance().premiumBeta.sampleFund, 100);
+    assert.equal(harness.finance().premiumResilience.roundUpCap, 1.5, 'reset keeps saved preferences');
+    await press('Back to Premium');
+    await press('Open Help, I’m Falling Behind');
+    await press('Review my bills');
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0);
+    assert.equal(harness.finance().balance, 300, 'all beta flows leave real cash unchanged');
+    assert.equal(harness.finance().bills[0].amount, '120.00', 'planning does not pay or change saved bills');
   } finally { await act(() => renderer.unmount()); }
 });
