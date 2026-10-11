@@ -67,6 +67,7 @@ function appHarness(savedFinance = {}) {
       };
       if (name.endsWith('/useBillReminders')) return { __esModule: true,
         default: () => ({ supported: true, count: 0 }), requestBillReminderPermission: async () => true };
+      if (name.endsWith('/useAnnieCare')) return { __esModule: true, default: () => ({supported:true,error:false}) };
       if (name.endsWith('/useSubscriptionReminders')) return { __esModule: true, default: () => ({ supported: true, count: 0 }) };
       if (name.endsWith('/backup-files')) return { pickBackupFile: async () => {}, saveBackupFile: async () => {} };
       if (name.startsWith('.')) {
@@ -111,6 +112,15 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await act(() => harness.setAppState('active'));
     assert.ok(button('Open PayPlace Premium'), 'the neighborhood renders after unlock');
+    const steps = renderer.root.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(t => t.props.children === 'One small step'));
+    await act(() => steps.props.onPress());
+    assert.ok(button('Open task: Review Power'));
+    await act(() => button('Complete task: Review Power').props.onPress());
+    assert.ok(harness.finance().smallSteps.done.includes('bill-power'));
+    assert.equal(harness.finance().bills[0].status, 'Upcoming', 'completing a review must not mark a bill paid');
+    await act(() => button('Open task: Review Power').props.onPress());
+    const homeNav = renderer.root.find(node => node.type?.name === 'BottomNav');
+    await act(() => homeNav.props.switchTab('Home'));
     for (const title of ['Bills', 'Budget', 'Debt', 'Calm', 'Premium', 'Home']) {
       const nav = renderer.root.find(node => node.type?.name === 'BottomNav');
       const target = nav.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(text => text.props.children === title));
