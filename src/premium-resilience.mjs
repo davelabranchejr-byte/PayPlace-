@@ -1,3 +1,5 @@
+import { readDate } from './paycheck-calendar.mjs';
+
 export const DEFAULT_PREMIUM_STATE = Object.freeze({
   lifeHappensTarget: 500,
   lifeHappensBalance: 0,
@@ -11,6 +13,27 @@ export const DEFAULT_PREMIUM_STATE = Object.freeze({
 export function money(value) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+}
+
+export function normalizePremiumState(value) {
+  const saved = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const state = { ...DEFAULT_PREMIUM_STATE };
+  for (const field of ['lifeHappensTarget', 'lifeHappensBalance', 'paydayContribution', 'roundUpCap', 'roundUpPot']) {
+    if (saved[field] !== undefined && Number.isFinite(Number(saved[field]))) state[field] = Math.max(0, money(saved[field]));
+  }
+  if ([1, 2, 3].includes(Number(saved.roundUpMultiplier))) state.roundUpMultiplier = Number(saved.roundUpMultiplier);
+  state.rebuildMode = saved.rebuildMode === true;
+  return state;
+}
+
+export function unpaidPremiumBills(bills, now = new Date()) {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return (Array.isArray(bills) ? bills : [])
+    .filter(bill => bill && typeof bill === 'object' && !bill.paid && String(bill.status).toLowerCase() !== 'paid')
+    .map(bill => {
+      const due = readDate(bill.dueDate || bill.due);
+      return { ...bill, overdue: bill.overdue === true || String(bill.status).toLowerCase() === 'overdue' || Boolean(due && due < today) };
+    });
 }
 
 export function roundUpForPurchase(amount, multiplier = 1) {
@@ -57,7 +80,8 @@ export function useLifeHappensFund(state, amount) {
 
 export function buildBillShockPlans({ expense, balance = 0, nextIncome = 0, upcomingEssentialBills = 0, lifeHappensBalance = 0 }) {
   const shock = Math.max(0, money(expense));
-  const cashAfterEssentials = Math.max(0, money(balance + nextIncome - upcomingEssentialBills));
+  // A paycheck that has not arrived cannot be offered as a payment "now".
+  const cashAfterEssentials = Math.max(0, money(money(balance) - money(upcomingEssentialBills)));
   const fundUse = Math.min(shock, Math.max(0, money(lifeHappensBalance)));
   const afterFund = money(shock - fundUse);
   const immediatelyCoverable = Math.min(afterFund, cashAfterEssentials);
@@ -101,9 +125,9 @@ const PRIORITY = {
   other: 20,
 };
 
-export function buildCatchUpPlan({ bills = [], availableCash = 0, nextIncome = 0 }) {
+export function buildCatchUpPlan({ bills = [], availableCash = 0, nextIncome = 0, now = new Date() }) {
   const resources = money(Math.max(0, Number(availableCash) || 0) + Math.max(0, Number(nextIncome) || 0));
-  const normalized = bills
+  const normalized = unpaidPremiumBills(bills, now)
     .map((bill, index) => ({
       ...bill,
       id: bill.id ?? `bill-${index}`,
