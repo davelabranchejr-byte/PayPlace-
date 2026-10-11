@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import CharacterArtwork from "./CharacterArtwork";
 
-const logo = require("../assets/branding/payplace-icon.png");
+const logo = require("../assets/branding/payplace-locked-logo.jpeg");
 
 export default function PayPlaceBrand({ compact = false, light = false, style }) {
   const primary = light ? "#FFFFFF" : "#173557";
