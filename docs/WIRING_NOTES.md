@@ -1,22 +1,29 @@
-# PayPlace Premium Resilience Hub wiring notes
+# PayPlace Premium Resilience Hub wiring
 
-Prepared against the current PayPlace source structure already inspected in GitHub.
+Premium opens through `PayPlaceApp` → `HomeScreen` → `NeighborhoodWelcome`.
+Pass `onPremium` through both child components; an unbound callback crashes Home
+as soon as the returning neighbor unlocks the app.
 
-1. Add these files under `src/`:
-   - `PremiumResilienceHub.js`
-   - `premium-resilience.mjs`
-2. Add `tests/premium-resilience.test.mjs`.
-3. In `App.js`, import `PremiumResilienceHub` and `DEFAULT_PREMIUM_STATE`.
-4. Add state alongside the existing `bankConnectionsVisible`, `detectiveVisible`, and `savingsVisible` state:
-   - `premiumVisible`
-   - `premiumState`
-5. Persist `premiumState` inside the same encrypted finance vault payload used for savings/subscription settings rather than a separate unencrypted store.
-6. Add a Premium entry point on Home / paid-features area. During beta, keep it available without charge just like Extra Paycheck Calendar and Subscription Detective.
-7. Render the hub near the existing modal components. Wire:
-   - `onOpenBankConnections={() => setBankConnectionsVisible(true)}`
-   - `onOpenSubscriptions={() => setDetectiveVisible(true)}`
-   - `onPremiumStateChange={setPremiumState}`
-   - `finance={finance}`
-8. Keep actual linked-money movement disabled until trusted server-side authorization, purchase entitlements, provider approval, receipts, and payment-status handling are in place.
-9. Credit Center should remain a UI shell until a bureau/embedded-credit provider is contracted and approved.
-10. The brand north star for this package is: “Money without Shame. Financial breathing room for real life.”
+`premiumVisible` controls the mounted hub. Only mount `PremiumResilienceHub`
+while it is open. Close Premium before opening BankConnections or
+SubscriptionDetective so two native sheets are not presented together.
+
+Store Premium settings at `finance.premiumResilience` and normalize with
+`normalizePremiumState`. The existing encrypted finance vault, backup and
+restore paths carry that state. Older saved plans receive defaults without
+replacing their bills, debts or onboarding profile.
+
+Use `finance.nextPaycheck` for estimated income. Exclude bills marked paid by
+either `paid` or `status`; infer overdue dates from `dueDate` or `due`.
+Expected income is not available for a payment now. Recovery planning does
+not move money, change account balances, or mark bills paid.
+
+Premium is a free beta preview. Automatic transfers, bank monitoring and
+credit reports remain upcoming features until their provider integrations
+are active. Keep those limitations visible to testers.
+
+Run `npm run check`, `npm test`, and production Expo exports before releasing.
+The launch regression renders the actual app with mocked device services,
+checks cancellation/background authentication, visits every main tab, opens
+all Premium panels and both linked sheets, and reopens saved Premium state.
+Native Face ID and TestFlight behavior still require checking on an iPhone.
