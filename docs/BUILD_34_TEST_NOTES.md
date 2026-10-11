@@ -1,0 +1,10 @@
+PayPlace Build 34 — What to test
+
+• Home: check the autumn neighborhood, pumpkins, friendly ghost and Halloween mascot cameos. Tap each treehouse and Annie’s red door. Lanterns should glow gently and stars twinkle without covering buttons. Enable iPhone Reduce Motion and confirm the scene stays still. Background the app and return.
+• Tell me what to do / One small step: Tate’s artwork should fit on screen. Open each task, mark it done, undo it, and reopen the app. Review tasks must never mark a bill paid or move money. Completion resets on a new local day.
+• Your Week with Annie: mark a bill paid, record a debt’s final payment, mark a subscription canceled and add to an existing savings goal. Check the past-seven-day recap. Undo the bill/cancellation and correct goal savings: the recap should adjust. Existing totals are not new achievements, deleted entries do not count as payments, and Premium simulations are excluded.
+• Annie’s quiet check-ins: both options start off. Turn on the weekly reminder or seven-day absence check-in, allow notifications, choose a local delivery hour (0–23), save and restart. Turn them off to pause. Weekly reminders open Home; absence reminders happen once after at least seven days away and reset after you return. Notifications are silent and contain no private totals. Full absence timing requires a seven-day device test.
+• Premium Round Up & Save: check the teal sample total and instruction to simulate a purchase batch. A preview alone must not increase savings. Simulate, pause, cap and reset the sample week.
+• Confirm your saved budget, bills, debts, subscriptions, savings goals and existing Premium preferences survive the update and app restart.
+
+Manual mode: record payments/transfers made outside PayPlace. Bank syncing, real transfers, in-app bill payment and bureau credit retrieval remain future integrations. Report crashes, unclear wording, totals that do not match actions, clipped content or notifications at the wrong time. Include your build number and a screenshot where possible.
