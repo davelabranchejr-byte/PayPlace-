@@ -1,76 +1,134 @@
-import React, { useMemo, useState } from 'react';
-import { Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { BackHandler, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import {
-  DEFAULT_PREMIUM_STATE,
-  buildBillShockPlans,
-  buildCatchUpPlan,
-  recoveryMessage,
-  unpaidPremiumBills,
-} from './premium-resilience.mjs';
+import { DEFAULT_PREMIUM_STATE, buildBillShockPlans, buildCatchUpPlan, roundUpForPurchase, unpaidPremiumBills } from './premium-resilience.mjs';
+import { SAMPLE_FINANCE, SAMPLE_PURCHASES, normalizePremiumBeta, premiumAmount, simulatePayday, simulateRoundup } from './premium-beta.mjs';
 
+const bobbie = require('../assets/characters/premium-bobbie-gala.png');
+const lockedLogo = require('../assets/branding/payplace-locked-logo.jpeg');
 const FEATURES = [
-  ['sparkles', 'Round Up & Save', 'Small change. Bigger breathing room.'],
-  ['leaf', 'Life Happens Fund', 'Your cushion for the stuff nobody planned.'],
-  ['car-sport', 'Bill Shock Mode', 'When the unexpected hits, build a recovery plan.'],
-  ['life-buoy', "Help, I'm Falling Behind", 'You do not need a lecture. You need a plan.'],
-  ['eye', 'Automatic Money Watch', 'Bills, subscriptions and debt changes in one calm place.'],
-  ['speedometer', 'Credit Center', 'See the credit picture without the shame spiral.'],
+  { id: 'roundup', title: 'Round Up & Save', body: 'Small change. Bigger breathing room.', image: require('../assets/characters/premium-roundup.png'), badge: 'Sample automation' },
+  { id: 'fund', title: 'Life Happens Fund', body: 'A cushion for the stuff nobody planned.', image: require('../assets/characters/premium-fund.png'), badge: 'Sample automation' },
+  { id: 'shock', title: 'Bill Shock Mode', body: 'An unexpected expense. A gentler recovery plan.', image: require('../assets/characters/premium-shock.png'), badge: 'Try with your budget' },
+  { id: 'catchup', title: 'Help, I’m Falling Behind', body: 'You do not need a lecture. You need a plan.', image: require('../assets/characters/premium-catchup.png'), badge: 'Try with your bills' },
+  { id: 'watch', title: 'Automatic Money Watch', body: 'Investigate bills, subscriptions and debt changes.', image: require('../assets/characters/premium-watch.png'), badge: 'Sample monitoring' },
+  { id: 'credit', title: 'Credit Center', body: 'A calmer place to understand your credit.', image: require('../assets/characters/premium-credit.png'), badge: 'Sample score' },
 ];
-
-function Card({ icon, title, body, onPress }) {
-  return <TouchableOpacity onPress={onPress} style={s.card} accessibilityRole="button">
-    <View style={s.icon}><Ionicons name={icon} size={23} color="#6754E8" /></View>
-    <View style={{ flex: 1 }}><Text style={s.cardTitle}>{title}</Text><Text style={s.body}>{body}</Text></View>
-    <Ionicons name="chevron-forward" size={20} color="#667085" />
-  </TouchableOpacity>;
+const dollars = value => `$${Number(value || 0).toFixed(2)}`;
+function Button({ label, onPress, secondary = false, disabled = false }) {
+  return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[s.button, secondary && s.secondary, disabled && s.disabled]}><Text style={[s.buttonText, secondary && s.secondaryText]}>{label}</Text></TouchableOpacity>;
+}
+function Field({ label, value, onChangeText }) {
+  return <View style={s.field}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} value={value} onChangeText={onChangeText} keyboardType="decimal-pad" style={s.input} /></View>;
+}
+function Toggle({ label, value, onChange }) {
+  return <View style={s.row}><Text style={s.rowTitle}>{label}</Text><Switch accessibilityLabel={label} value={value} onValueChange={onChange} trackColor={{ false: '#CBD5E1', true: '#087E76' }} /></View>;
+}
+function Box({ title, children }) {
+  return <View style={s.box}><Text accessibilityRole="header" style={s.panelTitle}>{title}</Text>{children}</View>;
 }
 
-export default function PremiumResilienceHub({ visible, onClose, finance = {}, premiumState = DEFAULT_PREMIUM_STATE, onPremiumStateChange = () => {}, onOpenBankConnections, onOpenSubscriptions }) {
-  const [panel, setPanel] = useState(null);
+export default function PremiumResilienceHub({ visible = true, embedded = false, onClose, finance = {}, premiumState = DEFAULT_PREMIUM_STATE, onPremiumStateChange = () => {}, betaState, onBetaStateChange = () => {}, onOpenBankConnections, onOpenSubscriptions, onOpenBills, initialPanel = null }) {
+  const [panel, setPanel] = useState(initialPanel);
+  const [notice, setNotice] = useState('');
   const [shockAmount, setShockAmount] = useState('');
-  const bills = useMemo(() => unpaidPremiumBills(finance.bills), [finance.bills]);
-  const nextIncome = finance.nextPaycheck || 0;
-  const catchUp = useMemo(() => buildCatchUpPlan({ bills, availableCash: finance.balance || 0, nextIncome }), [bills, finance.balance, nextIncome]);
-  const shock = useMemo(() => buildBillShockPlans({
-    expense: shockAmount,
-    balance: finance.balance || 0,
-    nextIncome,
-    upcomingEssentialBills: bills.reduce((sum, b) => sum + (Number(b.amount) || 0), 0),
-    lifeHappensBalance: premiumState.lifeHappensBalance || 0,
-  }), [shockAmount, finance.balance, nextIncome, bills, premiumState.lifeHappensBalance]);
-
-  return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-    <View style={s.page}>
-      <View style={s.header}><View style={{ flex: 1 }}><Text style={s.kicker}>PAYPLACE PREMIUM · BETA PREVIEW</Text><Text style={s.title}>Financial breathing room for real life.</Text><Text style={s.subtitle}>Prepared for the unexpected. Supported through the recovery.</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close PayPlace Premium" onPress={onClose} style={s.close}><Ionicons name="close" size={25} color="#071A3A" /></TouchableOpacity></View>
-      <ScrollView contentContainerStyle={s.content}>
-        <View style={s.promise}><Text style={s.promiseTitle}>A little more breathing room.</Text><Text style={s.promiseBody}>Try recovery plans with your saved budget. Beta access is free. Automatic transfers, bank monitoring and credit reports are coming soon; this preview does not move money or start a paid subscription.</Text></View>
-        {FEATURES.map(([icon, title, body]) => <Card key={title} icon={icon} title={title} body={body} onPress={() => {
-          if (title === 'Automatic Money Watch' && onOpenSubscriptions) onOpenSubscriptions();
-          else if (title === 'Credit Center') setPanel('credit');
-          else setPanel(title);
-        }} />)}
-
-        {panel === 'Life Happens Fund' && <View style={s.panel}><Text style={s.panelTitle}>Life Happens Fund</Text><Text style={s.body}>Current cushion: ${Number(premiumState.lifeHappensBalance || 0).toFixed(2)} of ${Number(premiumState.lifeHappensTarget || 500).toFixed(2)}</Text><Text style={s.body}>{recoveryMessage(premiumState)}</Text><TouchableOpacity style={s.primary} onPress={() => onPremiumStateChange({ ...premiumState, rebuildMode: false })}><Text style={s.primaryText}>Keep building my cushion</Text></TouchableOpacity></View>}
-
-        {panel === 'Round Up & Save' && <View style={s.panel}><Text style={s.panelTitle}>Round Up & Save</Text><Text style={s.body}>Coming soon: turn everyday purchases into tiny deposits toward your safety net, with a multiplier and a cap you control. Automatic round-ups are not active during this preview.</Text></View>}
-
-        {panel === 'Bill Shock Mode' && <View style={s.panel}><Text style={s.panelTitle}>Bill Shock Mode</Text><TextInput value={shockAmount} onChangeText={setShockAmount} keyboardType="decimal-pad" placeholder="Unexpected expense" style={s.input} /><Text style={s.body}>Fastest: pay ${shock.fastest.payNow.toFixed(2)} now. Remaining ${shock.fastest.remaining.toFixed(2)}.</Text><Text style={s.body}>Balanced: {shock.balanced.periods ? `${shock.balanced.periods} payments around $${shock.balanced.payment.toFixed(2)}` : 'covered with current resources'}.</Text><Text style={s.body}>Life Happens Fund available: ${shock.useFund.fundUse.toFixed(2)}.</Text></View>}
-
-        {panel === "Help, I'm Falling Behind" && <View style={s.panel}><Text style={s.panelTitle}>Help, I’m Falling Behind</Text><Text style={s.quote}>You do not need a lecture. You need a plan.</Text><Text style={s.body}>PayPlace protects essentials first, then builds a catch-up path that does not make next month worse.</Text><Text style={s.body}>Cash plus next paycheck (estimate): ${catchUp.resources.toFixed(2)} · Remaining shortfall: ${catchUp.totalShortfall.toFixed(2)}</Text>{catchUp.steps.slice(0, 6).map(step => <View key={step.id} style={s.row}><Text style={s.rowTitle}>{step.name || step.title || step.id}</Text><Text style={s.rowValue}>${step.recommendedPayment.toFixed(2)}</Text></View>)}</View>}
-
-        {panel === 'credit' && <View style={s.panel}><Text style={s.panelTitle}>Credit Center</Text><Text style={s.body}>Coming soon: credit scores, reports and change alerts in one calm place. This preview does not retrieve your credit report.</Text></View>}
-
-        <TouchableOpacity style={s.bank} onPress={onOpenBankConnections}><Ionicons name="link" size={21} color="#075E54" /><Text style={s.bankText}>Connect accounts for Premium automation</Text></TouchableOpacity>
-      </ScrollView>
+  const [cap, setCap] = useState(String(premiumState.roundUpCap));
+  const [target, setTarget] = useState(String(premiumState.lifeHappensTarget));
+  const [contribution, setContribution] = useState(String(premiumState.paydayContribution));
+  const beta = useMemo(() => normalizePremiumBeta(betaState), [betaState]);
+  const feature = FEATURES.find(item => item.id === panel);
+  const planFinance = beta.useSamplePlan ? SAMPLE_FINANCE : finance;
+  const bills = useMemo(() => unpaidPremiumBills(planFinance.bills), [planFinance.bills]);
+  const fundBalance = beta.useSamplePlan ? beta.sampleFund : premiumState.lifeHappensBalance;
+  const catchUp = useMemo(() => buildCatchUpPlan({ bills, availableCash: planFinance.balance, nextIncome: planFinance.nextPaycheck }), [bills, planFinance.balance, planFinance.nextPaycheck]);
+  const expense = premiumAmount(shockAmount);
+  const shock = buildBillShockPlans({ expense: expense ?? 0, balance: planFinance.balance, nextIncome: planFinance.nextPaycheck,
+    upcomingEssentialBills: bills.reduce((sum, bill) => sum + Number(bill.amount || 0), 0), lifeHappensBalance: fundBalance });
+  useEffect(() => { setPanel(initialPanel); }, [initialPanel]);
+  useEffect(() => { setCap(String(premiumState.roundUpCap)); }, [premiumState.roundUpCap]);
+  useEffect(() => { setTarget(String(premiumState.lifeHappensTarget)); setContribution(String(premiumState.paydayContribution)); }, [premiumState.lifeHappensTarget, premiumState.paydayContribution]);
+  useEffect(() => {
+    if (!visible || !panel) return;
+    const listener = BackHandler.addEventListener('hardwareBackPress', () => { setPanel(null); setNotice(''); return true; });
+    return () => listener.remove();
+  }, [panel, visible]);
+  function open(id) { setPanel(id); setNotice(''); }
+  function updateBeta(patch) { onBetaStateChange({ ...beta, ...patch }); }
+  function saveRoundup() {
+    const parsed = premiumAmount(cap);
+    if (parsed === null) { setNotice('Enter a valid cap with up to two decimal places.'); return; }
+    onPremiumStateChange({ ...premiumState, roundUpCap: parsed }); setNotice('Round-up preferences saved. Live transfers are not enabled.');
+  }
+  function saveFund() {
+    const goal = premiumAmount(target); const payday = premiumAmount(contribution);
+    if (goal === null || goal <= 0 || payday === null) { setNotice('Enter a target above zero and a valid payday contribution.'); return; }
+    onPremiumStateChange({ ...premiumState, lifeHappensTarget: goal, paydayContribution: payday }); setNotice('Fund preferences saved. Live transfers are not enabled.');
+  }
+  const sampleReady = beta.sampleConnected;
+  const sampleHelp = <><Text style={s.body}>Sample accounts keep beta money separate from your saved budget. No bank login, transfer or credit inquiry occurs.</Text><Button label={sampleReady ? 'Review sample accounts' : 'Set up sample accounts'} secondary onPress={() => open('accounts')} /></>;
+  const content = <View style={s.page}>
+    <View style={s.header}>
+      <View style={s.headerCopy}><Image source={lockedLogo} style={{ width: 30, height: 34, borderRadius: 6 }} resizeMode="contain" accessibilityLabel="Locked PayPlace logo" /><Text style={s.kicker}>PAYPLACE PREMIUM</Text><Text style={s.title}>{feature ? feature.title : panel === 'accounts' ? 'Account connections' : 'A little more breathing room.'}</Text><Text style={s.subtitle}>{feature ? feature.body : '“Oooh, premium like me!” — Bobbie'}</Text></View>
+      <Image source={bobbie} style={s.bobbie} resizeMode="contain" accessibilityLabel="Bobbie in her diamond tiara, colorful PayPlace princess gala gown and jewels" />
     </View>
-  </Modal>;
+    {panel && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Premium" onPress={() => open(null)} style={s.back}><Ionicons name="arrow-back" size={20} color="#6754E8" /><Text style={s.backText}>Back to Premium</Text></TouchableOpacity>}
+    <ScrollView key={panel || 'hub'} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <View style={s.promise}><Text style={s.promiseTitle}>Included during beta · no charge</Text><Text style={s.body}>Banking integrations are pending. Try sample automation and credit data, or use your saved entries for recovery plans. This beta does not move money, pay bills or retrieve credit reports.</Text></View>
+      {notice ? <Text accessibilityLiveRegion="polite" style={s.notice}>{notice}</Text> : null}
+      {!panel && <>
+        {FEATURES.map(item => <TouchableOpacity key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={s.card}>
+          <View style={s.cardArt}><Image source={item.image} style={s.cardArt} resizeMode="contain" accessible={false} /><Image source={lockedLogo} style={{ position: 'absolute', right: 3, bottom: 3, width: 22, height: 25, borderRadius: 4 }} resizeMode="contain" accessible={false} /></View><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View><Ionicons name="chevron-forward" size={18} color="#6754E8" />
+        </TouchableOpacity>)}
+        <Button secondary label="Account connections & beta setup" onPress={() => open('accounts')} />
+      </>}
+      {feature && <Image source={feature.image} style={s.featureArt} resizeMode="contain" accessibilityLabel={`${feature.title} original PayPlace illustration`} />}
+      {panel === 'accounts' && <>
+        <Box title="Try the sample neighborhood bank"><Text style={s.body}>Connect fictional checking and savings accounts to test the controls. These local sample accounts are separate from your real finances.</Text><Text style={s.value}>{sampleReady ? 'Sample accounts connected' : 'Sample accounts disconnected'}</Text>
+          {sampleReady && <><Text style={s.body}>Sample checking: $320.00 · Sample savings: {dollars(beta.sampleFund)}</Text><Button secondary label="Disconnect sample accounts" onPress={() => { updateBeta({ sampleConnected: false, roundUpEnabled: false, fundEnabled: false }); setNotice('Sample accounts disconnected. Sample automation is paused.'); }} /></>}
+          {!sampleReady && <Button label="Connect sample accounts" onPress={() => { updateBeta({ sampleConnected: true }); setNotice('Fictional accounts connected for beta testing.'); }} />}
+        </Box>
+        <Box title="Real banking"><Text style={s.body}>Provider eligibility and pricing are being evaluated. Live bank linking, transfers, credit data and bill payments will require approved integrations.</Text>{onOpenBankConnections && <Button secondary label="View live bank-linking availability" onPress={onOpenBankConnections} />}</Box>
+        <Button secondary label="Reset sample activity" onPress={() => { onBetaStateChange(normalizePremiumBeta(null)); setNotice('Sample activity reset. Your saved budget, bills and preferences are unchanged.'); }} />
+      </>}
+      {panel === 'roundup' && <>
+        <Box title="Your round-up preferences"><Toggle label="Enable sample round-ups" value={beta.roundUpEnabled} onChange={value => { updateBeta({ roundUpEnabled: value }); setNotice(value ? 'Sample round-ups enabled. No live transfer is authorized.' : 'Sample round-ups paused.'); }} />
+          <Text style={s.label}>Round-up multiplier</Text><View style={s.choices}>{[1, 2, 3].map(value => <TouchableOpacity accessibilityRole="radio" accessibilityLabel={`Round-up multiplier ${value} times`} accessibilityState={{ selected: premiumState.roundUpMultiplier === value }} key={value} style={[s.choice, premiumState.roundUpMultiplier === value && s.selected]} onPress={() => onPremiumStateChange({ ...premiumState, roundUpMultiplier: value })}><Text style={[s.choiceText, premiumState.roundUpMultiplier === value && { color: '#FFFFFF' }]}>{value}×</Text></TouchableOpacity>)}</View>
+          <Field label="Weekly round-up cap ($)" value={cap} onChangeText={setCap} /><Button label="Save round-up cap" onPress={saveRoundup} />
+        </Box>
+        <Box title="Sample purchase preview">{SAMPLE_PURCHASES.map(amount => <View style={s.row} key={amount}><Text style={s.rowTitle}>Purchase {dollars(amount)}</Text><Text style={s.rowValue}>+{dollars(roundUpForPurchase(amount, premiumState.roundUpMultiplier))}</Text></View>)}<Text style={s.body}>The saved cap limits the batch total. Each tap simulates a new batch in the same sample week.</Text><Text style={s.value}>{dollars(beta.roundUpSaved)} sample savings</Text>
+          <Button label="Simulate next purchase batch" disabled={!sampleReady || !beta.roundUpEnabled} onPress={() => { const result = simulateRoundup(beta, premiumState); onBetaStateChange(result.state); setNotice(`${dollars(result.added)} added to sample savings. No money moved.${result.added === 0 ? ' The sample-week cap has been reached, or the cap is zero.' : ''}`); }} />
+          <Button secondary label="Start a new sample week" onPress={() => { updateBeta({ roundUpSaved: 0, roundupRuns: 0 }); setNotice('Sample-week savings reset.'); }} />{sampleHelp}
+        </Box>
+      </>}
+      {panel === 'fund' && <>
+        <Box title="Build your cushion"><Field label="Life Happens target ($)" value={target} onChangeText={setTarget} /><Field label="Contribution per payday ($)" value={contribution} onChangeText={setContribution} /><Button label="Save fund preferences" onPress={saveFund} /><Toggle label="Enable sample payday savings" value={beta.fundEnabled} onChange={value => { updateBeta({ fundEnabled: value }); setNotice(value ? 'Sample payday savings enabled.' : 'Sample payday savings paused.'); }} /></Box>
+        <Box title="Your sample fund"><Text style={s.value}>{dollars(beta.sampleFund)}</Text><Text style={s.body}>Sample balance · target {dollars(premiumState.lifeHappensTarget)}. Your saved real-life cushion is {dollars(premiumState.lifeHappensBalance)}; this simulation never changes it.</Text><Button label="Simulate next payday" disabled={!sampleReady || !beta.fundEnabled} onPress={() => { const result = simulatePayday(beta, premiumState); onBetaStateChange(result.state); setNotice(`${dollars(result.added)} added to your sample fund. No money moved.`); }} />
+          <Button secondary label="Simulate a $50 emergency" disabled={!sampleReady || beta.sampleFund <= 0} onPress={() => { const used = Math.min(50, beta.sampleFund); updateBeta({ sampleFund: beta.sampleFund - used }); setNotice(`Your sample cushion covered ${dollars(used)}. Try another sample payday to rebuild it.`); }} />{sampleHelp}</Box>
+      </>}
+      {(panel === 'shock' || panel === 'catchup') && <Box title="Choose your planning data"><Toggle label="Use sample budget for this plan" value={beta.useSamplePlan} onChange={value => { updateBeta({ useSamplePlan: value }); setNotice('Planning data changed. No saved bills or balances were changed.'); }} /><Text style={s.body}>{beta.useSamplePlan ? 'Using a fictional budget and bills.' : 'Using your saved balance and unpaid bills. Entries may need updating.'} Cash now: {dollars(planFinance.balance)}. Next paycheck estimate: {dollars(planFinance.nextPaycheck)}.</Text></Box>}
+      {panel === 'shock' && <>
+        <Box title="What happened?"><Field label="Unexpected expense ($)" value={shockAmount} onChangeText={setShockAmount} /><Text style={s.body}>Unpaid bills are reserved first. An expected paycheck is not cash available today. These estimates do not create a loan, payment agreement or transfer.</Text></Box>
+        {expense !== null && expense > 0 && <Box title="Choose a recovery plan"><Text style={s.body}>Cushion available for this expense: {dollars(shock.useFund.fundUse)}.</Text>
+          {['fastest', 'balanced', 'gentlest'].map(choice => <View key={choice} style={s.plan}><Text style={s.cardTitle}>{shock[choice].label}</Text><Text style={s.body}>{choice === 'fastest' ? `${dollars(shock.fastest.payNow)} could be covered now; ${dollars(shock.fastest.remaining)} remains.` : choice === 'balanced' ? `${shock.balanced.periods} estimated future contributions around ${dollars(shock.balanced.payment)}, after the cushion and current cash.` : `${dollars(shock.gentlest.suggestedWeekly)} weekly starting estimate; reserves more of your cushion. Review against your future budget.`}</Text><Button secondary label={`Save ${shock[choice].label} recovery plan`} onPress={() => { updateBeta({ savedRecovery: { choice, expense } }); setNotice('Recovery choice saved for beta review. No payment has been scheduled.'); }} /></View>)}
+        </Box>}
+        {shockAmount && expense === null && <Text style={s.notice}>Enter a valid expense with up to two decimal places.</Text>}
+        {beta.savedRecovery && <Text style={s.body}>Saved beta choice: {beta.savedRecovery.choice} · expense {dollars(beta.savedRecovery.expense)}. Recalculate after your budget changes.</Text>}
+      </>}
+      {panel === 'catchup' && <Box title="One step at a time"><Text style={s.quote}>You do not need a lecture. You need a plan.</Text><Text style={s.body}>Estimates include your next paycheck. Check each due date and discuss partial payments with the provider; these are planning amounts, not payments.</Text><Text style={s.value}>{dollars(catchUp.totalShortfall)} remaining shortfall</Text>{catchUp.steps.length ? catchUp.steps.map(step => <View key={step.id} style={s.plan}><Text style={s.cardTitle}>{step.name || step.title || 'Bill'}{step.overdue ? ' · overdue' : ''}</Text><Text style={s.body}>Owed {dollars(step.amount)} · planned {dollars(step.recommendedPayment)} · shortfall {dollars(step.shortfall)}</Text></View>) : <Text style={s.body}>No unpaid bills saved. Add your bills or switch on the sample budget above to try a catch-up plan.</Text>}{onOpenBills && <Button label="Review my bills" onPress={onOpenBills} />}</Box>}
+      {panel === 'watch' && <>
+        <Box title="Sample money-watch feed"><Text style={s.body}>Fictional examples of what automated monitoring could highlight. Your accounts are not being scanned.</Text>{sampleReady ? <><Text style={s.cardTitle}>Sample subscription renewal · $14.99</Text><Text style={s.body}>A sample streaming renewal is approaching. Review whether it still fits.</Text><Text style={s.cardTitle}>Sample utility change · +$12.00</Text><Text style={s.body}>An example bill increase to review before the next payday.</Text><Button label="Refresh sample watch feed" onPress={() => { updateBeta({ watchRefreshes: beta.watchRefreshes + 1 }); setNotice('Sample feed refreshed. No live bank scan occurred.'); }} /><Text style={s.body}>Sample refreshes: {beta.watchRefreshes}</Text></> : sampleHelp}</Box>
+        <Box title="Your Subscription Detective"><Text style={s.body}>The casebook works now with entries you add yourself. You can edit renewals, record cancellation status and set reminders. It does not cancel subscriptions for you.</Text>{onOpenSubscriptions && <Button label="Open Subscription Detective" onPress={onOpenSubscriptions} />}</Box>
+      </>}
+      {panel === 'credit' && <>
+        <Box title="Sample credit dashboard"><Text style={s.badge}>FICTIONAL SCORE · BETA ONLY</Text><Text style={s.score}>{sampleReady ? beta.creditRefreshes % 2 ? '716' : '712' : '—'}</Text><Text style={s.body}>This is a fictional score on a sample 300–850 scale. No bureau report, identity verification or credit check has been requested.</Text>{sampleReady ? <><Text style={s.body}>Sample factors: payment history, balances and account age. Live bureau, score model and refresh schedule are still to be determined.</Text><Button label="Refresh sample credit score" onPress={() => { updateBeta({ creditRefreshes: beta.creditRefreshes + 1 }); setNotice('Fictional score refreshed. Your credit was not checked.'); }} /></> : sampleHelp}</Box>
+        <Box title="Your saved credit entry"><Text style={s.value}>{Number(finance.creditScore) >= 300 && Number(finance.creditScore) <= 850 ? finance.creditScore : 'No score saved'}</Text><Text style={s.body}>Manually entered in Budget. This is separate from the fictional score above and has not been verified by a credit bureau.</Text></Box>
+      </>}
+    </ScrollView>
+    {!embedded && <Button secondary label="Close Premium" onPress={onClose} />}
+  </View>;
+  return embedded ? content : <Modal visible={visible} animationType="slide" onRequestClose={panel ? () => open(null) : onClose}><SafeAreaView style={s.page}>{content}</SafeAreaView></Modal>;
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#F6FBFF' }, header: { padding: 22, paddingTop: 52, flexDirection: 'row', backgroundColor: '#FFFFFF' },
-  kicker: { fontSize: 12, fontWeight: '900', color: '#6754E8', letterSpacing: 1.2 }, title: { fontSize: 28, lineHeight: 34, fontWeight: '900', color: '#071A3A', marginTop: 7 }, subtitle: { fontSize: 15, lineHeight: 22, color: '#536178', marginTop: 7 }, close: { padding: 8 },
-  content: { padding: 18, gap: 13, paddingBottom: 50 }, promise: { backgroundColor: '#DFFCF7', borderRadius: 20, padding: 18 }, promiseTitle: { fontSize: 20, fontWeight: '900', color: '#075E54' }, promiseBody: { fontSize: 15, lineHeight: 22, color: '#334660', marginTop: 5 },
-  card: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#FFFFFF', borderRadius: 18, padding: 16 }, icon: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#EEE9FF', alignItems: 'center', justifyContent: 'center' }, cardTitle: { fontSize: 17, fontWeight: '800', color: '#071A3A' }, body: { fontSize: 14, lineHeight: 21, color: '#536178', marginTop: 3 },
-  panel: { backgroundColor: '#FFFFFF', borderRadius: 18, padding: 17, gap: 10 }, panelTitle: { fontSize: 20, fontWeight: '900', color: '#071A3A' }, quote: { fontSize: 16, lineHeight: 23, fontWeight: '800', color: '#6754E8' }, input: { borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 13, padding: 13, fontSize: 17, backgroundColor: '#FFFFFF' }, primary: { backgroundColor: '#6754E8', padding: 14, borderRadius: 13, alignItems: 'center' }, primaryText: { color: '#FFFFFF', fontWeight: '900' }, row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, borderTopWidth: 1, borderTopColor: '#E7EEF5', paddingTop: 10 }, rowTitle: { flex: 1, color: '#334660', fontWeight: '700' }, rowValue: { color: '#071A3A', fontWeight: '900' }, bank: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 9, backgroundColor: '#DFFCF7', padding: 15, borderRadius: 16 }, bankText: { color: '#075E54', fontWeight: '900' },
+  page: { flex: 1, backgroundColor: '#F6FBFF' }, header: { paddingHorizontal: 18, paddingTop: 12, paddingBottom: 8, flexDirection: 'row', alignItems: 'flex-start', backgroundColor: '#EEE9FF' }, headerCopy: { flex: 1, paddingTop: 8 }, bobbie: { width: 112, height: 154, marginLeft: 6 }, kicker: { fontSize: 11, fontWeight: '900', color: '#6754E8', letterSpacing: 1 }, title: { fontSize: 23, lineHeight: 28, fontWeight: '900', color: '#071A3A', marginTop: 7 }, subtitle: { fontSize: 13, lineHeight: 19, color: '#536178', marginTop: 7 }, content: { padding: 16, gap: 12, paddingBottom: 30 }, promise: { backgroundColor: '#DFFCF7', borderRadius: 18, padding: 15 }, promiseTitle: { fontSize: 15, fontWeight: '900', color: '#075E54' }, card: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#FFFFFF', borderRadius: 20, padding: 10, borderWidth: 1, borderColor: '#E4DDF7' }, cardArt: { width: 90, height: 90, borderRadius: 14 }, cardCopy: { flex: 1 }, cardTitle: { fontSize: 17, fontWeight: '800', color: '#071A3A' }, badge: { fontSize: 10, lineHeight: 15, fontWeight: '900', color: '#6754E8', marginBottom: 3 }, body: { fontSize: 14, lineHeight: 21, color: '#536178', marginTop: 4 }, back: { flexDirection: 'row', gap: 8, paddingHorizontal: 18, paddingVertical: 12, alignItems: 'center' }, backText: { color: '#6754E8', fontWeight: '800' }, box: { backgroundColor: '#FFFFFF', borderRadius: 18, padding: 17, gap: 10 }, panelTitle: { fontSize: 20, fontWeight: '900', color: '#071A3A' }, quote: { fontSize: 17, lineHeight: 24, fontWeight: '800', color: '#6754E8' }, featureArt: { width: '100%', height: 175, borderRadius: 18 }, field: { gap: 6 }, label: { fontSize: 14, color: '#334660', fontWeight: '800' }, input: { borderWidth: 1, borderColor: '#CBD5E1', borderRadius: 13, padding: 13, fontSize: 17, backgroundColor: '#FFFFFF' }, button: { backgroundColor: '#6754E8', padding: 14, borderRadius: 13, alignItems: 'center', justifyContent: 'center', minHeight: 46 }, buttonText: { color: '#FFFFFF', fontWeight: '900', textAlign: 'center' }, secondary: { backgroundColor: '#EEE9FF' }, secondaryText: { color: '#46349D' }, disabled: { opacity: 0.45 }, row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }, rowTitle: { flex: 1, color: '#334660', fontWeight: '700' }, rowValue: { color: '#071A3A', fontWeight: '900' }, value: { fontSize: 22, color: '#071A3A', fontWeight: '900' }, choices: { flexDirection: 'row', gap: 10 }, choice: { padding: 12, borderRadius: 12, backgroundColor: '#EEE9FF', minWidth: 55, alignItems: 'center' }, selected: { backgroundColor: '#6754E8' }, choiceText: { fontWeight: '900', color: '#46349D' }, notice: { padding: 12, borderRadius: 12, color: '#075E54', backgroundColor: '#DFFCF7', fontSize: 14, lineHeight: 21 }, plan: { borderTopWidth: 1, borderColor: '#E4DDF7', paddingTop: 12, gap: 8 }, score: { fontSize: 58, fontWeight: '900', color: '#6754E8', textAlign: 'center' },
 });

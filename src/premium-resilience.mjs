@@ -87,6 +87,9 @@ export function buildBillShockPlans({ expense, balance = 0, nextIncome = 0, upco
   const immediatelyCoverable = Math.min(afterFund, cashAfterEssentials);
   const unresolved = money(afterFund - immediatelyCoverable);
   const periods = unresolved <= 0 ? 0 : Math.max(1, Math.ceil(unresolved / Math.max(25, nextIncome * 0.08 || 25)));
+  const gentleFundUse = money(Math.min(fundUse, shock * 0.5));
+  const gentleRemaining = money(Math.max(0, shock - gentleFundUse - cashAfterEssentials));
+  const gentlePeriods = gentleRemaining ? Math.max(4, Math.ceil(gentleRemaining / Math.max(25, nextIncome * 0.08 || 25)) * 2) : 0;
 
   return {
     expense: shock,
@@ -108,8 +111,10 @@ export function buildBillShockPlans({ expense, balance = 0, nextIncome = 0, upco
     },
     gentlest: {
       label: 'Gentlest',
-      fundUse: money(Math.min(fundUse, shock * 0.5)),
-      suggestedWeekly: unresolved ? money(Math.max(10, unresolved / Math.max(4, periods * 2))) : 0,
+      fundUse: gentleFundUse,
+      remaining: gentleRemaining,
+      weeks: gentlePeriods,
+      suggestedWeekly: gentlePeriods ? money(Math.min(gentleRemaining, Math.max(10, gentleRemaining / gentlePeriods))) : 0,
     },
   };
 }

@@ -43,6 +43,10 @@ export default function TesterFeedback() {
           <Text style={s.body}>Notice something confusing or have an idea? Tell Daddy which screen you visited, what you expected, and what happened.</Text>
           <Text style={s.heading}>A few places to explore</Text>
           <Text style={s.body}>Open every family portrait, tap Em’s paw-print picture, and visit the quilt. Try entering cents in Budget, planning an extra check, and asking Bobbie’s mirror about a pretend purchase.</Text>
+          <Text style={s.heading}>Try the new Premium tab</Text>
+          <Text style={s.body}>Tap every illustrated feature and check Back to Premium. In Account connections & beta setup, connect the fictional sample accounts. Turn round-ups on and off, save a cap and simulate purchases. Save a Life Happens goal, try a sample payday and an emergency, compare Bill Shock recovery plans, review the catch-up plan, refresh sample Money Watch alerts and explore the fictional credit score.</Text>
+          <Text style={s.body}>Reopen the app and check that your preferences remain. Disconnect sample accounts and confirm automation pauses. Reset sample activity and check that your saved budget and bills stay intact. Sample balances, alerts and scores are fictional: this beta does not move money, pay bills or retrieve credit reports.</Text>
+          <Text style={s.body}>Look for Bobbie’s diamond tiara, colorful gala gown and jewels in the upper right. The logo should match the locked original: white P, paw with teal checkmark, and teal, yellow, purple and coral sections. Report clipped artwork, small-screen or larger-text issues, missing images and buttons that do nothing.</Text>
           <Text style={s.heading}>Send feedback</Text>
           <Text style={s.body}>On iPhone, TestFlight’s Send Beta Feedback lets you share feedback privately with the developer.</Text>
           <Text style={s.body}>You can also open a GitHub feedback draft below. GitHub issues are public and require a GitHub account. Use fictional examples and hide personal details in screenshots.</Text>
