@@ -115,6 +115,9 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       const nav = renderer.root.find(node => node.type?.name === 'BottomNav');
       const target = nav.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(text => text.props.children === title));
       await act(() => target.props.onPress());
+      await act(() => button(`How ${title} works`).props.onPress());
+      assert.ok(renderer.root.findAllByType('Text').some(node => [].concat(node.props.children).join('') === `${title}: a place to start`), 'each tab opens its own instructions');
+      await act(() => button('Close tab instructions').props.onPress());
     }
     await act(() => button('Open PayPlace Premium').props.onPress());
     const hub = () => renderer.root.find(node => node.type?.name === 'PremiumResilienceHub');
@@ -132,6 +135,9 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     for (const title of ['Round Up & Save', 'Life Happens Fund', 'Bill Shock Mode', 'Help, I’m Falling Behind', 'Automatic Money Watch', 'Credit Center']) {
       await press(`Open ${title}`);
       assert.equal(button('Open Round Up & Save'), undefined, 'feature opens a separate screen');
+      await press('Hide instructions');
+      assert.ok(button('Show instructions'), 'users can make room for controls after reading the steps');
+      await press('Show instructions');
       await press('Back to Premium');
     }
     await press('Account connections & beta setup');
@@ -147,8 +153,8 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Save round-up cap');
     await press('Round-up multiplier 2 times');
     await press('Simulate next purchase batch');
-    await press('Simulate next purchase batch');
-    assert.equal(harness.finance().premiumBeta.roundUpSaved, 1.5, 'multiple batches respect the saved cap');
+    assert.equal(harness.finance().premiumBeta.roundUpSaved, 1.5, 'the batch respects the saved cap');
+    assert.equal(button('Simulate next purchase batch').props.disabled, true, 'a reached cap has an explicit stop');
     await toggle('Enable sample round-ups', false);
     assert.equal(button('Simulate next purchase batch').props.disabled, true);
     await press('Back to Premium');
@@ -158,8 +164,8 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Save fund preferences');
     await toggle('Enable sample payday savings', true);
     await press('Simulate next payday');
-    await press('Simulate next payday');
     assert.equal(harness.finance().premiumBeta.sampleFund, 120, 'sample savings stop at the goal');
+    assert.equal(button('Simulate next payday').props.disabled, true, 'a reached savings goal disables another contribution');
     assert.equal(harness.finance().premiumResilience.lifeHappensBalance, 0, 'sample savings do not change the saved real cushion');
     await press('Back to Premium');
     await press('Open Bill Shock Mode');
@@ -205,6 +211,19 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Reset sample activity');
     assert.equal(harness.finance().premiumBeta.sampleFund, 100);
     assert.equal(harness.finance().premiumResilience.roundUpCap, 1.5, 'reset keeps saved preferences');
+    await press('Back to Premium');
+    await press('Open Round Up & Save');
+    assert.equal(button('Simulate next purchase batch').props.disabled, true);
+    assert.ok(renderer.root.findAllByType('Text').some(node => typeof node.props.children === 'string' && node.props.children.includes('First connect sample accounts below')), 'disabled simulation explains its missing setup nearby');
+    await press('Connect sample accounts');
+    assert.ok(button('Simulate next purchase batch'), 'inline connection stays on the feature screen');
+    assert.equal(button('Simulate next purchase batch').props.disabled, true, 'connection does not silently enable round-ups');
+    await press('Turn on sample round-ups');
+    assert.equal(button('Simulate next purchase batch').props.disabled, false);
+    await press('Simulate next purchase batch');
+    assert.equal(button('Simulate next purchase batch').props.disabled, true);
+    await press('Start a new sample week');
+    assert.equal(button('Simulate next purchase batch').props.disabled, false, 'resetting the week resolves the cap blocker');
     await press('Back to Premium');
     await press('Open Help, I’m Falling Behind');
     await press('Review my bills');
