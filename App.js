@@ -54,6 +54,7 @@ import { normalizePremiumBeta } from "./src/premium-beta.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
+import ScreenHelp from "./src/ScreenHelp";
 import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
@@ -1197,6 +1198,7 @@ function PayPlaceApp() {
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [premiumPanel, setPremiumPanel] = useState(null);
   const [premiumVisit, setPremiumVisit] = useState(0);
+  const [tabHelpVisible, setTabHelpVisible] = useState(false);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
@@ -1671,7 +1673,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowTwo} />
         <View style={styles.glowThree} />
 
-        <Header onSecurity={() => setSecurityVisible(true)} />
+        <Header compact={tab === "Premium"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
+        <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
 
         {tab === "Home" && (
           <HomeScreen
@@ -2046,16 +2049,16 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit }) {
   );
 }
 
-function Header({ onSecurity }) {
+function Header({ onSecurity, onHelp, tab, compact = false }) {
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
         <View style={styles.brandWrap}>
-          <CharacterArtwork source={payplaceLogo} style={{ width: 46, height: 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel="PayPlace official logo: a white P with a paw and checkmark on teal, yellow, purple, and coral" />
+          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel="PayPlace official logo: a white P with a paw and checkmark on teal, yellow, purple, and coral" />
 
           <View style={styles.wordmark}>
-            <Text style={styles.logoDark}>Pay</Text>
-            <Text style={styles.logoMint}>Place</Text>
+            <Text style={[styles.logoDark, compact && { fontSize: 23 }]}>Pay</Text>
+            <Text style={[styles.logoMint, compact && { fontSize: 23 }]}>Place</Text>
           </View>
         </View>
 
@@ -2065,10 +2068,11 @@ function Header({ onSecurity }) {
         </View>
       </View>
 
-      <Text style={styles.tagline} numberOfLines={1} adjustsFontSizeToFit>
+      <Text style={[styles.tagline, compact && { fontSize: 12, marginLeft: 39 }]} numberOfLines={1} adjustsFontSizeToFit>
         Money without shame.
       </Text>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 5 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
+        {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${tab} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {tab} works</Text></TouchableOpacity>}
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
     </View>
@@ -2909,7 +2913,7 @@ const importDemoBills = () => {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills" subtitle="Add, pay, review, or delete bills." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <SectionTitle title="Bills" subtitle="Add bills and record payments you make elsewhere." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
 
 {selectedReviewBill && (
   <Modal

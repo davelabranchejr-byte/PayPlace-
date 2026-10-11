@@ -4,10 +4,12 @@ Premium is included without charge during beta. Banking integrations are pending
 
 ## Paste into TestFlight “What to Test”
 
+This update makes the instructions easier to find. Tap How [tab] works in the header of each of the six tabs. Every Premium feature starts with a numbered How this works guide; try hiding and reopening the steps. Sample accounts can now be connected directly inside a feature, and disabled simulations explain what to do next. The Premium header scrolls with its content so the controls have more room. Simulation results appear beside the actions.
+
 Try the new diamond Premium tab and every illustrated feature button. Bobbie should appear in the upper right wearing her jeweled tiara and colorful gala gown. Compare the PayPlace logo with the locked original: white P, paw with teal checkmark, teal/yellow/purple/coral sections.
 
-1. Open Account connections & beta setup, then connect the fictional sample accounts.
-2. Round Up & Save: toggle sample round-ups on/off, choose a multiplier, save a weekly cap and simulate purchase batches. Savings must stop at the cap; turning the switch off must disable simulation. Invalid amounts must not save.
+1. Connect fictional sample accounts from Round Up & Save without leaving that feature, or use Account connections & beta setup. Connection alone must not turn on either savings switch.
+2. Round Up & Save: toggle sample round-ups on/off, choose a multiplier, save a weekly cap and simulate purchase batches. Savings must stop at the cap; turning the switch off must disable simulation. A reached or zero cap should show instructions for resolving it. Start a new sample week to reset the cap total. Invalid amounts must not save. At 3×, a $4.22 purchase should preview $2.34 ($0.78 multiplied by three).
 3. Life Happens Fund: save a goal and payday contribution, turn sample savings on/off, simulate a payday and a $50 emergency. The sample fund must stop at the goal and never go below zero.
 4. Bill Shock Mode: enter an expense, compare Fastest/Balanced/Gentlest and save a recovery choice. Switch between your saved budget and the fictional budget. No bill should become Paid.
 5. Help, I’m Falling Behind: check unpaid bills and priorities, try the sample budget and use Review my bills. Expected income must be labeled as an estimate.
