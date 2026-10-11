@@ -1,4 +1,4 @@
-name: Build 24 with Xcode 26 and submit through Expo
+name: Build PayPlace with Xcode 26 and submit through Expo
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ on:
       build_number:
         description: Build number for a signing-only archive
         type: string
-        default: '30'
+        default: '31'
 
 permissions:
   contents: read
@@ -80,6 +80,7 @@ jobs:
       - name: Install dependencies and run checks
         run: |
           npm ci
+          npm run check
           npm test
           gem install fastlane cocoapods --no-document
       - name: Validate release script syntax

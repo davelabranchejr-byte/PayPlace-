@@ -49,6 +49,7 @@ import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
+import { normalizePremiumState } from "./src/premium-resilience.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
@@ -1194,15 +1195,6 @@ function PayPlaceApp() {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [premiumVisible, setPremiumVisible] = useState(false);
-  const [premiumState, setPremiumState] = useState({
-  lifeHappensTarget: 500,
-  lifeHappensBalance: 0,
-  paydayContribution: 20,
-  roundUpMultiplier: 1,
-  roundUpCap: 25,
-  roundUpPot: 0,
-  rebuildMode: false,
-});
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
@@ -1758,21 +1750,21 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           reminderStatus={subscriptionReminderStatus}
           onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
         {securityPanel}
-        <PremiumResilienceHub
-  visible={premiumVisible}
-  onClose={() => setPremiumVisible(false)}
-  finance={finance}
-  premiumState={premiumState}
-  onPremiumStateChange={setPremiumState}
-  onOpenBankConnections={() => {
-    setPremiumVisible(false);
-    setBankConnectionsVisible(true);
-  }}
-  onOpenSubscriptions={() => {
-    setPremiumVisible(false);
-    setDetectiveVisible(true);
-  }}
-/>
+        {premiumVisible && <PremiumResilienceHub
+          visible={premiumVisible}
+          onClose={() => setPremiumVisible(false)}
+          finance={finance}
+          premiumState={normalizePremiumState(finance.premiumResilience)}
+          onPremiumStateChange={next => setFinance(current => ({ ...current, premiumResilience: normalizePremiumState(next) }))}
+          onOpenBankConnections={() => {
+            setPremiumVisible(false);
+            setBankConnectionsVisible(true);
+          }}
+          onOpenSubscriptions={() => {
+            setPremiumVisible(false);
+            setDetectiveVisible(true);
+          }}
+        />}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -2081,7 +2073,7 @@ function Header({ onSecurity }) {
 }
 
 
-function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective }) {
+function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremium }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("door");
   const [familyMember, setFamilyMember] = useState(null);
@@ -2388,7 +2380,7 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onDetective={onDetective} />
+      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onDetective={onDetective} onPremium={onPremium} />
       <TouchableOpacity style={styles.visitAnnieButton} onPress={replayAnnieOnboarding}>
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>

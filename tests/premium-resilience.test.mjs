@@ -9,6 +9,8 @@ import {
   buildBillShockPlans,
   buildCatchUpPlan,
   recoveryMessage,
+  normalizePremiumState,
+  unpaidPremiumBills,
 } from '../src/premium-resilience.mjs';
 
 test('roundups calculate correctly', () => {
@@ -62,4 +64,40 @@ test('recovery copy is shame-free and reflects rebuild state', () => {
   const message = recoveryMessage({ ...DEFAULT_PREMIUM_STATE, rebuildMode: true, lifeHappensBalance: 125 });
   assert.match(message, /did its job/i);
   assert.match(message, /375\.00/);
+});
+
+test('older saved plans receive defaults and malformed Premium values stay safe', () => {
+  assert.deepEqual(normalizePremiumState(undefined), { ...DEFAULT_PREMIUM_STATE });
+  assert.deepEqual(normalizePremiumState(null), { ...DEFAULT_PREMIUM_STATE });
+  const normalized = normalizePremiumState({ lifeHappensBalance: '125.25', lifeHappensTarget: -1,
+    roundUpCap: 'invalid', roundUpMultiplier: 20, rebuildMode: 'false' });
+  assert.equal(normalized.lifeHappensBalance, 125.25);
+  assert.equal(normalized.lifeHappensTarget, 0);
+  assert.equal(normalized.roundUpCap, DEFAULT_PREMIUM_STATE.roundUpCap);
+  assert.equal(normalized.roundUpMultiplier, 1);
+  assert.equal(normalized.rebuildMode, false);
+});
+
+test('paid bills are excluded and overdue dates use the app bill fields', () => {
+  const bills = [
+    { id: 'paid-flag', paid: true, amount: 700 },
+    { id: 'paid-status', status: 'Paid', amount: 700 },
+    { id: 'late', amount: '100.00', dueDate: '2026-10-01' },
+    { id: 'future', amount: '200.00', dueDate: '2026-10-15' },
+  ];
+  const now = new Date(2026, 9, 11, 12);
+  const outstanding = unpaidPremiumBills(bills, now);
+  assert.deepEqual(outstanding.map(bill => [bill.id, bill.overdue]), [['late', true], ['future', false]]);
+  const plan = buildCatchUpPlan({ bills, availableCash: '50', nextIncome: '150', now });
+  assert.equal(plan.resources, 200);
+  assert.equal(plan.totalShortfall, 100);
+  assert.equal(plan.steps.length, 2);
+  assert.equal(unpaidPremiumBills(null).length, 0);
+});
+
+test('bill shock treats saved strings as amounts instead of concatenating them', () => {
+  const numeric = buildBillShockPlans({ expense: 800, balance: 300, nextIncome: 500, upcomingEssentialBills: 400 });
+  const strings = buildBillShockPlans({ expense: '800', balance: '300', nextIncome: '500', upcomingEssentialBills: '400' });
+  assert.deepEqual(strings, numeric);
+  assert.equal(strings.fastest.payNow, 0, 'an expected paycheck is not available cash');
 });

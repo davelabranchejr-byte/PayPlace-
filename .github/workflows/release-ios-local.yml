@@ -14,7 +14,7 @@ on:
       build_number:
         description: Build number for a signing-only archive
         type: string
-        default: '24'
+        default: '31'
 
 permissions:
   contents: read
@@ -66,6 +66,7 @@ jobs:
       - name: Install dependencies and run checks
         run: |
           npm ci
+          npm run check
           npm test
           gem install fastlane cocoapods --no-document
       - name: Validate release script syntax

@@ -6,6 +6,7 @@ import {
   buildBillShockPlans,
   buildCatchUpPlan,
   recoveryMessage,
+  unpaidPremiumBills,
 } from './premium-resilience.mjs';
 
 const FEATURES = [
@@ -28,21 +29,22 @@ function Card({ icon, title, body, onPress }) {
 export default function PremiumResilienceHub({ visible, onClose, finance = {}, premiumState = DEFAULT_PREMIUM_STATE, onPremiumStateChange = () => {}, onOpenBankConnections, onOpenSubscriptions }) {
   const [panel, setPanel] = useState(null);
   const [shockAmount, setShockAmount] = useState('');
-  const bills = finance.bills || [];
-  const catchUp = useMemo(() => buildCatchUpPlan({ bills, availableCash: finance.balance || 0, nextIncome: finance.paycheckAmount || 0 }), [bills, finance.balance, finance.paycheckAmount]);
+  const bills = useMemo(() => unpaidPremiumBills(finance.bills), [finance.bills]);
+  const nextIncome = finance.nextPaycheck || 0;
+  const catchUp = useMemo(() => buildCatchUpPlan({ bills, availableCash: finance.balance || 0, nextIncome }), [bills, finance.balance, nextIncome]);
   const shock = useMemo(() => buildBillShockPlans({
     expense: shockAmount,
     balance: finance.balance || 0,
-    nextIncome: finance.paycheckAmount || 0,
+    nextIncome,
     upcomingEssentialBills: bills.reduce((sum, b) => sum + (Number(b.amount) || 0), 0),
     lifeHappensBalance: premiumState.lifeHappensBalance || 0,
-  }), [shockAmount, finance.balance, finance.paycheckAmount, bills, premiumState.lifeHappensBalance]);
+  }), [shockAmount, finance.balance, nextIncome, bills, premiumState.lifeHappensBalance]);
 
   return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
     <View style={s.page}>
-      <View style={s.header}><View style={{ flex: 1 }}><Text style={s.kicker}>PAYPLACE PREMIUM</Text><Text style={s.title}>Financial breathing room for real life.</Text><Text style={s.subtitle}>Prepared for the unexpected. Supported through the recovery.</Text></View><TouchableOpacity onPress={onClose} style={s.close}><Ionicons name="close" size={25} color="#071A3A" /></TouchableOpacity></View>
+      <View style={s.header}><View style={{ flex: 1 }}><Text style={s.kicker}>PAYPLACE PREMIUM · BETA PREVIEW</Text><Text style={s.title}>Financial breathing room for real life.</Text><Text style={s.subtitle}>Prepared for the unexpected. Supported through the recovery.</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close PayPlace Premium" onPress={onClose} style={s.close}><Ionicons name="close" size={25} color="#071A3A" /></TouchableOpacity></View>
       <ScrollView contentContainerStyle={s.content}>
-        <View style={s.promise}><Text style={s.promiseTitle}>Set it once.</Text><Text style={s.promiseBody}>PayPlace quietly helps you prepare, recover, and rebuild without turning a hard month into a character judgment.</Text></View>
+        <View style={s.promise}><Text style={s.promiseTitle}>A little more breathing room.</Text><Text style={s.promiseBody}>Try recovery plans with your saved budget. Beta access is free. Automatic transfers, bank monitoring and credit reports are coming soon; this preview does not move money or start a paid subscription.</Text></View>
         {FEATURES.map(([icon, title, body]) => <Card key={title} icon={icon} title={title} body={body} onPress={() => {
           if (title === 'Automatic Money Watch' && onOpenSubscriptions) onOpenSubscriptions();
           else if (title === 'Credit Center') setPanel('credit');
@@ -51,13 +53,13 @@ export default function PremiumResilienceHub({ visible, onClose, finance = {}, p
 
         {panel === 'Life Happens Fund' && <View style={s.panel}><Text style={s.panelTitle}>Life Happens Fund</Text><Text style={s.body}>Current cushion: ${Number(premiumState.lifeHappensBalance || 0).toFixed(2)} of ${Number(premiumState.lifeHappensTarget || 500).toFixed(2)}</Text><Text style={s.body}>{recoveryMessage(premiumState)}</Text><TouchableOpacity style={s.primary} onPress={() => onPremiumStateChange({ ...premiumState, rebuildMode: false })}><Text style={s.primaryText}>Keep building my cushion</Text></TouchableOpacity></View>}
 
-        {panel === 'Round Up & Save' && <View style={s.panel}><Text style={s.panelTitle}>Round Up & Save</Text><Text style={s.body}>Turn everyday purchases into tiny deposits toward your safety net. Choose 1x, 2x or 3x and set a cap so the automation never gets bossy.</Text></View>}
+        {panel === 'Round Up & Save' && <View style={s.panel}><Text style={s.panelTitle}>Round Up & Save</Text><Text style={s.body}>Coming soon: turn everyday purchases into tiny deposits toward your safety net, with a multiplier and a cap you control. Automatic round-ups are not active during this preview.</Text></View>}
 
         {panel === 'Bill Shock Mode' && <View style={s.panel}><Text style={s.panelTitle}>Bill Shock Mode</Text><TextInput value={shockAmount} onChangeText={setShockAmount} keyboardType="decimal-pad" placeholder="Unexpected expense" style={s.input} /><Text style={s.body}>Fastest: pay ${shock.fastest.payNow.toFixed(2)} now. Remaining ${shock.fastest.remaining.toFixed(2)}.</Text><Text style={s.body}>Balanced: {shock.balanced.periods ? `${shock.balanced.periods} payments around $${shock.balanced.payment.toFixed(2)}` : 'covered with current resources'}.</Text><Text style={s.body}>Life Happens Fund available: ${shock.useFund.fundUse.toFixed(2)}.</Text></View>}
 
-        {panel === "Help, I'm Falling Behind" && <View style={s.panel}><Text style={s.panelTitle}>Help, I’m Falling Behind</Text><Text style={s.quote}>You do not need a lecture. You need a plan.</Text><Text style={s.body}>PayPlace protects essentials first, then builds a catch-up path that does not make next month worse.</Text><Text style={s.body}>Available to assign: ${catchUp.resources.toFixed(2)} · Remaining shortfall: ${catchUp.totalShortfall.toFixed(2)}</Text>{catchUp.steps.slice(0, 6).map(step => <View key={step.id} style={s.row}><Text style={s.rowTitle}>{step.name || step.title || step.id}</Text><Text style={s.rowValue}>${step.recommendedPayment.toFixed(2)}</Text></View>)}</View>}
+        {panel === "Help, I'm Falling Behind" && <View style={s.panel}><Text style={s.panelTitle}>Help, I’m Falling Behind</Text><Text style={s.quote}>You do not need a lecture. You need a plan.</Text><Text style={s.body}>PayPlace protects essentials first, then builds a catch-up path that does not make next month worse.</Text><Text style={s.body}>Cash plus next paycheck (estimate): ${catchUp.resources.toFixed(2)} · Remaining shortfall: ${catchUp.totalShortfall.toFixed(2)}</Text>{catchUp.steps.slice(0, 6).map(step => <View key={step.id} style={s.row}><Text style={s.rowTitle}>{step.name || step.title || step.id}</Text><Text style={s.rowValue}>${step.recommendedPayment.toFixed(2)}</Text></View>)}</View>}
 
-        {panel === 'credit' && <View style={s.panel}><Text style={s.panelTitle}>Credit Center</Text><Text style={s.body}>Credit score, report, utilization, payment history, open accounts and change alerts belong here. The provider connection stays inactive until PayPlace has approved production access.</Text></View>}
+        {panel === 'credit' && <View style={s.panel}><Text style={s.panelTitle}>Credit Center</Text><Text style={s.body}>Coming soon: credit scores, reports and change alerts in one calm place. This preview does not retrieve your credit report.</Text></View>}
 
         <TouchableOpacity style={s.bank} onPress={onOpenBankConnections}><Ionicons name="link" size={21} color="#075E54" /><Text style={s.bankText}>Connect accounts for Premium automation</Text></TouchableOpacity>
       </ScrollView>

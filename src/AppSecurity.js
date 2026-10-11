@@ -75,19 +75,10 @@ export default function AppSecurity({ children }) {
     finally { authenticating.current = false; if (alive.current) setBusy(false); }
   }
   async function unlock() {
-  if (authenticating.current || !ready) return;
-
-  const success = await authenticate();
-  if (!success || !alive.current) return;
-
-  await new Promise(resolve => setTimeout(resolve, 350));
-
-  if (!alive.current) return;
-
-  lastInteraction.current = Date.now();
-  lockedRef.current = false;
-  setUnlockedOnce(true);
-  setLocked(false);
+    if (!ready) return;
+    // Keep Build 26's authentication transition. The home render failure was
+    // a missing Premium callback, not a reason to delay or block unlocking.
+    if (await authenticate()) { lockedRef.current = false; setLocked(false); setUnlockedOnce(true); }
   }
   async function setAppLock(next) {
     if (!native || !(await authenticate(next ? 'Enable PayPlace app lock' : 'Turn off PayPlace app lock'))) return;
