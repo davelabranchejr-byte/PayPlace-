@@ -45,6 +45,10 @@ import BelongingQuilt, { AcornSquare, QuiltDetail } from "./src/BelongingQuilt";
 import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import useNeighborhoodArtwork from "./src/useNeighborhoodArtwork";
+import NeighborCare, { SmallSteps } from "./src/NeighborCare";
+import useAnnieCare from "./src/useAnnieCare";
+import { recordActivity } from "./src/neighborhood-progress.mjs";
+import LivingNeighborhood from "./src/LivingNeighborhood";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
@@ -1203,7 +1207,9 @@ function PayPlaceApp() {
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   function openPremium(panel = null) { setPremiumPanel(panel); setPremiumVisit(current => current + 1); setTab("Premium"); }
-  const [finance, setFinance] = useState(starterFinance);
+  const [finance, setFinanceRaw] = useState(starterFinance);
+  function setFinance(update) { setFinanceRaw(current => recordActivity(current, typeof update === "function" ? update(current) : update)); }
+
   const [calmIndex, setCalmIndex] = useState(0);
   const [pearlCategory, setPearlCategory] = useState("westley");
   const [loaded, setLoaded] = useState(false);
@@ -1224,6 +1230,7 @@ function PayPlaceApp() {
     notes: "",
     arrivalReason: "",
   });
+  const annieStatus = useAnnieCare(finance.annieCare, loaded && onboardingComplete && !storageError, now => setFinanceRaw(current => ({...current, annieCare:{...current.annieCare, lastOpened:now, returnedAfterWeek: !!current.annieCare?.lastOpened && now-current.annieCare.lastOpened >= 7*86400000}})), () => setTab("Home"));
   const reminderStatus = useBillReminders(finance.bills, finance.billReminders, loaded && !storageError,
     () => setTab("Bills"));
   const subscriptions = useMemo(() => subscriptionCases(finance), [finance.subscriptions]);
@@ -1265,7 +1272,7 @@ function PayPlaceApp() {
         if (saved && active) {
           const parsed = JSON.parse(saved);
 
-          setFinance({
+          setFinanceRaw({
             ...starterFinance,
             ...parsed,
             bills: Array.isArray(parsed.bills) ? parsed.bills : starterFinance.bills,
@@ -1578,7 +1585,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   async function resetDemoData() {
     try {
       await ProtectedStorage.removeItem(STORAGE_KEY);
-      setFinance(starterFinance);
+      setFinanceRaw(starterFinance);
       Alert.alert("Reset complete", "PayPlace is back to starter demo data.");
     } catch (error) {
       Alert.alert("Reset failed", "PayPlace could not clear saved data.");
@@ -1621,7 +1628,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       [STORAGE_KEY]: JSON.stringify(restoredFinance),
       [ONBOARDING_KEY]: JSON.stringify(recoveredProfile),
     });
-    setFinance(restoredFinance);
+    setFinanceRaw(restoredFinance);
     onboardingFinalizing.current = false;
     setOnboardingSession(current => current + 1);
     setOnboardingAnswers(recoveredProfile);
@@ -1693,6 +1700,9 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onDetective={() => setDetectiveVisible(true)}
             onPremium={() => openPremium()}
             onCredit={() => openPremium("credit")}
+            onCareChange={next => setFinanceRaw(current => ({...current,annieCare:next}))}
+            onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
+            annieStatus={annieStatus}
             onSavings={() => setSavingsVisible(true)}
           />
         )}
@@ -2170,7 +2180,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </Modal>
 
       <View style={styles.neighborhoodHero}>
-        <CharacterArtwork source={neighborhoodScene} style={styles.heroArtwork} resizeMode="contain" accessibilityLabel="PayPlace's treehouse neighborhood around Annie and her red stained-glass door" />
+        <LivingNeighborhood />
         <View style={styles.heroEdgeShade} pointerEvents="none" />
 
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
@@ -2325,6 +2335,9 @@ function HomeScreen({
   onPremium,
   onCredit,
   onSavings,
+  onCareChange,
+  onStepsChange,
+  annieStatus,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2393,6 +2406,7 @@ function HomeScreen({
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
       </TouchableOpacity>
+      <NeighborCare finance={finance} onChange={onCareChange} status={annieStatus} onSmallStep={() => setGuidanceVisible(true)} onCalm={() => switchTab("Calm")} />
       <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => switchTab("Budget")} />
       <ExtraPaycheckCalendar
         visible={extraPlanVisible}
@@ -2410,7 +2424,8 @@ function HomeScreen({
         onRequestClose={() => setGuidanceVisible(false)}
       >
         <View style={styles.overlayShell}>
-          <View style={styles.guidanceModalCard}>
+          <ScrollView style={{maxHeight:"85%"}} contentContainerStyle={styles.guidanceModalCard}>
+            <SmallSteps finance={finance} onChange={onStepsChange} onOpen={target => {setGuidanceVisible(false); if(target === "Savings") onSavings(); else if(target === "Subscriptions") onDetective(); else switchTab(target);}} />
             <View
               style={[
                 styles.guidanceIconWrap,
@@ -2452,7 +2467,7 @@ function HomeScreen({
                 <Text style={styles.primaryButtonText}>{guidancePlan.actionLabel}</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </ScrollView>
         </View>
       </Modal>
 
