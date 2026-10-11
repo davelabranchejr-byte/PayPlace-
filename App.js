@@ -50,6 +50,7 @@ import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
 import { normalizePremiumState } from "./src/premium-resilience.mjs";
+import { normalizePremiumBeta } from "./src/premium-beta.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
@@ -60,7 +61,7 @@ import DebtMethodComparison from "./src/DebtMethodComparison";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
-const payplaceLogo = require("./assets/branding/payplace-icon.png");
+const payplaceLogo = require("./assets/branding/payplace-locked-logo.jpeg");
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -1194,10 +1195,12 @@ function PayPlaceApp() {
   const [storageError, setStorageError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
-  const [premiumVisible, setPremiumVisible] = useState(false);
+  const [premiumPanel, setPremiumPanel] = useState(null);
+  const [premiumVisit, setPremiumVisit] = useState(0);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
+  function openPremium(panel = null) { setPremiumPanel(panel); setPremiumVisit(current => current + 1); setTab("Premium"); }
   const [finance, setFinance] = useState(starterFinance);
   const [calmIndex, setCalmIndex] = useState(0);
   const [pearlCategory, setPearlCategory] = useState("westley");
@@ -1685,7 +1688,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onMirrorAction={updateMirror}
             onExtraPaycheckAction={updateExtraPaycheck}
             onDetective={() => setDetectiveVisible(true)}
-            onPremium={() => setPremiumVisible(true)}
+            onPremium={() => openPremium()}
+            onCredit={() => openPremium("credit")}
             onSavings={() => setSavingsVisible(true)}
           />
         )}
@@ -1724,6 +1728,20 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
+        {tab === "Premium" && <PremiumResilienceHub
+          key={premiumVisit}
+          embedded
+          initialPanel={premiumPanel}
+          finance={finance}
+          premiumState={normalizePremiumState(finance.premiumResilience)}
+          onPremiumStateChange={next => setFinance(current => ({ ...current, premiumResilience: normalizePremiumState(next) }))}
+          betaState={normalizePremiumBeta(finance.premiumBeta)}
+          onBetaStateChange={next => setFinance(current => ({ ...current, premiumBeta: normalizePremiumBeta(next) }))}
+          onOpenBankConnections={() => setBankConnectionsVisible(true)}
+          onOpenSubscriptions={() => setDetectiveVisible(true)}
+          onOpenBills={() => setTab("Bills")}
+        />}
+
         {tab === "Calm" && (
           <CalmScreen
             pearl={pearlCollections[pearlCategory].pearls[calmIndex % pearlCollections[pearlCategory].pearls.length]}
@@ -1742,7 +1760,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
-        <BottomNav current={tab} switchTab={setTab} />
+        <BottomNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
@@ -1750,21 +1768,6 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           reminderStatus={subscriptionReminderStatus}
           onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
         {securityPanel}
-        {premiumVisible && <PremiumResilienceHub
-          visible={premiumVisible}
-          onClose={() => setPremiumVisible(false)}
-          finance={finance}
-          premiumState={normalizePremiumState(finance.premiumResilience)}
-          onPremiumStateChange={next => setFinance(current => ({ ...current, premiumResilience: normalizePremiumState(next) }))}
-          onOpenBankConnections={() => {
-            setPremiumVisible(false);
-            setBankConnectionsVisible(true);
-          }}
-          onOpenSubscriptions={() => {
-            setPremiumVisible(false);
-            setDetectiveVisible(true);
-          }}
-        />}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -2316,6 +2319,7 @@ function HomeScreen({
   onExtraPaycheckAction,
   onDetective,
   onPremium,
+  onCredit,
   onSavings,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
@@ -2744,7 +2748,7 @@ function HomeScreen({
           value={creditScoreValue}
           sub={`${creditScoreStatus} • Manual for now`}
           theme={cardThemes.purple}
-          onPress={() => switchTab("Budget")}
+          onPress={onCredit}
         />
         <QuickCard
           artwork={require("./assets/characters/snapshot-calm-reset.png")}
@@ -3918,6 +3922,7 @@ function BottomNav({ current, switchTab }) {
     { name: "Budget", activeIcon: "wallet", inactiveIcon: "wallet-outline", color: palette.blue },
     { name: "Debt", activeIcon: "trending-down", inactiveIcon: "trending-down-outline", color: palette.coral },
     { name: "Calm", activeIcon: "leaf", inactiveIcon: "leaf-outline", color: palette.mintDark },
+    { name: "Premium", activeIcon: "diamond", inactiveIcon: "diamond-outline", color: palette.purple },
   ];
 
   return (
@@ -3929,6 +3934,9 @@ function BottomNav({ current, switchTab }) {
           return (
             <TouchableOpacity
               key={item.name}
+              accessibilityRole="tab"
+              accessibilityLabel={`Open ${item.name} tab`}
+              accessibilityState={{ selected: active }}
               style={[
                 styles.navItem,
                 active && { backgroundColor: item.color + "18" },
