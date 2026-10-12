@@ -14,7 +14,7 @@ on:
       build_number:
         description: Build number for a signing-only archive
         type: string
-        default: '31'
+        default: '35'
 
 permissions:
   contents: read
