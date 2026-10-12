@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Image, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 
 // Only release/platform details go into the draft. Never include the saved plan.

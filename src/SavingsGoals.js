@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View, KeyboardAvoidingView, Platform } from 'react-native';
+import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import Alert from './alert';
 import { contributeSavings, saveSavingsGoal, savingsProgress } from './savings-goals.mjs';

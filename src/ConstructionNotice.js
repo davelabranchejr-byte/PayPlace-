@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import Alert from "./alert";
 

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Modal, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Modal, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import Alert from "./alert";
 

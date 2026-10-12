@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Linking, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, TouchableOpacity, View } from "react-native";
+import { Text } from "./Privacy";
 import { reminderSettings } from './bill-reminders.mjs';
 import { requestBillReminderPermission } from './useBillReminders';
 

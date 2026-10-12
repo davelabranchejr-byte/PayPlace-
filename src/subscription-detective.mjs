@@ -81,7 +81,7 @@ export function planSubscriptionReminders(cases, settings, now = new Date()) {
       if (!due) continue;
       // Only dates explicitly entered by the user: no silent renewal projections.
       for (const daysBefore of [3, 0]) {
-        const date = new Date(due); date.setDate(date.getDate() - daysBefore); date.setHours(9, 0, 0, 0);
+        const date = new Date(due); date.setDate(date.getDate() - daysBefore); date.setHours(Number.isInteger(settings.hour) && settings.hour >= 0 && settings.hour <= 23 ? settings.hour : 9, Number.isInteger(settings.minute) && settings.minute >= 0 && settings.minute <= 59 ? settings.minute : 0, 0, 0);
         if (date <= now) continue;
         reminders.set(date.getTime(), { identifier: `${SUBSCRIPTION_REMINDER_PREFIX}${date.getTime()}`, date,
           content: { title: 'A little clue from PayPlace', body: 'Your Detective Clubhouse has a date to review. Come visit when you have a moment.', data: { kind: 'payplace-subscription-reminder' }, sound: false } });

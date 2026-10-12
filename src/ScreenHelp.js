@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "./Privacy";
 
 const TAB_HELP = {
   Home: { summary: 'Your starting place for the neighborhood and your money overview.', steps: [
+    'Until next payday shows bills, groceries, gas, its calculation and when your balance was updated. Your first win with Annie helps you enter one payday and one bill.',
+    'Undo & payment history corrects records without moving money. Quiet Mode lets you choose reminder time, pause Annie check-ins, reduce animation and hide dollar amounts.',
     'Start in Budget to enter your current balance, next paycheck and emergency buffer. Add your unpaid bills in Bills and debt minimums in Debt.',
     'Home uses those saved entries to estimate Safe to Spend. It is a planning guide, so update your entries when your money changes.',
     'Tap a labeled treehouse or the bottom tabs to visit a feature. Premium opens the sample automation tools; Calm gives you a moment to breathe.',
   ] },
   Bills: { summary: 'Keep a list of what you owe and when it is due.', steps: [
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
-    'After paying through your bank or the bill provider, tap Paid to record it here. Undo puts the bill back on your unpaid list.',
+    'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Home payment history shows changes and lets you correct a recorded amount.',
     'Sample bills let you try the review flow. They enter your saved list if you add them. PayPlace does not send a payment in this beta.',
   ] },
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [

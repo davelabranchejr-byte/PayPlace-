@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import { checkPurchase, mirrorBudget, parseAmount } from "./smart-mirror.mjs";
 

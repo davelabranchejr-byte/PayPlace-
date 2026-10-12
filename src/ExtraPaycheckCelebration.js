@@ -1,10 +1,13 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AccessibilityInfo, Animated, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { AccessibilityInfo, Animated, Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { PrivacyContext, Text } from "./Privacy";
 
 const artwork = require("../assets/characters/extra-paycheck-chapo-treat-rain.png");
 const treats = ["🍪", "🐟", "🍪", "🦴", "🍪", "🐟", "🍪", "🦴"];
 export default function ExtraPaycheckCelebration({ event, onPlan, onDismiss }) {
   const [reduceMotion, setReduceMotion] = useState(true);
+  const quiet = useContext(PrivacyContext);
+  const animationPaused = reduceMotion || quiet.reduceAnimation;
   const [width, setWidth] = useState(0);
   const drops = useRef(treats.map(() => new Animated.Value(0))).current;
   useEffect(() => {
@@ -15,7 +18,7 @@ export default function ExtraPaycheckCelebration({ event, onPlan, onDismiss }) {
     return () => { active = false; sub.remove(); };
   }, []);
   useEffect(() => {
-    if (reduceMotion || !width) return;
+    if (animationPaused || !width) return;
     drops.forEach(value => value.setValue(0));
     const animations = drops.map((value, i) => Animated.loop(Animated.sequence([
       Animated.delay(i * 150),
@@ -23,7 +26,7 @@ export default function ExtraPaycheckCelebration({ event, onPlan, onDismiss }) {
     ]), { iterations: 3 }));
     animations.forEach(animation => animation.start());
     return () => animations.forEach(animation => animation.stop());
-  }, [reduceMotion, width, drops]);
+  }, [animationPaused, width, drops]);
   return <View testID="extra-paycheck-celebration" style={s.overlay} accessibilityViewIsModal>
     <ScrollView contentContainerStyle={s.content}>
       <View style={s.card}>
@@ -31,7 +34,7 @@ export default function ExtraPaycheckCelebration({ event, onPlan, onDismiss }) {
         <Text accessibilityRole="header" style={s.title}>EXTRA PAYCHECK MONTH!</Text>
         <View style={s.art} onLayout={({ nativeEvent }) => setWidth(nativeEvent.layout.width)}>
           <Image source={artwork} style={s.image} resizeMode="contain" accessibilityLabel="Chapo in his PayPlace pajamas joyfully eating treats as cookies and fish-shaped snacks rain down in his treehouse" />
-          {!reduceMotion && width > 0 && drops.map((drop, i) => <Animated.Text key={i} accessible={false} pointerEvents="none" style={[s.treat, {
+          {!animationPaused && width > 0 && drops.map((drop, i) => <Animated.Text key={i} accessible={false} pointerEvents="none" style={[s.treat, {
             left: width * (0.07 + i * 0.12),
             opacity: drop.interpolate({ inputRange: [0, 0.12, 0.9, 1], outputRange: [0, 1, 1, 0] }),
             transform: [

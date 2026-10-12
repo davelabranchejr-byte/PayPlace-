@@ -1,5 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Text } from "./Privacy";
 export default function DebtMethodComparison() {
   return <View style={s.card}>
     <Text accessibilityRole="header" style={s.title}>Avalanche with a chance of snowballs</Text>

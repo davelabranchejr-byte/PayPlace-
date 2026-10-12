@@ -10,6 +10,7 @@ export function recordActivity(before, after, now = Date.now()) {
   for (const b of after.bills || []) {
     const old = oldBills.get(b.id);
     if (old && !paid(old) && paid(b)) add('bill', b.id, cents(b.amount));
+    if (old && paid(old) && paid(b) && cents(old.amount)!==cents(b.amount)) events=events.map(e => e.kind==='bill'&&e.id===b.id ? {...e,amount:cents(b.amount)} : e);
     if (old && paid(old) && !paid(b)) events = events.filter(e => !(e.kind === 'bill' && e.id === b.id));
   }
   for (const d of after.debts || []) {
@@ -43,6 +44,6 @@ export function smallTasks(finance) {
     ...(sub ? [{id:`subscription-${sub.id}`, title:`Review ${sub.name}`, target:'Subscriptions'}] : []),
     {id:'savings', title:'Check one savings goal', target:'Savings'}];
 }
-export function nextQuietDate(days, hour, now = new Date()) {
-  const date = new Date(now); date.setDate(date.getDate() + days); date.setHours(Math.max(0,Math.min(23,Number(hour) || 0)),0,0,0); if(date.getTime() < now.getTime() + days*86400000) date.setDate(date.getDate()+1); return date;
+export function nextQuietDate(days, hour, now = new Date(), minute = 0) {
+  const date = new Date(now); date.setDate(date.getDate() + days); date.setHours(Math.max(0,Math.min(23,Number(hour) || 0)),minute,0,0); if(date.getTime() < now.getTime() + days*86400000) date.setDate(date.getDate()+1); return date;
 }
