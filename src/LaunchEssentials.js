@@ -10,9 +10,18 @@ export const essentialsArtwork = {
   quiet:require('../assets/characters/feature-quiet-mode.png'),
 };
 const captions={payday:['Until next payday','Bills, groceries, gas, and what remains.'],history:['Undo & payment history','Correct a recorded payment or undo a mistake.'],firstWin:['Your first win with Annie','One payday. One bill. One useful next step.'],quiet:['Quiet Mode','Your reminders, your pace, your privacy.']};
+export function FeatureArtwork({source,style,testID}) {
+  const [bounds,setBounds]=useState({width:0,height:0});
+  return <View testID={testID} pointerEvents="none" style={[style,{overflow:'hidden'}]}
+    onLayout={({nativeEvent:{layout}})=>setBounds(previous=>previous.width===layout.width&&previous.height===layout.height
+      ? previous : {width:Math.max(0,layout.width),height:Math.max(0,layout.height)})}>
+    {bounds.width>0&&bounds.height>0&&<Image source={source} resizeMode="contain" accessible={false}
+      testID={`${testID}-image`} style={{position:'absolute',left:0,top:0,width:bounds.width,height:bounds.height}}/>}
+  </View>;
+}
 export function EssentialsButtons({onOpen,reduceAnimation=false}) {
   return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={s.tile} onPress={() => onOpen(key)}>
-    <Image source={essentialsArtwork[key]} resizeMode="contain" style={s.art} accessible={false}/>
+    <FeatureArtwork source={essentialsArtwork[key]} style={s.art} testID={`feature-card-${key}`}/>
     <Text style={s.tileTitle}>{title}</Text><Text style={s.note}>{body}</Text>
   </TouchableOpacity>)}</View>;
 }
@@ -102,7 +111,7 @@ export default function LaunchEssentials({panel,onClose,finance,onChange,onUndo,
   return <Modal visible={!!panel} animationType={finance.quietMode?.reduceAnimation?'none':'slide'} onRequestClose={onClose}>
     {panel&&<ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
       <Button title="Back to neighborhood" onPress={onClose}/><PayPlaceBrand/>
-      <Image source={essentialsArtwork[panel]} style={s.hero} resizeMode="contain" accessible={false}/>
+      <FeatureArtwork source={essentialsArtwork[panel]} style={s.hero} testID={`feature-hero-${panel}`}/>
       <Text style={s.title}>{captions[panel][0]}</Text>
       {panel==='payday'&&<Snapshot finance={finance} onChange={onChange}/>}
       {panel==='history'&&<History finance={finance} onUndo={onUndo} onCorrect={onCorrect}/>}
@@ -111,4 +120,4 @@ export default function LaunchEssentials({panel,onClose,finance,onChange,onUndo,
     </ScrollView>}
   </Modal>;
 }
-const s=StyleSheet.create({page:{padding:20,paddingTop:55,paddingBottom:50,gap:16,backgroundColor:'#F6FBFF'},grid:{flexDirection:'row',flexWrap:'wrap',gap:12,marginVertical:12},tile:{width:'47%',flexGrow:1,backgroundColor:'white',borderRadius:20,padding:10,gap:7,borderWidth:1,borderColor:'#DDEAF4'},art:{width:'100%',aspectRatio:3/2,borderRadius:14},hero:{width:'100%',aspectRatio:3/2,borderRadius:20},title:{fontSize:24,fontWeight:'900',color:'#0B1F40'},tileTitle:{fontSize:16,fontWeight:'800',color:'#0B1F40'},body:{fontSize:16,lineHeight:24,color:'#34465E'},note:{fontSize:13,lineHeight:20,color:'#43546B'},warning:{fontSize:15,lineHeight:22,color:'#884300',backgroundColor:'#FFF1CC',padding:12,borderRadius:12},section:{gap:14},calculation:{gap:8,padding:14,backgroundColor:'#EEE9FF',borderRadius:14},button:{backgroundColor:'#6754C5',padding:14,borderRadius:14,minHeight:48},buttonText:{color:'white',fontWeight:'800'},input:{borderWidth:1,borderColor:'#BACBD8',borderRadius:12,padding:12,fontSize:18,backgroundColor:'white'}});
+const s=StyleSheet.create({page:{padding:20,paddingTop:55,paddingBottom:50,gap:16,backgroundColor:'#F6FBFF'},grid:{flexDirection:'row',flexWrap:'wrap',gap:12,marginVertical:12},tile:{width:'47%',flexGrow:1,flexShrink:1,minWidth:0,overflow:'hidden',backgroundColor:'white',borderRadius:20,padding:10,gap:7,borderWidth:1,borderColor:'#DDEAF4'},art:{width:'100%',aspectRatio:3/2,maxHeight:112,borderRadius:14},hero:{width:'100%',aspectRatio:3/2,maxHeight:220,borderRadius:20},title:{fontSize:24,fontWeight:'900',color:'#0B1F40'},tileTitle:{fontSize:16,fontWeight:'800',color:'#0B1F40'},body:{fontSize:16,lineHeight:24,color:'#34465E'},note:{fontSize:13,lineHeight:20,color:'#43546B'},warning:{fontSize:15,lineHeight:22,color:'#884300',backgroundColor:'#FFF1CC',padding:12,borderRadius:12},section:{gap:14},calculation:{gap:8,padding:14,backgroundColor:'#EEE9FF',borderRadius:14},button:{backgroundColor:'#6754C5',padding:14,borderRadius:14,minHeight:48},buttonText:{color:'white',fontWeight:'800'},input:{borderWidth:1,borderColor:'#BACBD8',borderRadius:12,padding:12,fontSize:18,backgroundColor:'white'}});
