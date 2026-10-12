@@ -10,6 +10,7 @@ export const essentialsArtwork = {
   quiet:require('../assets/characters/feature-quiet-mode.png'),
 };
 const captions={payday:['Until next payday','Bills, groceries, gas, and what remains.'],history:['Undo & payment history','Correct a recorded payment or undo a mistake.'],firstWin:['Your first win with Annie','One payday. One bill. One useful next step.'],quiet:['Quiet Mode','Your reminders, your pace, your privacy.']};
+const tileColors={payday:{backgroundColor:'#FFE34F',borderColor:'#E5B900',color:'#0B1F40'},history:{backgroundColor:'#7842D2',borderColor:'#6027B8',color:'#FFFFFF'},firstWin:{backgroundColor:'#FF7EB5',borderColor:'#E64D92',color:'#0B1F40'},quiet:{backgroundColor:'#42D8CE',borderColor:'#16AAA0',color:'#0B1F40'}};
 export function FeatureArtwork({source,style,testID}) {
   const [bounds,setBounds]=useState({width:0,height:0});
   return <View testID={testID} pointerEvents="none" style={[style,{overflow:'hidden'}]}
@@ -20,9 +21,9 @@ export function FeatureArtwork({source,style,testID}) {
   </View>;
 }
 export function EssentialsButtons({onOpen,reduceAnimation=false}) {
-  return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={s.tile} onPress={() => onOpen(key)}>
+  return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={[s.tile,{backgroundColor:tileColors[key].backgroundColor,borderColor:tileColors[key].borderColor}]} onPress={() => onOpen(key)}>
     <FeatureArtwork source={essentialsArtwork[key]} style={s.art} testID={`feature-card-${key}`}/>
-    <Text style={s.tileTitle}>{title}</Text><Text style={s.note}>{body}</Text>
+    <Text style={[s.tileTitle,{color:tileColors[key].color}]}>{title}</Text><Text style={[s.note,{color:tileColors[key].color}]}>{body}</Text>
   </TouchableOpacity>)}</View>;
 }
 const money=n=>`$${(n/100).toFixed(2)}`;
