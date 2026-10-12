@@ -17,7 +17,7 @@ export default function useSubscriptionReminders(cases, settings, ready, onOpen)
         const permission = await Notifications.getPermissionsAsync();
         const allowed = permission.granted || permission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL;
         if (Platform.OS === 'android') await Notifications.setNotificationChannelAsync('subscription-detective', { name: 'Detective Clubhouse reminders', importance: Notifications.AndroidImportance.LOW, sound: null, enableVibrate: false, showBadge: false, lockscreenVisibility: Notifications.AndroidNotificationVisibility.PRIVATE });
-        const plan = planSubscriptionReminders(current.cases, { enabled: current.settings?.enabled === true && allowed });
+        const plan = planSubscriptionReminders(current.cases, { ...current.settings, enabled: current.settings?.enabled === true && allowed });
         const count = await reconcileReminders(plan, {
           scheduled: Notifications.getAllScheduledNotificationsAsync,
           presented: async () => (await Notifications.getPresentedNotificationsAsync()).map(item => item.request),

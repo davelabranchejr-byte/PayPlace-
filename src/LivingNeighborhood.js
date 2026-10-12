@@ -18,7 +18,7 @@ function Light({x,y,star,index,moving}) {
     {star?<><View style={{position:'absolute',left:3,width:1,height:7,backgroundColor:'#FFFCE6'}}/><View style={{position:'absolute',top:3,height:1,width:7,backgroundColor:'#FFFCE6'}}/></>: [30,24,18,12,6].map(size=><View key={size} style={{position:'absolute',width:size,height:size,left:(30-size)/2,top:(30-size)/2,borderRadius:size/2,backgroundColor:'rgba(255,192,73,0.09)'}}/>)}
   </Layer>;
 }
-export default function LivingNeighborhood() {
+export default function LivingNeighborhood({ reduceAnimation = false }) {
   const [now,setNow]=useState(()=>new Date());
   const [reduce,setReduce]=useState(true);
   const [active,setActive]=useState(AppState.currentState==='active');
@@ -34,8 +34,8 @@ export default function LivingNeighborhood() {
   return <View style={s.scene}>
     <Image source={fall?autumn:dark?night:original} resizeMode="contain" style={s.image} accessibilityLabel={fall?"PayPlace’s autumn neighborhood with pumpkins, friendly ghosts, Budget Sisters, bill zombies and Bobbie the Bill Slayer. Annie’s door and treehouses remain open.":"Annie’s welcoming treehouse neighborhood"}/>
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
-      {[[16,8],[60,17],[73,21],[96,10],[39,65],[56,66]].map(([x,y],index)=><Light key={`lamp-${index}`} x={x} y={y} index={index} moving={!reduce&&active}/>) }
-      {(dark||fall)&&[[84,15],[92,7],[81,19],[89,22],[71,27]].map(([x,y],index)=><Light key={`star-${index}`} x={x} y={y} star index={index} moving={!reduce&&active}/>) }
+      {[[16,8],[60,17],[73,21],[96,10],[39,65],[56,66]].map(([x,y],index)=><Light key={`lamp-${index}`} x={x} y={y} index={index} moving={!reduce&&!reduceAnimation&&active}/>) }
+      {(dark||fall)&&[[84,15],[92,7],[81,19],[89,22],[71,27]].map(([x,y],index)=><Light key={`star-${index}`} x={x} y={y} star index={index} moving={!reduce&&!reduceAnimation&&active}/>) }
     </View>
   </View>;
 }

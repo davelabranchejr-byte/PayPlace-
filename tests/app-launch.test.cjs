@@ -17,10 +17,10 @@ test.before(async () => {
 });
 
 // Execute the real app and its components. Only native/device services are mocked.
-function appHarness(savedFinance = {}) {
+function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }) {
   const vaultModel = models.get(path.join(root, 'src/vault-storage.mjs'));
   const records = new Map([
-    [vaultModel.PROFILE_KEY, JSON.stringify({ name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true })],
+    [vaultModel.PROFILE_KEY, JSON.stringify(profile)],
     [vaultModel.FINANCE_KEY, JSON.stringify(savedFinance)],
   ]);
   const listeners = new Set();
@@ -241,4 +241,65 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(harness.finance().balance, 300, 'all beta flows leave real cash unchanged');
     assert.equal(harness.finance().bills[0].amount, '120.00', 'planning does not pay or change saved bills');
   } finally { await act(() => renderer.unmount()); }
+});
+
+test('launch features open, payment corrections persist, sample stays separate and Quiet Mode masks totals', async () => {
+  const payday=new Date();payday.setDate(payday.getDate()+8);
+  const date=models.get(path.join(root,'src/launch-essentials.mjs')).localDate(payday);
+  const harness=appHarness({balance:321.45,nextPaycheckDate:date,firstWinComplete:true,bills:[{id:'p',name:'Power',amount:'20.05',dueDate:date,status:'Upcoming'}],debts:[]});
+  let renderer,pending;
+  const button=label=>renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.accessibilityLabel===label);
+  const press=async label=>{assert.ok(button(label),label);await act(()=>button(label).props.onPress());};
+  const input=async(label,text)=>{const n=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel===label);assert.ok(n,label);await act(()=>n.props.onChangeText(text));};
+  try {
+    await act(async()=>{renderer=create(React.createElement(harness.App));});
+    await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+    await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+    for(const title of ['Until next payday','Undo & payment history','Your first win with Annie','Quiet Mode']){await press(`Open ${title}`);await press('Back to neighborhood');}
+    await press('Open Bills tab');
+    const paidButton=renderer.root.findAllByType('TouchableOpacity').find(n=>n.findAllByType('Text').some(t=>t.props.children==='Record payment'));
+    await act(()=>paidButton.props.onPress());
+    assert.equal(harness.finance().paymentHistory[0].kind,'recorded');
+    await press('Open Home tab');await press('Open Undo & payment history');
+    await press('Correct amount for Power');await input('Corrected payment amount','15.05');await press('Save payment correction');
+    assert.equal(harness.finance().bills[0].amount,'15.05');
+    await press('Undo record change for Power');assert.equal(harness.finance().bills[0].amount,'20.05');assert.equal(harness.finance().balance,321.45);
+    await press('Back to neighborhood');await press('Open Your first win with Annie');await press('Explore the sample neighborhood');
+    assert.equal(harness.finance().balance,321.45);assert.equal(harness.finance().bills[0].id,'p');
+    await press('Open Budget tab');
+    await act(()=>renderer.root.find(n=>n.type?.name==='BudgetScreen').props.resetDemoData());
+    assert.equal(harness.finance().balance,321.45);assert.equal(harness.finance().bills[0].id,'p');
+    await press('Return to my personal plan');await press('Open Quiet Mode');
+    await press('Hide dollar amounts');await press('Reduce neighborhood animation');await press('Pause Annie’s weekly and absence check-ins');
+    await input('Reminder time (24-hour HH:MM, local time)','02:45');await press('Save reminder time');
+    assert.equal(harness.finance().quietMode.hour,2);assert.equal(harness.finance().quietMode.minute,45);
+    await press('Back to neighborhood');
+    const nativeTexts=renderer.root.findAllByType('Text').map(n=>JSON.stringify(n.props.children)).join(' ');
+    assert.doesNotMatch(nativeTexts,/\$321\.45|\$20\.05/);assert.match(nativeTexts,/\$•••/);
+    await press('Open Until next payday');
+    const balanceInput=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel==='Current bank balance');assert.equal(balanceInput.props.secureTextEntry,true);
+    await press('Back to neighborhood');
+    await act(()=>renderer.unmount());
+    await act(async()=>{renderer=create(React.createElement(harness.App));});
+    await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+    await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+    assert.equal(harness.finance().quietMode.hideAmounts,true);assert.equal(harness.finance().paymentHistory.length,3);
+  }finally{if(renderer)await act(()=>renderer.unmount());}
+});
+
+test('an unverified new neighbor can explore samples and safely return to account setup', async()=>{
+ const harness=appHarness({balance:0,bills:[],debts:[]},{name:'',completed:false});let renderer,pending;
+ const button=label=>renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.accessibilityLabel===label);
+ try{
+   await act(async()=>{renderer=create(React.createElement(harness.App));});
+   await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+   await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+   assert.ok(button('Explore sample neighborhood before setup'));
+   await act(()=>button('Explore sample neighborhood before setup').props.onPress());
+   assert.ok(button('Open Until next payday'));
+   assert.equal(harness.finance().balance,0);assert.deepEqual(harness.finance().bills,[]);
+   await act(()=>button('Return to my personal plan').props.onPress());
+   assert.ok(button('Explore sample neighborhood before setup'));
+   assert.equal(button('Open Until next payday'),undefined,'samples do not bypass personal account verification');
+ }finally{if(renderer)await act(()=>renderer.unmount());}
 });

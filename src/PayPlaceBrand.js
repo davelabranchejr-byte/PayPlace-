@@ -1,5 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { Text } from "./Privacy";
 import CharacterArtwork from "./CharacterArtwork";
 
 const logo = require("../assets/branding/payplace-locked-logo.jpeg");

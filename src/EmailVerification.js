@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Platform, TouchableOpacity, View } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import { createContactApi } from './email-api.mjs';
 import { normalizeContact, verifiedAnswers } from './contact-verification.mjs';
 const api = createContactApi(Platform.OS);

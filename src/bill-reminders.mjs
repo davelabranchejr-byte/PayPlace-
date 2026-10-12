@@ -6,7 +6,7 @@ export const REMINDER_CONTENT = Object.freeze({
   sound: false,
 });
 export function reminderSettings(value) {
-  return { enabled: value?.enabled === true, hour: value?.hour === 18 ? 18 : 9, daysBefore: value?.daysBefore === 3 ? 3 : 1 };
+  return { enabled: value?.enabled === true, hour: Number.isInteger(value?.hour) && value.hour >= 0 && value.hour <= 23 ? value.hour : 9, minute: Number.isInteger(value?.minute) && value.minute >= 0 && value.minute <= 59 ? value.minute : 0, daysBefore: value?.daysBefore === 3 ? 3 : 1 };
 }
 export function billDate(value) {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value.trim())) return null;
@@ -30,7 +30,7 @@ export function planBillReminders(bills, options, now = new Date()) {
     for (const daysBefore of [settings.daysBefore, 0]) {
       const date = new Date(due);
       date.setDate(date.getDate() - daysBefore);
-      date.setHours(settings.hour, 0, 0, 0);
+      date.setHours(settings.hour, settings.minute, 0, 0);
       if (date <= now || !settings.enabled) continue;
       const timestamp = date.getTime();
       dates.set(timestamp, { identifier: `${REMINDER_PREFIX}${timestamp}`, date, content: REMINDER_CONTENT });

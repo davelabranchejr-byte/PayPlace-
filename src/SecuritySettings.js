@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { AppState, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { AppState, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import Alert from './alert';

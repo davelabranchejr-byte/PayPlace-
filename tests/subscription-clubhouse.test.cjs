@@ -17,6 +17,7 @@ test('Clubhouse supports add/edit cents, review decisions and beta disclosure wi
   const sandbox = { exports: {}, console, Date, Math, require: name => {
     if (name === 'react') return React;
     if (name === 'react-native') return ui;
+    if (name === './Privacy') return { Text: ui.Text, TextInput: ui.TextInput };
     if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
     if (name.endsWith('subscription-detective.mjs')) return model;
     if (name.endsWith('smart-mirror.mjs')) return { parseAmount };

@@ -14,19 +14,8 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  Image,
-  Modal,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
 import AppSecurity from "./src/AppSecurity";
@@ -717,6 +706,9 @@ const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
 // Welcome, red door, and foyer share Dave's original canonical Annie.
+import LaunchEssentials, { EssentialsButtons } from "./src/LaunchEssentials";
+import { PrivacyContext } from "./src/Privacy";
+import { paydaySnapshot, recordBillHistory, undoPayment, firstWinPlan, emptyPlan, samplePlan, quietSettings } from "./src/launch-essentials.mjs";
 const greatAnnieHero = annieArtwork.welcome;
 const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
@@ -1207,8 +1199,27 @@ function PayPlaceApp() {
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   function openPremium(panel = null) { setPremiumPanel(panel); setPremiumVisit(current => current + 1); setTab("Premium"); }
-  const [finance, setFinanceRaw] = useState(starterFinance);
-  function setFinance(update) { setFinanceRaw(current => recordActivity(current, typeof update === "function" ? update(current) : update)); }
+  const [savedFinance, setSavedFinance] = useState(starterFinance);
+  const [sampleFinance, setSampleFinance] = useState(null);
+  const [essentialsPanel, setEssentialsPanel] = useState(null);
+  const finance = sampleFinance || savedFinance;
+  const quiet = quietSettings(finance.quietMode);
+  const effectiveBillSettings = useMemo(() => ({...finance.billReminders,
+    ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
+    ...(sampleFinance ? {enabled:false} : {})}), [finance.billReminders,quiet.hour,quiet.minute,!!sampleFinance]);
+  const effectiveCareSettings = useMemo(() => ({...finance.annieCare,
+    ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
+    ...(quiet.pauseCheckIns || sampleFinance ? {weekly:false,checkIn:false} : {})}), [finance.annieCare,quiet.hour,quiet.minute,quiet.pauseCheckIns,!!sampleFinance]);
+  const effectiveSubscriptionSettings = useMemo(() => ({...finance.subscriptionReminders,
+    ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
+    ...(sampleFinance ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance]);
+  function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
+  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, typeof update === "function" ? update(current) : update))); }
+  function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
+  function endSample() { setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
+  function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
+  function undoRecordedPayment(id) { try {setFinance(undoPayment(finance,id));} catch(e) {Alert.alert("Review this record",e.message);} }
+  function correctRecordedPayment(id,amount) { setFinance(current => ({...current,bills:current.bills.map(b=>b.id===id?{...b,amount:amount.toFixed(2)}:b)})); }
 
   const [calmIndex, setCalmIndex] = useState(0);
   const [pearlCategory, setPearlCategory] = useState("westley");
@@ -1230,11 +1241,11 @@ function PayPlaceApp() {
     notes: "",
     arrivalReason: "",
   });
-  const annieStatus = useAnnieCare(finance.annieCare, loaded && onboardingComplete && !storageError, now => setFinanceRaw(current => ({...current, annieCare:{...current.annieCare, lastOpened:now, returnedAfterWeek: !!current.annieCare?.lastOpened && now-current.annieCare.lastOpened >= 7*86400000}})), () => setTab("Home"));
-  const reminderStatus = useBillReminders(finance.bills, finance.billReminders, loaded && !storageError,
+  const annieStatus = useAnnieCare(effectiveCareSettings, loaded && onboardingComplete && !storageError, now => setFinanceRaw(current => ({...current, annieCare:{...current.annieCare, lastOpened:now, returnedAfterWeek: !!current.annieCare?.lastOpened && now-current.annieCare.lastOpened >= 7*86400000}})), () => setTab("Home"));
+  const reminderStatus = useBillReminders(finance.bills, effectiveBillSettings, loaded && !storageError,
     () => setTab("Bills"));
   const subscriptions = useMemo(() => subscriptionCases(finance), [finance.subscriptions]);
-  const subscriptionReminderStatus = useSubscriptionReminders(subscriptions, finance.subscriptionReminders,
+  const subscriptionReminderStatus = useSubscriptionReminders(subscriptions, effectiveSubscriptionSettings,
     loaded && onboardingComplete && !storageError, () => setDetectiveVisible(true));
   function updateDetective(action) {
     try { setFinance(updateSubscription(finance, action)); return true; }
@@ -1272,7 +1283,7 @@ function PayPlaceApp() {
         if (saved && active) {
           const parsed = JSON.parse(saved);
 
-          setFinanceRaw({
+          setSavedFinance({
             ...starterFinance,
             ...parsed,
             bills: Array.isArray(parsed.bills) ? parsed.bills : starterFinance.bills,
@@ -1280,6 +1291,7 @@ function PayPlaceApp() {
             payoffMode: normalizeStrategy(parsed.payoffMode),
           });
         }
+        if (!saved && active) setSavedFinance(emptyPlan(starterFinance));
         if (active) setStorageError(false);
       } catch (error) {
         if (active) setStorageError(true);
@@ -1301,10 +1313,10 @@ function PayPlaceApp() {
   useEffect(() => {
     if (!loaded) return;
 
-    ProtectedStorage.setItem(STORAGE_KEY, JSON.stringify(finance)).catch(() => {
+    ProtectedStorage.setItem(STORAGE_KEY, JSON.stringify(savedFinance)).catch(() => {
       Alert.alert("Your changes are not saved yet", "PayPlace could not save this update. Keep the app open and try again, or create an encrypted backup from Security & backup.");
     });
-  }, [finance, loaded]);
+  }, [savedFinance, loaded]);
 
   const saveOnboardingProgress = useCallback((profile) => {
     // A queued draft must never overwrite a completed profile. Vault writes are
@@ -1334,6 +1346,7 @@ function PayPlaceApp() {
     setFinance((current) => ({
       ...current,
       [field]: cleanNumber(text),
+      ...(field === "balance" ? {balanceUpdatedAt:Date.now(),balanceSource:"Manual entry"} : {}),
     }));
   }
 
@@ -1341,6 +1354,7 @@ function PayPlaceApp() {
     setFinance((current) => ({
       ...current,
       [field]: text,
+      ...(field === "nextPaycheckDate" ? {daysUntilPayday:paydaySnapshot({...current,nextPaycheckDate:text}).days ?? 0} : {}),
     }));
   }
 
@@ -1583,6 +1597,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function resetDemoData() {
+    if (sampleFinance) {setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode});return;}
     try {
       await ProtectedStorage.removeItem(STORAGE_KEY);
       setFinanceRaw(starterFinance);
@@ -1593,6 +1608,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function replayAnnieOnboarding() {
+    if (sampleFinance) {setEssentialsPanel("firstWin");return;}
     setOnboardingSession(current => current + 1);
     setRevisitingAnnie(true);
   }
@@ -1614,6 +1630,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       setOnboardingAnswers(completedAnswers);
       setOnboardingComplete(true);
       setRevisitingAnnie(false);
+      if (!finance.firstWinComplete && !finance.bills.length) setEssentialsPanel("firstWin");
     } catch (error) {
       onboardingFinalizing.current = false;
       Alert.alert("Almost there", "PayPlace could not save onboarding yet. Please try again.");
@@ -1622,6 +1639,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   async function restorePlan(data) {
+    if (sampleFinance) {Alert.alert("Return to your plan first", "Leave the sample neighborhood before restoring a personal backup.");return;}
     const restoredFinance = { ...starterFinance, ...data.finance, billReminders: { ...data.finance.billReminders, enabled: false }, subscriptionReminders: { enabled: false } };
     const recoveredProfile = restoredProfile(data.profile, ONBOARDING_STEPS.length);
     await ProtectedStorage.replaceAll({
@@ -1660,17 +1678,18 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     );
   }
 
-  if (!onboardingComplete || revisitingAnnie) {
+  if ((!onboardingComplete && !sampleFinance) || revisitingAnnie) {
     return (
       <>
-        <OnboardingFlow key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} onExit={revisitingAnnie ? leaveAnnieVisit : undefined} />
+        <OnboardingFlow onSample={startSample} key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} onExit={revisitingAnnie ? leaveAnnieVisit : undefined} />
         {securityPanel}
-        <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
+        <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance, balanceUpdatedAt:Date.now(),balanceSource:"Bank connection" }))} />
       </>
     );
   }
 
   return (
+    <PrivacyContext.Provider value={quiet}>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.safe}
@@ -1680,12 +1699,14 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowTwo} />
         <View style={styles.glowThree} />
 
+        {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
         <Header compact={tab === "Premium"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
 
         {tab === "Home" && (
           <HomeScreen
             finance={finance}
+            onEssentials={setEssentialsPanel}
             upcomingTotal={upcomingTotal}
             debtDueTotal={debtDueTotal}
             safeToSpend={safeToSpend}
@@ -1774,6 +1795,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
         <BottomNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
+        <LaunchEssentials panel={essentialsPanel} onClose={() => setEssentialsPanel(null)} finance={finance} onChange={setFinance}
+          onUndo={undoRecordedPayment} onCorrect={correctRecordedPayment} onFirstWin={saveFirstWin} onSample={startSample} onPersonal={endSample}/>
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
@@ -1781,9 +1804,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           reminderStatus={subscriptionReminderStatus}
           onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
         {securityPanel}
-        <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance }))} />
+        <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance, balanceUpdatedAt:Date.now(),balanceSource:"Bank connection" }))} />
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </PrivacyContext.Provider>
   );
 }
 
@@ -1871,7 +1895,7 @@ const ONBOARDING_STEPS = [
   },
 ];
 
-function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit }) {
+function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSample }) {
   const [welcomeStage, setWelcomeStage] = useState(() => onExit ? "annie" : onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stage);
   const [stepIndex, setStepIndex] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stepIndex);
   const [answers, setAnswers] = useState(initialAnswers);
@@ -1914,6 +1938,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit }) {
             <Text style={styles.annieWelcomeEyebrow}>GREAT ANNIE OAK TREE</Text>
             <Text style={styles.annieWelcomeTitle}>There you are.</Text>
             <Text style={styles.annieWelcomeBody}>“Every new neighbor eventually finds their way here. Sit with me for a minute, sweetheart.”</Text>
+            {onSample && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Explore sample neighborhood before setup" style={styles.onboardingBackButton} onPress={onSample}><Text style={styles.onboardingBackText}>Explore the sample neighborhood first</Text></TouchableOpacity>}
             <Text style={styles.annieWelcomePrompt}>What brought you to PayPlace?</Text>
             <View style={styles.annieWelcomeChoices}>
               {["I want less financial stress", "I’m starting over", "I want to pay off debt", "I’m saving for something important", "I’m trying to get organized", "I’m not sure yet"].map((option) => {
@@ -2090,7 +2115,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
 }
 
 
-function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremium }) {
+function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremium, reduceAnimation }) {
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("door");
   const [familyMember, setFamilyMember] = useState(null);
@@ -2180,7 +2205,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </Modal>
 
       <View style={styles.neighborhoodHero}>
-        <LivingNeighborhood />
+        <LivingNeighborhood reduceAnimation={reduceAnimation} />
         <View style={styles.heroEdgeShade} pointerEvents="none" />
 
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
@@ -2320,6 +2345,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
 
 function HomeScreen({
   finance,
+  onEssentials,
   upcomingTotal,
   debtDueTotal,
   safeToSpend,
@@ -2401,11 +2427,13 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <NeighborhoodWelcome switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onDetective={onDetective} onPremium={onPremium} />
+      <NeighborhoodWelcome reduceAnimation={finance.quietMode?.reduceAnimation} switchTab={switchTab} safeToSpendDaily={safeToSpendDaily} onDetective={onDetective} onPremium={onPremium} />
       <TouchableOpacity style={styles.visitAnnieButton} onPress={replayAnnieOnboarding}>
         <Ionicons name="leaf" size={18} color="#FFFFFF" />
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
       </TouchableOpacity>
+      <EssentialsButtons onOpen={onEssentials} />
+      {!finance.firstWinComplete && !finance.bills.length && <Text style={styles.helperText}>Annie can help you start: open Your first win above.</Text>}
       <NeighborCare finance={finance} onChange={onCareChange} status={annieStatus} onSmallStep={() => setGuidanceVisible(true)} onCalm={() => switchTab("Calm")} />
       <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => switchTab("Budget")} />
       <ExtraPaycheckCalendar
@@ -3374,7 +3402,7 @@ const importDemoBills = () => {
                 onPress={() => toggleBillPaid(bill.id)}
               >
                 <Text style={styles.smallButtonText}>
-                  {bill.status === "Paid" ? "Undo" : "Paid"}
+                  {bill.status === "Paid" || bill.paid ? "Undo record" : "Record payment"}
                 </Text>
               </TouchableOpacity>
 

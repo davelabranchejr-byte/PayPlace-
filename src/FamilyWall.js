@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
 import { MASCOT_LORE } from "./data/mascotLore";

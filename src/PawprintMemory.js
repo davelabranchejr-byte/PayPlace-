@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 
 // Dave's approved combined wall artwork, including Westley's pointed ears.

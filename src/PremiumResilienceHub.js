@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BackHandler, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import { DEFAULT_PREMIUM_STATE, buildBillShockPlans, buildCatchUpPlan, roundUpForPurchase, unpaidPremiumBills } from './premium-resilience.mjs';
 import { SAMPLE_FINANCE, SAMPLE_PURCHASES, normalizePremiumBeta, premiumAmount, simulatePayday, simulateRoundup } from './premium-beta.mjs';

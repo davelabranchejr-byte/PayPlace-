@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, Image } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { Text, TextInput } from "./Privacy";
 import { weeklyRecap, smallTasks } from './neighborhood-progress.mjs';
 import { requestBillReminderPermission } from './useBillReminders';
 const money = n => `$${Number(n).toFixed(2)}`;
@@ -37,6 +38,7 @@ export default function NeighborCare({ finance, onChange, onSmallStep, onCalm, s
     <View style={s.row}><TouchableOpacity style={s.button} accessibilityRole="button" onPress={onSmallStep}><Text style={s.buttonText}>One small step</Text></TouchableOpacity><TouchableOpacity style={s.secondary} accessibilityRole="button" onPress={onCalm}><Text style={s.secondaryText}>Visit the Calm Garden</Text></TouchableOpacity></View>
     <TouchableOpacity style={s.secondary} accessibilityRole="button" accessibilityState={{expanded:showSettings}} onPress={() => setShowSettings(!showSettings)}><Text style={s.secondaryText}>{showSettings ? "Hide check-in settings" : "Annie’s check-in settings"}</Text></TouchableOpacity>
     {showSettings && <View style={{gap:10}}><Text style={s.title}>Annie’s quiet check-ins</Text><Text style={s.body}>Optional silent notifications. Choose an hour that works with your sleep schedule. Turning either option off pauses it.</Text>
+    {finance.quietMode?.pauseCheckIns && <Text style={s.note}>Annie’s check-ins are paused in Quiet Mode. Your choices below are kept for when you resume.</Text>}
     {[['weekly','Weekly recap reminder'],['checkIn','Check in after seven days away']].map(([key,label]) => <TouchableOpacity key={key} style={s.secondary} accessibilityRole="switch" accessibilityLabel={label} accessibilityState={{checked:settings[key] === true}} onPress={() => toggle(key)}><Text style={s.secondaryText}>{label}: {settings[key] ? 'On' : 'Off'}</Text></TouchableOpacity>)}
     <Text style={s.body}>Delivery hour in your local time (0–23)</Text><TextInput accessibilityLabel="Annie notification delivery hour" keyboardType="number-pad" value={hour} onChangeText={setHour} style={s.input} />
     <TouchableOpacity style={s.button} accessibilityRole="button" onPress={() => { if (!/^\d{1,2}$/.test(hour) || Number(hour)>23) {setMessage('Choose an hour from 0 to 23.');return;} onChange({...settings,hour:Number(hour)});setMessage('Annie’s delivery time saved.'); }}><Text style={s.buttonText}>Save delivery time</Text></TouchableOpacity>
