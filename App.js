@@ -49,6 +49,10 @@ import NeighborCare, { SmallSteps } from "./src/NeighborCare";
 import useAnnieCare from "./src/useAnnieCare";
 import { recordActivity } from "./src/neighborhood-progress.mjs";
 import LivingNeighborhood from "./src/LivingNeighborhood";
+import PetSpa from "./src/PetSpa";
+import NeighborhoodNav from "./src/NeighborhoodNav";
+import NeighborRoom from "./src/NeighborRooms";
+import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
@@ -1768,12 +1772,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
+        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible} />}
+        {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
+          finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Home")}
+          onNavigate={next => { if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
+          onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
+          onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
+
         {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ flex: 1, color: palette.ink }}>Deleted {recentDeleted[0].collection === "bills" ? "bill" : "debt"}. You can bring it back.</Text>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
-        <BottomNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
+        <NeighborhoodNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
@@ -2082,7 +2093,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
         Money without shame.
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${tab} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {tab} works</Text></TouchableOpacity>}
+        {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
     </View>
@@ -2102,13 +2113,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
     : Image.resolveAssetSource(posterSource);
   const posterAspectRatio = posterDimensions.width / posterDimensions.height;
   const greeting = NEIGHBORHOOD_GREETING[day % NEIGHBORHOOD_GREETING.length];
-
-  const places = [
-    { label: "Post Office", tab: "Bills", image: require("./assets/characters/nav-post-office.png"), theme: cardThemes.coral, note: "Bills" },
-    { label: "Budget Studio", tab: "Budget", image: require("./assets/characters/nav-budget-studio.png"), theme: cardThemes.sky, note: "Plan" },
-    { label: "Debt Climb", tab: "Debt", image: require("./assets/characters/nav-debt-climb.png"), theme: cardThemes.purple, note: "Payoff" },
-    { label: "Calm Garden", tab: "Calm", image: require("./assets/characters/nav-calm-garden.png"), theme: cardThemes.mint, note: "Breathe" },
-  ];
 
   const openFoyer = () => {
     setFoyerStage("door");
@@ -2214,41 +2218,14 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
           style={[styles.heroHotspot, { left: "78%", top: "33%", width: "17%", height: "23%", minWidth: 48, minHeight: 48 }]}
           onPress={onDetective} />
       </View>
-      <TouchableOpacity
-  accessibilityRole="button"
-  accessibilityLabel="Open PayPlace Premium"
-  onPress={onPremium}
-  style={{
-    marginHorizontal: 20,
-    marginTop: 14,
-    marginBottom: 6,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderRadius: 18,
-    backgroundColor: "#0f766e",
-  }}
->
-  <Text
-    style={{
-      color: "#ffffff",
-      fontSize: 18,
-      fontWeight: "800",
-      textAlign: "center",
-    }}
-  >
-    PayPlace Premium
-  </Text>
-  <Text
-    style={{
-      color: "#ffffff",
-      fontSize: 13,
-      textAlign: "center",
-      marginTop: 4,
-    }}
-  >
-    Financial breathing room for real life.
-  </Text>
-</TouchableOpacity>
+
+
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
+        style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 92, height: 100 }} resizeMode="contain" accessible={false} />
+        <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
+          <Text style={{ color: "#34465E", fontSize: 14, lineHeight: 20, marginTop: 4 }}>Peek in for pampered paws, top-secret makeovers, and cookie cleanup. ›</Text></View>
+      </TouchableOpacity>
 
       <View style={styles.heroCaptionRow}>
         <View style={styles.heroCaptionCopy}>
@@ -2266,35 +2243,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
           <Text style={styles.gentleLimitLabel}>TODAY’S GENTLE LIMIT</Text>
           <Text style={styles.gentleLimitValue}>{money(safeToSpendDaily)}/day</Text>
           <Text style={styles.gentleLimitSub}>A calm guide, not a guilt trip.</Text>
-        </View>
-      </View>
-
-      <View style={styles.neighborhoodPlacesCard}>
-        <View style={styles.neighborhoodSectionHead}>
-          <View>
-            <Text style={styles.neighborhoodEyebrow}>TREEHOUSE MAP</Text>
-            <Text style={styles.neighborhoodSectionTitle}>Where are we heading?</Text>
-          </View>
-        </View>
-        <View style={styles.neighborhoodNavigationFrame}>
-          <CharacterArtwork source={require("./assets/characters/neighborhood-navigation-mascots.png")} style={styles.neighborhoodNavigationArtwork} resizeMode="contain" accessibilityLabel="Westley checks a compass, Tate studies a map, Daddy uses GPS, Bobbie unrolls MapQuest directions, and Chapo snacks along the route" />
-        </View>
-        <View style={styles.placeGrid}>
-          {places.map((place) => (
-            <TouchableOpacity
-              key={place.label}
-              accessibilityRole="button"
-              accessibilityLabel={`Open ${place.label}`}
-              style={[styles.placeButton, { backgroundColor: place.theme.background, borderColor: place.theme.border }]}
-              onPress={() => switchTab(place.tab)}
-            >
-              <View style={styles.placeArtworkFrame}>
-                <CharacterArtwork source={place.image} style={styles.placeArtwork} resizeMode="contain" accessible={false} />
-              </View>
-              <Text style={[styles.placeLabel, { color: place.theme.text }]}>{place.label}</Text>
-              <Text style={[styles.placeNote, { color: place.theme.text }]}>{place.note}</Text>
-            </TouchableOpacity>
-          ))}
         </View>
       </View>
 
@@ -3930,55 +3878,6 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
           <Ionicons name={neighborhood.isNight ? "moon" : "sunny"} size={18} color={palette.yellow} />
         </View>
       </TouchableOpacity>
-    </View>
-  );
-}
-
-function BottomNav({ current, switchTab }) {
-  const tabs = [
-    { name: "Home", activeIcon: "map", inactiveIcon: "map-outline", color: palette.purple },
-    { name: "Bills", activeIcon: "mail", inactiveIcon: "mail-outline", color: palette.teal },
-    { name: "Budget", activeIcon: "wallet", inactiveIcon: "wallet-outline", color: palette.blue },
-    { name: "Debt", activeIcon: "trending-down", inactiveIcon: "trending-down-outline", color: palette.coral },
-    { name: "Calm", activeIcon: "leaf", inactiveIcon: "leaf-outline", color: palette.mintDark },
-    { name: "Premium", activeIcon: "diamond", inactiveIcon: "diamond-outline", color: palette.purple },
-  ];
-
-  return (
-    <View style={styles.navWrap}>
-      <View style={styles.nav}>
-        {tabs.map((item) => {
-          const active = current === item.name;
-
-          return (
-            <TouchableOpacity
-              key={item.name}
-              accessibilityRole="tab"
-              accessibilityLabel={`Open ${item.name} tab`}
-              accessibilityState={{ selected: active }}
-              style={[
-                styles.navItem,
-                active && { backgroundColor: item.color + "18" },
-              ]}
-              onPress={() => switchTab(item.name)}
-            >
-              <Ionicons
-                name={active ? item.activeIcon : item.inactiveIcon}
-                size={22}
-                color={active ? item.color : palette.muted}
-              />
-              <Text
-                style={[
-                  styles.navText,
-                  active && { color: item.color, fontWeight: "900" },
-                ]}
-              >
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
     </View>
   );
 }
