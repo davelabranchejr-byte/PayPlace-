@@ -713,7 +713,7 @@ import LaunchEssentials, { EssentialsButtons } from "./src/LaunchEssentials";
 import { PrivacyContext } from "./src/Privacy";
 import { paydaySnapshot, recordBillHistory, undoPayment, firstWinPlan, emptyPlan, samplePlan, quietSettings } from "./src/launch-essentials.mjs";
 const greatAnnieHero = annieArtwork.welcome;
-const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
+const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.png");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
 const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const mixedBuddyGraphic = require("./assets/characters/debt-mixed-snowplow.png");
@@ -2245,7 +2245,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
 
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
         style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 92, height: 100 }} resizeMode="contain" accessible={false} />
+        <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
         <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
           <Text style={{ color: "#34465E", fontSize: 14, lineHeight: 20, marginTop: 4 }}>Peek in for pampered paws, top-secret makeovers, and cookie cleanup. ›</Text></View>
       </TouchableOpacity>
