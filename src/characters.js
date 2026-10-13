@@ -1,6 +1,6 @@
 // Canon confirmed by Dave on 2026-09-29. Bobbie is a TABBY, never a tuxedo.
 // Reuse original reference pixels; outfits, wigs, hair and nails may change.
-const family = require("../assets/characters/references/family-reference.png");
+const family = require("../assets/characters/references/family-reference.jpg");
 const guide = require("../assets/characters/references/character-guide-legacy.jpg");
 // Dave's image 3 is Annie's canonical face, approved on 2026-10-03.
 // Portraits and welcome scenes use these original pixels rather than redrawing her.
@@ -27,7 +27,6 @@ export const portraits = Object.freeze({
 
 export const CHARACTER_LOCK = Object.freeze({
   version: "2026-10-03-annie-canonical",
-  daddy: Object.freeze({ updated: '2026-10-13', reference: 'assets/characters/references/family-reference.png', fixed: ['closely buzzed salt-and-pepper hair', 'dark rectangular glasses', 'short salt-and-pepper beard', 'broad friendly smile'], style: 'dimensional PayPlace storybook cartoon matching the approved spa-day and flashlight illustrations' }),
   bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
   westley: Object.freeze({ species: "white West Highland Terrier", fixed: ["face", "white fur", "pointed Westie ears", "body proportions"] }),
   tate: Object.freeze({

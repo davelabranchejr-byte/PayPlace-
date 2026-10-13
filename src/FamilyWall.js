@@ -7,7 +7,7 @@ import { MASCOT_LORE } from "./data/mascotLore";
 import PawprintMemory from "./PawprintMemory";
 import { FAMILY_PORTRAITS, FAMILY_WALL_SIZE, portraitFrameStyle, familyGallerySize } from "./family-wall-layout.mjs";
 
-const familyWallArtwork = require("../assets/characters/annie-family-wall.png");
+const familyWallArtwork = require("../assets/characters/annie-family-wall.jpg");
 const storyPortraits = Object.fromEntries(Object.entries(FAMILY_PORTRAITS).map(([id, detail]) => [
   id, { source: familyWallArtwork, ...FAMILY_WALL_SIZE, crop: detail.crop, label: detail.label },
 ]));
