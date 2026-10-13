@@ -41,6 +41,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     Animated: { Value: class { setValue() {} interpolate() { return 0; } }, Text: 'AnimatedText' },
   });
   const cache = new Map();
+  const imageIds = new Map();
   function load(file) {
     if (models.has(file)) return models.get(file);
     if (cache.has(file)) return cache.get(file).exports;
@@ -58,7 +59,11 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
       if (name === 'expo-secure-store') return { getItemAsync: async () => 'enabled', setItemAsync: async () => {} };
       if (name === 'expo-local-authentication') return { SecurityLevel: { SECRET: 1 }, getEnrolledLevelAsync: async () => 2,
         authenticateAsync: () => { authCalls++; return new Promise(resolve => { resolveAuth = resolve; }); } };
-      if (/\.(png|jpg|jpeg)$/.test(name)) return 1;
+      if (/\.(png|jpg|jpeg)$/.test(name)) {
+        const asset = path.resolve(path.dirname(file), name);
+        if (!imageIds.has(asset)) imageIds.set(asset, imageIds.size + 1);
+        return imageIds.get(asset);
+      }
       if (name.endsWith('/secure-storage')) return {
         getItem: async key => records.get(key) ?? null,
         setItem: async (key, value) => records.set(key, value),
@@ -89,6 +94,19 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   };
 }
 
+function assertIllustrationFits(illustration) {
+  const image = illustration.findByType('Image');
+  assert.equal(image.props.resizeMode, 'contain');
+  assert.equal(image.props.style.width, '100%');
+  assert.equal(image.props.style.height, '100%');
+  assert.equal(image.props.style.position, undefined, 'native intrinsic dimensions must not override an absolute-positioned image');
+  const frame = illustration.findByType('View');
+  const style = Object.assign({}, ...frame.props.style);
+  assert.equal(style.width, '100%');
+  assert.equal(style.overflow, 'hidden');
+  assert.ok(style.aspectRatio > 0, 'the enclosing frame has a resolved height');
+}
+
 test('a returning neighbor unlocks, enters Home and opens every Premium panel without a render crash', async () => {
   const harness = appHarness({ balance: 300, nextPaycheck: 500,
     bills: [{ id: 'power', name: 'Power', amount: '120.00', dueDate: '2026-10-01', status: 'Upcoming', category: 'utilities' }], debts: [] });
@@ -112,6 +130,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await act(() => harness.setAppState('active'));
     assert.ok(button('Open The Clubhouse'), 'the neighborhood renders after unlock');
+    const homeSpaSource = button('Visit Em’s Pet Spa').findByType('Image').props.source;
     const steps = renderer.root.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(t => t.props.children === 'One small step'));
     await act(() => steps.props.onPress());
     assert.ok(button('Open task: Review Power'));
@@ -128,11 +147,18 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       assert.equal(selected.props.accessibilityState.selected, true);
       if (id === 'Home') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 0, 'Home no longer duplicates the mirror');
       if (id === 'Bobbie') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 1, 'the working mirror lives inside Bobbie’s building');
+      if (id === 'Tate') assertIllustrationFits(renderer.root.find(node => node.type?.name === 'ContainedIllustration'));
       await act(() => button(`How ${label} works`).props.onPress());
       assert.ok(renderer.root.findAllByType('Text').some(node => [].concat(node.props.children).join('') === `${label}: a place to start`), 'each building opens its own instructions');
       await act(() => button('Close tab instructions').props.onPress());
     }
     await act(() => button('Open Em’s Pet Spa').props.onPress());
+    const navSpa = button('Open Em’s Pet Spa').findByType('Image');
+    assert.equal(navSpa.props.source, homeSpaSource, 'the spa entrance and map tab use the same cottage asset');
+    for (let scene = 0; scene < 5; scene++) {
+      assertIllustrationFits(renderer.root.find(node => node.type?.name === 'ContainedIllustration'));
+      await act(() => button('Next spa scene').props.onPress());
+    }
     const beforeSpa = harness.finance();
     await act(() => button('Next spa scene').props.onPress());
     assert.ok(renderer.root.findAllByType('Text').some(node => node.props.children === 'Westley’s top-secret makeover'));
