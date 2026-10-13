@@ -713,7 +713,7 @@ import LaunchEssentials, { EssentialsButtons } from "./src/LaunchEssentials";
 import { PrivacyContext } from "./src/Privacy";
 import { paydaySnapshot, recordBillHistory, undoPayment, firstWinPlan, emptyPlan, samplePlan, quietSettings } from "./src/launch-essentials.mjs";
 const greatAnnieHero = annieArtwork.welcome;
-const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.jpg");
+const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budget.png");
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
 const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const mixedBuddyGraphic = require("./assets/characters/debt-mixed-snowplow.png");
