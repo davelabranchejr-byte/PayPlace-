@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
+import { neighborhoodLabel } from './neighborhood-destinations.mjs';
 import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const TAB_HELP = {
+  Spa: { summary: 'Em’s cozy neighborhood pet spa.', steps: [
+    'Scenes rotate every twelve seconds while the app is active. Use Previous, Next, or the thumbnails to choose a scene and pause the rotation.',
+    'Tap the character button for a little reply. Play resumes the scene rotation; reduced motion keeps the artwork still.',
+    'Swipe the building tabs along the bottom to visit any destination. Hide gives the artwork more room; Show brings the tabs back.',
+  ] },
+  Annie: { summary: 'Come inside Annie’s house and meet the family.', steps: ['Tap any portrait on the family wall to read their story.', 'Open the belonging quilt to see the neighborhood’s welcome.', 'Use Back or the building tabs to return to your money tools.'] },
+  Bobbie: { summary: 'Visit Bobbie’s smart mirror and boutique.', steps: ['Use the smart mirror to check a purchase against your saved budget.', 'Record a treat or save a look using the existing mirror controls.', 'Budget Corner opens your budget; the building tabs take you home.'] },
+  Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Visit the Calm Garden, review your bills, or peek into Em’s Pet Spa.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
+  Tate: { summary: 'One small bite at a time with Tate.', steps: ['Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
+  Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
   Home: { summary: 'Your starting place for the neighborhood and your money overview.', steps: [
     'Start in Budget to enter your current balance, next paycheck and emergency buffer. Add your unpaid bills in Bills and debt minimums in Debt.',
     'Home uses those saved entries to estimate Safe to Spend. It is a planning guide, so update your entries when your money changes.',
@@ -86,8 +97,8 @@ export function HowItWorks({ guide }) {
 export default function ScreenHelp({ tab, visible, onClose }) {
   return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
     <SafeAreaView style={s.page}><ScrollView contentContainerStyle={s.content}>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close tab instructions" onPress={onClose} style={s.button}><Text style={s.buttonText}>Back to {tab}</Text></TouchableOpacity>
-      <Text accessibilityRole="header" style={s.heading}>{tab}: a place to start</Text>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close tab instructions" onPress={onClose} style={s.button}><Text style={s.buttonText}>Back to {neighborhoodLabel(tab)}</Text></TouchableOpacity>
+      <Text accessibilityRole="header" style={s.heading}>{neighborhoodLabel(tab)}: a place to start</Text>
       <HowItWorks guide={TAB_HELP[tab]} />
       <Text style={s.body}>Manual Mode means you enter and maintain your own financial information. Banking connections and live payments are not enabled in this beta.</Text>
     </ScrollView></SafeAreaView>

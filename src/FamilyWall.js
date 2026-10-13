@@ -82,11 +82,11 @@ const westleyMemories = {
   3: { source: require("../assets/characters/westley-trusting-em.jpg"), ratio: 1122 / 1402, caption: "A little trust, one gentle moment at a time · Illustrated", label: "An illustration of Westley accepting Em’s gentle head scratches while she carefully grooms him" },
 };
 
-export function CharacterStory({ person, onBack }) {
+export function CharacterStory({ person, onBack, backLabel = "Back to the family wall" }) {
   const [enlarged, setEnlarged] = useState(null);
   return <><ScrollView style={s.screen} contentContainerStyle={s.story}>
-    <TouchableOpacity style={s.back} onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to the family wall">
-      <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.backText}>Back to the family wall</Text>
+    <TouchableOpacity style={s.back} onPress={onBack} accessibilityRole="button" accessibilityLabel={backLabel}>
+      <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.backText}>{backLabel}</Text>
     </TouchableOpacity>
     <View style={s.storyCard}>
       <CharacterArtwork source={storyPortraits[person.id]} style={s.storyPortrait} resizeMode="contain" />
