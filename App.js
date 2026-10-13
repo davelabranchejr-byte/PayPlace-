@@ -42,7 +42,6 @@ import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BelongingQuilt, { AcornSquare, QuiltDetail } from "./src/BelongingQuilt";
-import BobbieSmartMirror from "./src/BobbieSmartMirror";
 import CalmGardenScene from "./src/CalmGardenScene";
 import useNeighborhoodArtwork from "./src/useNeighborhoodArtwork";
 import NeighborCare, { SmallSteps } from "./src/NeighborCare";
@@ -1699,7 +1698,6 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             handleOverwhelmed={handleOverwhelmed}
             showPlaidPlan={showPlaidPlan}
             replayAnnieOnboarding={replayAnnieOnboarding}
-            onMirrorAction={updateMirror}
             onExtraPaycheckAction={updateExtraPaycheck}
             onDetective={() => setDetectiveVisible(true)}
             onPremium={() => openPremium()}
@@ -2277,7 +2275,6 @@ function HomeScreen({
   handleOverwhelmed,
   showPlaidPlan,
   replayAnnieOnboarding,
-  onMirrorAction,
   onExtraPaycheckAction,
   onDetective,
   onPremium,
@@ -2355,7 +2352,6 @@ function HomeScreen({
         <Text style={styles.visitAnnieButtonText}>Visit Annie again</Text>
       </TouchableOpacity>
       <NeighborCare finance={finance} onChange={onCareChange} status={annieStatus} onSmallStep={() => setGuidanceVisible(true)} onCalm={() => switchTab("Calm")} />
-      <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => switchTab("Budget")} />
       <ExtraPaycheckCalendar
         visible={extraPlanVisible}
         onClose={() => setExtraPlanVisible(false)}
