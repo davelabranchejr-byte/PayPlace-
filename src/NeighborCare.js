@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Text, TextInput } from "./Privacy";
 import { weeklyRecap, smallTasks } from './neighborhood-progress.mjs';
 import { requestBillReminderPermission } from './useBillReminders';
+import ContainedIllustration from './ContainedIllustration';
 const money = n => `$${Number(n).toFixed(2)}`;
 export function SmallSteps({ finance, onChange, onOpen }) {
   const tasks = smallTasks(finance);
   const day = new Date().toLocaleDateString('en-CA');
   const done = finance.smallSteps?.day === day ? finance.smallSteps.done || [] : [];
   return <View style={s.card}>
-    <Image source={require('../assets/characters/tate-small-bites.png')} style={{width:'100%',aspectRatio:16/9,borderRadius:14}} resizeMode="contain" accessibilityLabel="Tate offers a tiny biscuit: One small bite at a time. One little task is enough to start." />
+    <ContainedIllustration source={require('../assets/characters/tate-small-bites.png')} style={{borderRadius:14}} accessibilityLabel="Tate offers a tiny biscuit: One small bite at a time. One little task is enough to start." />
     <Text style={s.title}>One small step</Text><Text style={s.body}>Choose just one. Reviewing counts; you do not have to spend or save money to finish a task.</Text>
     {tasks.map(task => <View key={task.id} style={s.task}><Text style={s.body}>{task.title}{done.includes(task.id) ? ' · Done today' : ''}</Text>
       <View style={s.row}><TouchableOpacity accessibilityRole="button" accessibilityLabel={`Open task: ${task.title}`} onPress={() => onOpen(task.target)} style={s.button}><Text style={s.buttonText}>Take a look</Text></TouchableOpacity>

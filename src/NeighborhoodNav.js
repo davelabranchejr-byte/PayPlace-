@@ -6,6 +6,7 @@ import { NEIGHBORHOOD_DESTINATIONS } from './neighborhood-destinations.mjs';
 const atlas = require('../assets/characters/neighborhood-building-tabs.png');
 const bills = require('../assets/characters/nav-post-office.png');
 const debt = require('../assets/characters/nav-debt-climb.png');
+const spa = require('../assets/characters/em-spa-building.png');
 const atlasSize = Image.resolveAssetSource(atlas);
 const cellWidth = atlasSize.width / 5;
 const cellHeight = atlasSize.height / 2;
@@ -13,6 +14,7 @@ export function buildingArtwork(id) {
   const place = NEIGHBORHOOD_DESTINATIONS.find(item => item.id === id);
   if (id === 'Bills') return bills;
   if (id === 'Debt') return debt;
+  if (id === 'Spa') return spa;
   if (!place || place.tile === undefined) return atlas;
   return { source: atlas, width: atlasSize.width, height: atlasSize.height,
     crop: [(place.tile % 5) * cellWidth, Math.floor(place.tile / 5) * cellHeight, cellWidth, cellHeight], label: place.label };

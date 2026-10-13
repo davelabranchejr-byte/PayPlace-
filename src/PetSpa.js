@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SPA_SCENES, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
+import ContainedIllustration from './ContainedIllustration';
 
 const artwork = [
   require('../assets/characters/spa-welcome.png'),
@@ -62,10 +63,9 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
     <Text accessibilityRole="header" style={s.title}>Em’s Pet Spa</Text>
     <Text style={s.body}>Fresh towels, fabulous blow-outs, and all the love. Come see who is being pampered today.</Text>
     <View style={s.card}>
-      <View style={{ width: '100%', aspectRatio: scene.ratio, overflow: 'hidden', borderRadius: 18 }}>
-        <Image source={artwork[index]} resizeMode="contain" style={StyleSheet.absoluteFillObject} accessibilityLabel={`${scene.title}. ${scene.caption}`} />
+      <ContainedIllustration source={artwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={`${scene.title}. ${scene.caption}`}>
         <SpaAtmosphere playing={playing} kind={scene.motion} />
-      </View>
+      </ContainedIllustration>
       <Text style={s.sceneTitle} accessibilityRole="header">{scene.title}</Text>
       <Text style={s.body}>{scene.caption}</Text>
       <TouchableOpacity accessibilityRole="button" onPress={() => { setPaused(true); setReply(scene.reply); }} style={s.action}><Text style={s.actionText}>{scene.action}</Text></TouchableOpacity>
