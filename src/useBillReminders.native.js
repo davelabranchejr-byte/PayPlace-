@@ -5,6 +5,7 @@ import { planBillReminders, reconcileReminders } from './bill-reminders.mjs';
 
 const CHANNEL = 'annie-private-reminders';
 let queue = Promise.resolve();
+export const drainBillReminders = () => queue.catch(() => {});
 Notifications.setNotificationHandler({ handleNotification: async () => ({ shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: true, shouldShowList: true }) });
 function allowed(permission) { return permission.granted || permission.ios?.status === Notifications.IosAuthorizationStatus.PROVISIONAL; }
 async function channel() {

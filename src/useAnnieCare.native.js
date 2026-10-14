@@ -4,6 +4,7 @@ import * as Notifications from 'expo-notifications';
 import { nextQuietDate } from './neighborhood-progress.mjs';
 const ids=['payplace-annie-weekly','payplace-annie-away'];
 let queue=Promise.resolve();
+export const drainAnnieCare = () => queue.catch(() => {});
 export default function useAnnieCare(settings, ready, onReturn, onOpen) {
   const latest=useRef();latest.current={settings,ready,onReturn,onOpen};
   const [status,setStatus]=useState({supported:true,error:false});

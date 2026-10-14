@@ -9,8 +9,10 @@ import { createBackup, restoreBackup } from './security-crypto.mjs';
 import { pickBackupFile, saveBackupFile } from './backup-files';
 import BillReminderSettings from './BillReminderSettings';
 import { deletedItems } from './deleted-items.mjs';
+import PrivacyLinks from './PrivacyLinks';
+import DataDeletion from './DataDeletion';
 
-export default function SecuritySettings({ visible, onClose, finance, profile, onRestore, recovery = false, onRemindersChange, reminderStatus, onUndoDeletion }) {
+export default function SecuritySettings({ visible, onClose, finance, profile, onRestore, recovery = false, onRemindersChange, reminderStatus, onUndoDeletion, onDeleteDevice, demo = false }) {
   const security = useAppSecurity();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -69,6 +71,7 @@ export default function SecuritySettings({ visible, onClose, finance, profile, o
           <Text style={s.title}>Security & backup</Text>
           <Text style={s.body}>Your money. Your place. Your control.</Text>
           <Text style={s.body}>Basic security and recovery are free for everyone.</Text>
+          <PrivacyLinks />
           {!recovery && <BillReminderSettings settings={finance.billReminders} onChange={onRemindersChange} status={reminderStatus} styles={s} />}
           {!recovery && <View style={s.card}>
             <Text style={s.heading}>Recently deleted</Text>
@@ -100,6 +103,7 @@ export default function SecuritySettings({ visible, onClose, finance, profile, o
             <TouchableOpacity accessibilityRole="button" disabled={busy} style={s.outline} onPress={importFile}><Text style={s.link}>Restore from backup</Text></TouchableOpacity>
           </View>
           <View style={s.card}><Text style={s.heading}>Protected local storage</Text><Text style={s.body}>{Platform.OS === 'web' ? 'Your browser encrypts saved entries, but this does not protect them from scripts with access to this website. Browser storage clearing can remove the encryption key.' : 'Your budget and onboarding profile are encrypted on this device. The encryption key uses your phone’s protected storage and does not transfer automatically to another phone.'}</Text><Text style={s.body}>This app lock does not establish a cloud account or authorize bank payments.</Text></View>
+          {onDeleteDevice && <DataDeletion profile={profile} onDeleteDevice={onDeleteDevice} authorize={authorize} styles={s} demo={demo} onBusyChange={setBusy} />}
           {!!message && <Text accessibilityLiveRegion="polite" style={s.message}>{message}</Text>}
         </ScrollView>
       </SafeAreaView>

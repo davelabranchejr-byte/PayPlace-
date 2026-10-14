@@ -5,7 +5,6 @@ import FamilyWall, { CharacterStory, FAMILY_STORIES } from './FamilyWall';
 import BelongingQuilt, { QuiltDetail } from './BelongingQuilt';
 import BobbieSmartMirror from './BobbieSmartMirror';
 import { SmallSteps } from './NeighborCare';
-import ExtraPaycheckCalendar from './ExtraPaycheckCalendar';
 import { buildingArtwork } from './NeighborhoodNav';
 import { neighborhoodLabel } from './neighborhood-destinations.mjs';
 
@@ -20,12 +19,11 @@ const introductions = {
 export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
-  const [calendar, setCalendar] = useState(false);
   const title = neighborhoodLabel(destination);
   const neighbor = FAMILY_STORIES.find(person => person.id === destination.toLowerCase());
   const action = (label, target) => <TouchableOpacity key={target} accessibilityRole="button" style={s.action} onPress={() => onNavigate(target)}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
-    <TouchableOpacity accessibilityRole="button" style={s.back} onPress={onHome}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" style={s.back} onPress={onHome}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
     <CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} />
     <Text accessibilityRole="header" style={s.title}>{title}</Text>
     <Text style={s.body}>{introductions[destination]}</Text>
@@ -41,9 +39,8 @@ export default function NeighborRoom({ destination, finance, upcomingTotal, onHo
     </View>}
     {destination === 'Tate' && <SmallSteps finance={finance} onChange={onStepsChange} onOpen={onNavigate} />}
     {destination === 'Chapo' && <>
-      <TouchableOpacity accessibilityRole="button" style={s.action} onPress={() => setCalendar(true)}><Text style={s.actionText}>Open the extra-paycheck calendar</Text></TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" style={s.action} onPress={() => onNavigate('Calendar')}><Text style={s.actionText}>Open the extra-paycheck calendar</Text></TouchableOpacity>
       {action('Make room in my budget', 'Budget')}
-      <ExtraPaycheckCalendar visible={calendar} onClose={() => setCalendar(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={onExtraPaycheckAction} onBudget={() => { setCalendar(false); onNavigate('Budget'); }} />
     </>}
     {neighbor && destination !== 'Annie' && <TouchableOpacity accessibilityRole="button" onPress={() => setStory(neighbor)} style={s.storyButton}><Text style={s.backText}>Read {neighbor.name}’s story</Text></TouchableOpacity>}
     <Modal visible={!!story || quilt} onRequestClose={() => { setStory(null); setQuilt(false); }} animationType="slide">

@@ -6,6 +6,7 @@ import { DEFAULT_PREMIUM_STATE, buildBillShockPlans, buildCatchUpPlan, roundUpFo
 import { SAMPLE_FINANCE, SAMPLE_PURCHASES, normalizePremiumBeta, premiumAmount, simulatePayday, simulateRoundup } from './premium-beta.mjs';
 import { HowItWorks, PREMIUM_HELP } from './ScreenHelp';
 import BobbieBankDemoLogin from './BobbieBankDemoLogin';
+import BankWelcomeCard from './BankWelcomeCard';
 
 const bobbie = require('../assets/characters/premium-bobbie-gala.png');
 const lockedLogo = require('../assets/branding/payplace-locked-logo.jpeg');
@@ -31,7 +32,7 @@ function Box({ title, children }) {
   return <View style={s.box}><Text accessibilityRole="header" style={s.panelTitle}>{title}</Text>{children}</View>;
 }
 
-export default function PremiumResilienceHub({ visible = true, embedded = false, onClose, finance = {}, premiumState = DEFAULT_PREMIUM_STATE, onPremiumStateChange = () => {}, betaState, onBetaStateChange = () => {}, onOpenBankConnections, onOpenSubscriptions, onOpenBills, initialPanel = null }) {
+export default function PremiumResilienceHub({ visible = true, embedded = false, onClose, finance = {}, premiumState = DEFAULT_PREMIUM_STATE, onPremiumStateChange = () => {}, betaState, onBetaStateChange = () => {}, onOpenBankConnections, onOpenSubscriptions, onOpenBills, onStartDemo, onCreditChange, initialPanel = null }) {
   const [panel, setPanel] = useState(initialPanel);
   const [notice, setNotice] = useState('');
   const [shockAmount, setShockAmount] = useState('');
@@ -73,23 +74,25 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
   const roundUpBlock = !sampleReady ? 'First connect sample accounts below to unlock the purchase simulation.' : !beta.roundUpEnabled ? 'Sample round-ups are paused. Turn them on to try a purchase batch.' : premiumState.roundUpCap <= 0 ? 'Your saved weekly cap is $0. Set a cap above zero and tap Save round-up cap.' : beta.roundUpSaved >= premiumState.roundUpCap ? 'You have reached your saved weekly cap. Start a new sample week below, or save a higher cap.' : '';
   const fundBlock = !sampleReady ? 'First connect sample accounts below to unlock the payday simulation.' : !beta.fundEnabled ? 'Sample payday savings are paused. Turn them on to try a payday.' : beta.sampleFund >= premiumState.lifeHappensTarget ? 'Your sample fund has reached its target. Try a sample emergency below, or save a higher target.' : premiumState.paydayContribution <= 0 ? 'Your saved contribution is $0. Enter an amount above zero and tap Save fund preferences.' : '';
   const content = <View style={s.page}>
-    {panel && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Premium" onPress={() => open(null)} style={s.back}><Ionicons name="arrow-back" size={20} color="#6754E8" /><Text style={s.backText}>Back to Premium</Text></TouchableOpacity>}
+    {panel && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Plaid Banking" onPress={() => open(null)} style={s.back}><Ionicons name="arrow-back" size={20} color="#6754E8" /><Text style={s.backText}>Back to Plaid Banking</Text></TouchableOpacity>}
     <ScrollView key={panel || 'hub'} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-    <View style={s.header}>
-      <View style={s.headerCopy}><Image source={lockedLogo} style={{ width: 30, height: 34, borderRadius: 6 }} resizeMode="contain" accessibilityLabel="Locked PayPlace logo" /><Text style={s.kicker}>PAYPLACE PREMIUM</Text><Text style={s.title}>{feature ? feature.title : panel === 'accounts' ? 'Account connections' : 'A little more breathing room.'}</Text><Text style={s.subtitle}>{feature ? feature.body : '“Oooh, premium like me!” — Bobbie'}</Text></View>
+    {panel && <View style={s.header}>
+      <View style={s.headerCopy}><Image source={lockedLogo} style={{ width: 30, height: 34, borderRadius: 6 }} resizeMode="contain" accessibilityLabel="Locked PayPlace logo" /><Text style={s.kicker}>PLAID BANKING</Text><Text style={s.title}>{feature ? feature.title : panel === 'accounts' ? 'Account connections' : panel === 'demo' ? 'Bobbie’s banking demo' : 'Your neighborhood bank.'}</Text><Text style={s.subtitle}>{feature ? feature.body : 'Accounts, savings, monitoring and credit in one place.'}</Text></View>
       <Image source={bobbie} style={s.bobbie} resizeMode="contain" accessibilityLabel="Bobbie in her diamond tiara, colorful PayPlace princess gala gown and jewels" />
-    </View>
-      {!feature && <View style={s.promise}><Text style={s.promiseTitle}>Included during beta · no charge</Text><Text style={s.body}>Banking integrations are pending. Try sample automation and credit data, or use your saved entries for recovery plans. This beta does not move money, pay bills or retrieve credit reports.</Text></View>}
+    </View>}
+      {panel && !feature && <View style={s.promise}><Text style={s.promiseTitle}>Included during beta · no charge</Text><Text style={s.body}>Banking integrations are pending. Try sample automation and credit data, or use your saved entries for recovery plans. This beta does not move money, pay bills or retrieve credit reports.</Text></View>}
       {panel && <HowItWorks guide={PREMIUM_HELP[panel]} />}
+      {panel === 'demo' && <BobbieBankDemoLogin onConnect={onStartDemo || (() => {updateBeta({sampleConnected:true,useSamplePlan:true});open(null);})} />}
       {notice && !['roundup', 'fund', 'watch', 'credit'].includes(panel) ? <Text accessibilityLiveRegion="polite" style={s.notice}>{notice}</Text> : null}
       {!panel && <>
-        <Box title="Start here"><Text style={s.body}>Tap a feature below for its step-by-step instructions. You can connect fictional sample accounts inside each feature. Recovery plans also work with entries you save in Budget and Bills.</Text><Text style={s.badge}>{sampleReady ? 'SAMPLE ACCOUNTS CONNECTED' : 'SAMPLE ACCOUNTS NOT CONNECTED YET'}</Text><Button secondary label="Account connections & beta setup" onPress={() => open('accounts')} /></Box>
-        {FEATURES.map(item => <TouchableOpacity key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={s.card}>
+        <BankWelcomeCard onDemo={() => open('demo')} />
+        <Box title="Accounts"><Text style={s.body}>Sample accounts, provider availability and connection controls live here. Everything below uses these same banking settings.</Text><Text style={s.badge}>{sampleReady ? 'SAMPLE ACCOUNTS CONNECTED' : 'SAMPLE ACCOUNTS NOT CONNECTED YET'}</Text><Button secondary label="Account connections & beta setup" onPress={() => open('accounts')} /></Box>
+        {FEATURES.map((item, index) => <React.Fragment key={item.id}>{index === 0 && <Text style={s.panelTitle}>Savings & automation</Text>}{index === 2 && <Text style={s.panelTitle}>Recovery plans</Text>}{index === 4 && <Text style={s.panelTitle}>Monitoring & credit</Text>} <TouchableOpacity key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={s.card}>
           <View style={s.cardArt}><Image source={item.image} style={s.cardArt} resizeMode="contain" accessible={false} /><Image source={lockedLogo} style={{ position: 'absolute', right: 3, bottom: 3, width: 22, height: 25, borderRadius: 4 }} resizeMode="contain" accessible={false} /></View><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View><Ionicons name="chevron-forward" size={18} color="#6754E8" />
-        </TouchableOpacity>)}
+        </TouchableOpacity></React.Fragment>)}
       </>}
       {panel === 'accounts' && <>
-        {!sampleReady && <BobbieBankDemoLogin onConnect={() => { updateBeta({ sampleConnected: true, useSamplePlan: true }); setNotice('Bobbie’s fictional checking and savings accounts are connected. Explore every demo feature from Premium.'); }} />}
+        {!sampleReady && <BobbieBankDemoLogin onConnect={() => { updateBeta({ sampleConnected: true, useSamplePlan: true }); setNotice('Bobbie’s fictional checking and savings accounts are connected. Explore every demo feature from Plaid Banking.'); }} />}
         <Box title="Try the sample neighborhood bank"><Text style={s.body}>Connect fictional checking and savings accounts to test the controls. These local sample accounts are separate from your real finances.</Text><Text style={s.value}>{sampleReady ? 'Sample accounts connected' : 'Sample accounts disconnected'}</Text>
           {sampleReady && <><Text style={s.body}>Sample checking: $320.00 · Sample savings: {dollars(beta.sampleFund)}</Text><Button secondary label="Disconnect sample accounts" onPress={() => { updateBeta({ sampleConnected: false, roundUpEnabled: false, fundEnabled: false }); setNotice('Sample accounts disconnected. Sample automation is paused.'); }} /></>}
           {!sampleReady && <Button label="Connect sample accounts" onPress={() => { updateBeta({ sampleConnected: true }); setNotice('Fictional accounts connected for beta testing.'); }} />}
@@ -140,11 +143,11 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
       </>}
       {panel === 'credit' && <>
         <Box title="Sample credit dashboard"><Text style={s.badge}>FICTIONAL SCORE · BETA ONLY</Text><Text style={s.score}>{sampleReady ? beta.creditRefreshes % 2 ? '716' : '712' : '—'}</Text><Text style={s.body}>This is a fictional score on a sample 300–850 scale. No bureau report, identity verification or credit check has been requested.</Text>{sampleReady ? <><Text style={s.body}>Sample factors: payment history, balances and account age. Live bureau, score model and refresh schedule are still to be determined.</Text><Button label="Refresh sample credit score" onPress={() => { updateBeta({ creditRefreshes: beta.creditRefreshes + 1 }); setNotice('Fictional score refreshed. Your credit was not checked.'); }} />{!!notice && <Text accessibilityLiveRegion="polite" style={s.notice}>{notice}</Text>}</> : sampleHelp}</Box>
-        <Box title="Your saved credit entry"><Text style={s.value}>{Number(finance.creditScore) >= 300 && Number(finance.creditScore) <= 850 ? finance.creditScore : 'No score saved'}</Text><Text style={s.body}>Manually entered in Budget. This is separate from the fictional score above and has not been verified by a credit bureau.</Text></Box>
+        <Box title="Your saved credit entry">{onCreditChange && <><Text style={s.label}>Current credit score</Text><TextInput accessibilityLabel="Current credit score" value={String(finance.creditScore || '')} onChangeText={onCreditChange} keyboardType="number-pad" style={s.input}/></>}<Text style={s.value}>{Number(finance.creditScore) >= 300 && Number(finance.creditScore) <= 850 ? finance.creditScore : 'No score saved'}</Text><Text style={s.body}>Your manually entered record, separate from the fictional score above. It has not been verified by a credit bureau.</Text></Box>
       </>}
       {feature && <><Text style={s.body}>Beta practice only. This beta does not move money, pay bills or retrieve credit reports.</Text><Image source={feature.image} style={s.featureArt} resizeMode="contain" accessibilityLabel={`${feature.title} original PayPlace illustration`} /></>}
     </ScrollView>
-    {!embedded && <Button secondary label="Close Premium" onPress={onClose} />}
+    {!embedded && <Button secondary label="Close Plaid Banking" onPress={onClose} />}
   </View>;
   return embedded ? content : <Modal visible={visible} animationType="slide" onRequestClose={panel ? () => open(null) : onClose}><SafeAreaView style={s.page}>{content}</SafeAreaView></Modal>;
 }

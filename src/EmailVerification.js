@@ -3,6 +3,7 @@ import { Platform, TouchableOpacity, View } from "react-native";
 import { Text, TextInput } from "./Privacy";
 import { createContactApi } from './email-api.mjs';
 import { normalizeContact, verifiedAnswers } from './contact-verification.mjs';
+import PrivacyLinks from './PrivacyLinks';
 const api = createContactApi(Platform.OS);
 const button = { backgroundColor: '#147D78', borderRadius: 14, padding: 16, marginTop: 16, alignItems: 'center' };
 const inputStyle = { fontSize: 18, borderWidth: 1, borderColor: '#147D78', borderRadius: 12, padding: 16, marginTop: 10 };
@@ -57,6 +58,7 @@ export default function EmailVerification({ answers, onDraftChange = () => {}, o
   return <View style={{ width: '100%', maxWidth: 520, padding: 24, backgroundColor: 'white', borderRadius: 24 }}>
     <Text style={{ fontSize: 28, fontWeight: '800', color: '#173C43' }}>Your key to PayPlace</Text>
     <Text style={{ fontSize: 17, lineHeight: 26, marginTop: 16 }}>There you are, {answers.name || 'Neighbor'}. Enter your email so Annie can send your security code and welcome letter. Email verification is included for everyone.</Text>
+    <PrivacyLinks />
     {!challenge && <>
       <TextInput accessibilityLabel="Email address" value={contact} onChangeText={text => {
         setContact(text); setVerifiedProfile(null);

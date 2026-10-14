@@ -7,29 +7,29 @@ const TAB_HELP = {
   Spa: { summary: 'Em’s cozy neighborhood pet spa.', steps: [
     'Scenes rotate every twelve seconds while the app is active. Use Previous, Next, or the thumbnails to choose a scene and pause the rotation.',
     'Tap the character button for a little reply. Play resumes the scene rotation; reduced motion keeps the artwork still.',
-    'Swipe the building tabs along the bottom to visit any destination. Hide gives the artwork more room; Show brings the tabs back.',
+    'Use the six tabs along the bottom to open a feature group. Hide gives the artwork more room; Show brings the tabs back.',
   ] },
   Annie: { summary: 'Come inside Annie’s house and meet the family.', steps: ['Tap any portrait on the family wall to read their story.', 'Open the belonging quilt to see the neighborhood’s welcome.', 'Use Back or the building tabs to return to your money tools.'] },
   Bobbie: { summary: 'Visit Bobbie’s smart mirror and boutique.', steps: ['Use the smart mirror to check a purchase against your saved budget.', 'Record a treat or save a look using the existing mirror controls.', 'Budget Corner opens your budget; the building tabs take you home.'] },
   Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Visit the Calm Garden, review your bills, or peek into Em’s Pet Spa.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
   Tate: { summary: 'One small bite at a time with Tate.', steps: ['Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
   Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
-  Home: { summary: 'Your starting place for the neighborhood and your money overview.', steps: [
-    'Until next payday shows bills, groceries, gas, its calculation and when your balance was updated. Your first win with Annie helps you enter one payday and one bill.',
-    'Undo & payment history corrects records without moving money. Quiet Mode lets you choose reminder time, pause Annie check-ins, reduce animation and hide dollar amounts.',
-    'Start in Budget to enter your current balance, next paycheck and emergency buffer. Add your unpaid bills in Bills and debt minimums in Debt.',
-    'Home uses those saved entries to estimate Safe to Spend. It is a planning guide, so update your entries when your money changes.',
-    'Tap a labeled treehouse or the bottom tabs to visit a feature. Premium opens the sample automation tools; Calm gives you a moment to breathe.',
+  Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Choose a character’s house, Em’s Pet Spa or Calm Garden.', 'Quiet Mode controls reminders, animation and hidden amounts.', 'Back to Neighborhood returns to these visits; the bottom tabs return to money tools.']},
+  Home: { summary:'Your short money overview and a clear entrance to the banking demo.', steps:[
+    'Try Bobbie’s banking demo opens public demo credentials. Fictional activity remains separate from your personal plan.',
+    'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
+    'Bills holds payment history and Subscription Detective. Plaid Banking holds accounts, savings automation, monitoring and credit.',
+    'Neighborhood holds character visits, the spa and Calm Garden. One small step offers a suggested next action.',
   ] },
   Bills: { summary: 'Keep a list of what you owe and when it is due.', steps: [
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
-    'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Home payment history shows changes and lets you correct a recorded amount.',
+    'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Bills payment history shows changes and lets you correct a recorded amount.',
     'Sample bills let you try the review flow. They enter your saved list if you add them. PayPlace does not send a payment in this beta.',
   ] },
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [
     'Enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
     'Safe to Spend subtracts unpaid bills, debt minimums and your buffer from your current balance. An expected paycheck is not money available now.',
-    'A credit score entered here is your own record; it is not verified. Premium keeps fictional balances and scores separate from these saved entries.',
+    'Open Until next payday, Extra Paycheck Calendar or Savings Goals from Budget. Credit entries and fictional credit previews live in Plaid Banking.',
   ] },
   Debt: { summary: 'Choose which debt to focus on and track payments you make elsewhere.', steps: [
     'Add each debt with its balance, interest rate and minimum payment.',
@@ -77,11 +77,11 @@ export const PREMIUM_HELP = {
   credit: { summary: 'Preview a credit dashboard without checking your actual credit.', steps: [
     'Connect sample accounts to display a fictional score.',
     'Refresh sample credit score switches the example between 712 and 716 so you can test the display. Neither number is your real score.',
-    'Your saved credit entry below comes from the score you enter manually in Budget. A live credit report requires a future approved integration.',
+    'Enter or update your own credit score in Your saved credit entry below. A live credit report requires a future approved integration.',
   ] },
-  accounts: { summary: 'Set up fictional accounts for trying the Premium controls.', steps: [
-    'Tap Connect sample accounts. No bank login is needed, and no account is opened at a bank.',
-    'Go Back to Premium and choose a feature. Round-ups and payday savings each have their own on/off switch.',
+  accounts: { summary: 'Set up fictional accounts for trying the Plaid Banking controls.', steps: [
+    'Tap Connect sample accounts. The sample setup never opens a real bank account. The prominent Bobbie demo uses public username Bobbie and password litterbox.',
+    'Go Back to Plaid Banking and choose a feature. Round-ups and payday savings each have their own on/off switch.',
     'Disconnect pauses both sample savings switches. Reset sample activity restores the starter samples and disconnects them; it keeps your saved preferences, real budget and bills.',
   ] },
 };

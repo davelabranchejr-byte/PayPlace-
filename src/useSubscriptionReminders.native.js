@@ -5,6 +5,7 @@ import { reconcileReminders } from './bill-reminders.mjs';
 import { planSubscriptionReminders, SUBSCRIPTION_REMINDER_PREFIX } from './subscription-detective.mjs';
 
 let queue = Promise.resolve();
+export const drainSubscriptionReminders = () => queue.catch(() => {});
 export default function useSubscriptionReminders(cases, settings, ready, onOpen) {
   const [status, setStatus] = useState({ supported: true, count: 0, permissionBlocked: false, error: false });
   const latest = useRef(); latest.current = { cases, settings, ready, onOpen };
