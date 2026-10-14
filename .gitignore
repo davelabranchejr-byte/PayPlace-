@@ -5,3 +5,4 @@ dist/
 *.p12
 *.mobileprovision
 .env*
+node_modules
