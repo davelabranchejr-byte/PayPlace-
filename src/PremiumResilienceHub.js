@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { DEFAULT_PREMIUM_STATE, buildBillShockPlans, buildCatchUpPlan, roundUpForPurchase, unpaidPremiumBills } from './premium-resilience.mjs';
 import { SAMPLE_FINANCE, SAMPLE_PURCHASES, normalizePremiumBeta, premiumAmount, simulatePayday, simulateRoundup } from './premium-beta.mjs';
 import { HowItWorks, PREMIUM_HELP } from './ScreenHelp';
+import BobbieBankDemoLogin from './BobbieBankDemoLogin';
 
 const bobbie = require('../assets/characters/premium-bobbie-gala.png');
 const lockedLogo = require('../assets/branding/payplace-locked-logo.jpeg');
@@ -88,6 +89,7 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
         </TouchableOpacity>)}
       </>}
       {panel === 'accounts' && <>
+        {!sampleReady && <BobbieBankDemoLogin onConnect={() => { updateBeta({ sampleConnected: true, useSamplePlan: true }); setNotice('Bobbie’s fictional checking and savings accounts are connected. Explore every demo feature from Premium.'); }} />}
         <Box title="Try the sample neighborhood bank"><Text style={s.body}>Connect fictional checking and savings accounts to test the controls. These local sample accounts are separate from your real finances.</Text><Text style={s.value}>{sampleReady ? 'Sample accounts connected' : 'Sample accounts disconnected'}</Text>
           {sampleReady && <><Text style={s.body}>Sample checking: $320.00 · Sample savings: {dollars(beta.sampleFund)}</Text><Button secondary label="Disconnect sample accounts" onPress={() => { updateBeta({ sampleConnected: false, roundUpEnabled: false, fundEnabled: false }); setNotice('Sample accounts disconnected. Sample automation is paused.'); }} /></>}
           {!sampleReady && <Button label="Connect sample accounts" onPress={() => { updateBeta({ sampleConnected: true }); setNotice('Fictional accounts connected for beta testing.'); }} />}
