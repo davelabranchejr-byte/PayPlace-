@@ -4615,7 +4615,7 @@ const styles = StyleSheet.create({
   safeHeroImageBadge: {
     position: "absolute",
     left: 12,
-    bottom: 12,
+    top: 12,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "rgba(255,255,255,0.86)",
