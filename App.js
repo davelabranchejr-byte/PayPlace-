@@ -45,6 +45,7 @@ import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
+import BobbieBankDemoLogin from "./src/BobbieBankDemoLogin";
 import { normalizePremiumState } from "./src/premium-resilience.mjs";
 import { normalizePremiumBeta } from "./src/premium-beta.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
@@ -1219,6 +1220,11 @@ function PayPlaceApp() {
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
   function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, typeof update === "function" ? update(current) : update))); }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
+  function startBankDemo() {
+    setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
+      premiumBeta:{sampleConnected:true,useSamplePlan:true}});
+    setEssentialsPanel(null);setPremiumPanel(null);setTab("Premium");
+  }
   function endSample() { setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
   function undoRecordedPayment(id) { try {setFinance(undoPayment(finance,id));} catch(e) {Alert.alert("Review this record",e.message);} }
@@ -1684,7 +1690,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   if ((!onboardingComplete && !sampleFinance) || revisitingAnnie) {
     return (
       <>
-        <OnboardingFlow onSample={startSample} key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} onExit={revisitingAnnie ? leaveAnnieVisit : undefined} />
+        <OnboardingFlow onSample={startSample} onBankDemo={startBankDemo} key={onboardingSession} initialAnswers={onboardingAnswers} onProgress={saveOnboardingProgress} onComplete={finishOnboarding} onExit={revisitingAnnie ? leaveAnnieVisit : undefined} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance, balanceUpdatedAt:Date.now(),balanceSource:"Bank connection" }))} />
       </>
@@ -1904,7 +1910,8 @@ const ONBOARDING_STEPS = [
   },
 ];
 
-function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSample }) {
+function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSample, onBankDemo }) {
+  const [bankDemoVisible, setBankDemoVisible] = useState(false);
   const [welcomeStage, setWelcomeStage] = useState(() => onExit ? "annie" : onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stage);
   const [stepIndex, setStepIndex] = useState(() => onboardingPosition(initialAnswers, ONBOARDING_STEPS.length).stepIndex);
   const [answers, setAnswers] = useState(initialAnswers);
@@ -1936,6 +1943,11 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
     setStepIndex((current) => current + 1);
   }
 
+  if (bankDemoVisible) return <SafeAreaView style={styles.onboardingSafe}><KeyboardAvoidingView style={{flex:1}} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView contentContainerStyle={{padding:20}} keyboardShouldPersistTaps="handled">
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Annie from banking demo" style={styles.onboardingBackButton} onPress={() => setBankDemoVisible(false)}><Text style={styles.onboardingBackText}>Back to Annie</Text></TouchableOpacity>
+    <BobbieBankDemoLogin onConnect={onBankDemo}/>
+  </ScrollView></KeyboardAvoidingView></SafeAreaView>;
+
   if (welcomeStage === "annie") {
     return (
       <SafeAreaView style={styles.onboardingSafe}>
@@ -1948,6 +1960,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
             <Text style={styles.annieWelcomeTitle}>There you are.</Text>
             <Text style={styles.annieWelcomeBody}>“Every new neighbor eventually finds their way here. Sit with me for a minute, sweetheart.”</Text>
             {onSample && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Explore sample neighborhood before setup" style={styles.onboardingBackButton} onPress={onSample}><Text style={styles.onboardingBackText}>Explore the sample neighborhood first</Text></TouchableOpacity>}
+            {onBankDemo && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Try Bobbie’s banking demo before setup" style={styles.onboardingBackButton} onPress={() => setBankDemoVisible(true)}><Text style={styles.onboardingBackText}>Try Bobbie’s banking demo</Text></TouchableOpacity>}
             <Text style={styles.annieWelcomePrompt}>What brought you to PayPlace?</Text>
             <View style={styles.annieWelcomeChoices}>
               {["I want less financial stress", "I’m starting over", "I want to pay off debt", "I’m saving for something important", "I’m trying to get organized", "I’m not sure yet"].map((option) => {
