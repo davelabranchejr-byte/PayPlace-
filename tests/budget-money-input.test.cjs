@@ -23,7 +23,7 @@ const sandbox = {
   require: asset => ({ uri: asset }),
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
-    'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
+    'FeatureLinks', 'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
   styles: {}, palette: {}, approvedClothedCharacterArtwork: {}, portraits: { together: {} }, artStudioArtwork: {},
   scheduleSettings: () => ({ kind: 'biweekly' }), module: { exports: {} },
 };
@@ -78,7 +78,7 @@ test('budget cents remain editable, saved and usable after reopening', async () 
     }
     // Whole-number controls keep their existing behavior and keyboard.
     assert.equal(input('Days until payday').props.keyboardType, 'number-pad');
-    assert.equal(input('Current credit score').props.keyboardType, 'number-pad');
+    assert.equal(input('Current credit score'), undefined, 'credit entry lives in Plaid Banking');
     await act(() => input('Current bank balance').props.onChangeText('123.45'));
     await act(() => input('Emergency buffer').props.onChangeText('10.10'));
     await act(() => renderer.unmount());

@@ -16,7 +16,7 @@ test('email draft is retained and verified one-use code can retry a failed local
   }).code;
   let verifies = 0, saves = 0, draft;
   const sandbox = { React, useState: React.useState, useEffect: React.useEffect,
-    Platform: { OS: 'ios' }, Text: 'Text', TextInput: 'TextInput', TouchableOpacity: 'TouchableOpacity', View: 'View',
+    Platform: { OS: 'ios' }, Text: 'Text', TextInput: 'TextInput', TouchableOpacity: 'TouchableOpacity', View: 'View', PrivacyLinks: 'PrivacyLinks',
     Date, Math, setInterval: () => 1, clearInterval: () => {}, ...contactHelpers,
     createContactApi: () => async (action, payload) => {
       if (action === 'status') return { emailConfigured: true };
