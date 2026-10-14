@@ -390,3 +390,47 @@ test('an unverified new neighbor can explore samples and safely return to accoun
    assert.equal(button('Open Until next payday'),undefined,'samples do not bypass personal account verification');
  }finally{if(renderer)await act(()=>renderer.unmount());}
 });
+
+test('Bobbie banking demo works without verification or network and leaves personal finances intact', async () => {
+ const harness=appHarness({balance:87,bills:[],debts:[]},{name:'',completed:false});let renderer,pending;
+ const button=label=>renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.accessibilityLabel===label);
+ const press=async label=>{assert.ok(button(label),label);await act(()=>button(label).props.onPress());};
+ const input=async(label,value)=>{const field=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel===label);assert.ok(field,label);await act(()=>field.props.onChangeText(value));};
+ const hub=()=>renderer.root.find(n=>n.type?.name==='PremiumResilienceHub');
+ try {
+  await act(async()=>{renderer=create(React.createElement(harness.App));});
+  await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+  await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+  const personalBefore=JSON.stringify(harness.finance());
+  await press('Try Bobbie’s banking demo before setup');
+  await input('Demo username','Bobbie');await input('Demo password','wrong');
+  await press('Open Bobbie’s banking demo');
+  assert.ok(button('Back to Annie from banking demo'));
+  assert.equal(renderer.root.findAll(n=>n.type?.name==='PremiumResilienceHub').length,0);
+  await input('Demo username',' Bobbie ');await input('Demo password','litterbox');
+  await press('Open Bobbie’s banking demo');
+  assert.equal(hub().props.betaState.sampleConnected,true);
+  assert.equal(hub().props.betaState.useSamplePlan,true);
+  assert.equal(renderer.root.findAllByType('TextInput').some(n=>n.props.value==='litterbox'),false,'demo password is cleared');
+  await press('Open Round Up & Save');
+  await press('Turn on sample round-ups');await press('Simulate next purchase batch');
+  assert.ok(hub().props.betaState.roundUpSaved>0);
+  await press('Back to Premium');await press('Open Life Happens Fund');
+  await press('Turn on sample payday savings');await press('Simulate next payday');
+  assert.ok(hub().props.betaState.sampleFund>100);
+  await press('Back to Premium');await press('Open Credit Center');await press('Refresh sample credit score');
+  assert.equal(hub().props.betaState.creditRefreshes,1);
+  await press('Back to Premium');await press('Open Automatic Money Watch');await press('Refresh sample watch feed');
+  assert.equal(hub().props.betaState.watchRefreshes,1);
+  await press('Back to Premium');await press('Account connections & beta setup');await press('Disconnect sample accounts');
+  assert.equal(hub().props.betaState.sampleConnected,false);
+  assert.equal(hub().props.betaState.roundUpEnabled,false);
+  await input('Demo username','bobbie');await input('Demo password','litterbox');await press('Open Bobbie’s banking demo');
+  assert.equal(hub().props.betaState.sampleConnected,true);
+  await press('Reset sample activity');assert.equal(hub().props.betaState.creditRefreshes,0);
+  assert.equal(JSON.stringify(harness.finance()),personalBefore,'all demo operations leave the stored personal plan unchanged');
+  await press('Return to my personal plan');
+  assert.ok(button('Try Bobbie’s banking demo before setup'));
+  assert.equal(renderer.root.findAll(n=>n.type?.name==='PremiumResilienceHub').length,0,'demo login never verifies a real profile');
+ } finally {if(renderer)await act(()=>renderer.unmount());}
+});
