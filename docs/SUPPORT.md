@@ -1,32 +1,27 @@
-# PayPlace Support
+# PayPlace Help & Support
 
-Welcome home. Our neighborhood is still under construction, and we appreciate you coming home to visit.
+Last updated: October 14, 2026
 
-PayPlace 1.0.0 helps you manually organize balances, bills, budgets, and debt plans. You can also explore the Calm Garden and tap the family portraits to read each character's story.
+PayPlace is created and operated by David LaBranche, Jr. Welcome to our neighborhood. We are testing a kinder way to plan bills, budgets and debt: Money without shame.
 
-## Ask for help or report a problem
+## Private help
 
-[Open the PayPlace support issues page](https://github.com/davelabranchejr-byte/PayPlace-/issues). Check whether someone has reported the same issue, or create a new issue with:
+Email [annieoaktree@payplace.app](mailto:annieoaktree@payplace.app). Describe the screen, button, what you expected and what happened. Include your build number and phone model if helpful. Use fictional amounts; never send bank passwords, authentication codes, full card numbers or unnecessary personal financial details. We do not promise a response time.
 
-- Your iPhone model and iOS version.
-- The PayPlace version.
-- The screen or button involved.
-- What you expected and what happened.
+## Beta feedback
 
-GitHub issues are public. Do not post bank details, balances, account numbers, passwords, personal notes, or private contact information. Use fictional examples in screenshots. Creating an issue requires a GitHub account.
+TestFlight's Send Beta Feedback is a private route to the developer. The optional GitHub draft opens a public issue and requires a GitHub account. Hide private details in screenshots and use made-up examples.
 
-## Common questions
+## Privacy and data controls
 
-**Do I need an account?** Onboarding asks you to verify your email. Your budget stays encrypted on this device; verification does not synchronize it to a cloud account. Once onboarding is completed and saved, normal relaunches return to your neighborhood after any enabled device lock.
+Read the [Privacy Policy](https://payplace-dave.davelabranchejr.chatgpt.site/privacy). The hosted preview has Privacy & data controls in its header and welcome screen. Mobile controls are prepared for the next TestFlight update and are not in Build 42. Once that update is installed, open Security & backup, then Delete account & data, or use the welcome-screen controls. Website cleanup affects the current browser, not saved entries on a separate phone. Use email-confirmed deletion for service records and the local plan, or the clearly labeled device-only option for local cleanup.
 
-**Can I connect my bank?** Bank linking through Plaid is an upcoming paid Premium feature. It is not active in this release. Manual entry is available now.
+Deletion codes expire after ten minutes. If you cannot access your old email, contact us for help verifying an appropriate privacy request. Device cleanup cannot erase provider records, mailbox copies or exported backups.
 
-**Where are the character stories?** On Home, open Annie’s welcome and tap her red door. Tap a family portrait to read its background. Em’s paw-print picture is on that same wall; tap it for a larger view. The Belonging Quilt is below the gallery.
+## Banking previews
 
-**Why do the starting numbers look like examples?** The neighborhood starts with sample entries. Replace them with your own information before relying on the calculations. Safe to Spend is an estimate based on what you enter, and may omit expenses you have not recorded.
+Use Bobbie / litterbox in the mobile beta for fictional previews. They do not connect a real bank or move money. The separate owner-only Plaid Sandbox is for technical testing. Live integration and consumer credit-score access remain pending.
 
-**Can PayPlace recover my information?** Use Security & backup to create a password-protected backup file. You need both the file and its password to restore it. Restore asks you to verify email and opt into letters/reminders again. PayPlace cannot remotely retrieve your local budget or reset a forgotten backup password.
+## Backup and recovery
 
-**Where can I leave beta feedback?** Home has “Help make the neighborhood better” with testing tips and a public GitHub feedback draft. On iPhone, you can also use TestFlight’s Send Beta Feedback. No budget data is automatically added to a feedback draft.
-
-[Read the PayPlace Privacy Policy](PRIVACY.md).
+The mobile app can create a password-protected backup. Keep the file and password safe. PayPlace cannot reset that password. Restore replaces a local plan after confirmation and requires fresh verification. Exported copies remain after deleting the current plan.

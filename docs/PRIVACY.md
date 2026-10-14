@@ -1,53 +1,63 @@
 # PayPlace Privacy Policy
 
-Last updated: October 6, 2026
+Last updated: October 14, 2026
 
-This policy describes PayPlace 1.0.0 for iPhone, operated by David LaBranche Jr. The neighborhood is still under construction. The current release uses manual entry and stores budget information on your device. Contact verification sends limited onboarding details to the PayPlace delivery service. Verification is required to enter PayPlace. Email verification is included for everyone. Text-message security codes are a planned paid Premium feature and are not available in this release.
+PayPlace is operated by David LaBranche, Jr. Contact [annieoaktree@payplace.app](mailto:annieoaktree@payplace.app) for support or privacy questions. This policy covers the mobile beta, hosted preview, email service and restricted owner bank testing. The current beta does not move real money, pay bills or retrieve a real consumer credit score.
 
-## Information in the app
+## Your manual plan and profile
 
-PayPlace stores the information you enter, including your onboarding answers, name, verified email, letter delivery preferences, personal notes, balances, bills, budget settings, and debt plans. These entries are stored locally on your device. Budget entries, balances, bills, debt plans, and personal notes remain on your device. Contact verification does not create a cloud budget account or synchronize your financial entries.
+Your entered balances, income, bills, debts, notes, savings goals, subscription records, preferences and onboarding answers are stored on your device or in the browser you use. Manual financial entries are not synchronized to our service. Do not enter bank passwords, full card numbers or authentication secrets in notes or bill fields.
 
-Do not put bank passwords, full card numbers, or other authentication secrets in personal notes or bill fields.
+Mobile releases use an encrypted local vault for the budget and onboarding profile. Its random key is held in protected phone storage. Supported configured phones use device authentication for app lock and cover the app when inactive. Device unlock does not establish a cloud budget account or authorize banking.
 
-## Annie’s welcome letters and security codes
+Web security differs: the hosted preview stores its plan in browser storage and has no native device-authentication app lock. Same-origin scripts and other people using that browser may access its storage. Clearing browser data can remove your plan.
 
-Email is the current verification and welcome-letter delivery method. Requesting a code sends your chosen contact address, name, selected goal, and optional-letter preference to PayPlace’s hosted service. Email uses Resend. SMS delivery is disabled in this release. Budget balances, bills, debts, personal notes, and bank credentials are not included.
+## Bobbie's fictional banking demo
 
-The welcome email includes an eight-character code. Codes are hashed on the server, expire after ten minutes, allow five attempts, and can be used once. Short-lived hashed contact and network IP identifiers limit code requests. Expired challenges are cleaned up after a short retention window. After verification, the service stores your verified contact, name, verification time, and optional future-letter choice and consent time. No recurring letter campaign is started by this update.
+Bobbie/litterbox are public demo credentials, not personal sign-in credentials. They do not authenticate a person, contact Plaid, connect a real bank, transfer funds or request a credit report. Sample balances, purchases, alerts, savings and scores are fictional. The welcome-screen demo uses temporary state separate from the saved personal plan, with notifications disabled. Sample feature choices in your personal Premium screen may persist with local preferences. Demo credentials are not saved as account credentials.
 
-Future Annie letters are optional. Email replies go to annieoaktree@payplace.app in the operator’s Porkbun-hosted mailbox. Delivery providers may retain operational logs under their own policies. Email is not end-to-end encrypted.
+## Email verification and Annie's letters
 
-## Annie’s discreet bill reminders and recovery
+Requesting a code sends your email, name, chosen goal and optional-letter choice to PayPlace. Resend delivers the email and receives the destination and message contents. Your manual balances, bills, debts and notes are not included. Email and mailbox copies are not end-to-end encrypted.
 
-Bill reminders are optional, free local notifications scheduled on your phone. They do not send bills or financial entries to a push, email, or SMS provider. Notifications contain only a general invitation from Annie to open PayPlace; they never include bill names, amounts, account details, or bill identifiers. You can choose 9 AM or 6 PM local time and one or three days before the due date, plus a due-day reminder. Your phone may delay or block delivery. Disable reminders in Security & backup or your phone’s settings. Restoring a backup leaves reminders off until you enable them again.
+Codes are hashed, expire after ten minutes, allow five attempts and are single-use. After verification, the service retains email, name, verification time, optional-letter choice and consent time. Future Annie letters are optional; verification does not start a recurring campaign. Replies go to the operator's Porkbun-hosted mailbox. Providers may retain delivery and mailbox records under their own policies.
 
-The last 20 deleted bills/debts are retained in the encrypted local vault for undo or restoration. They are included in encrypted backups. Restored records do not replace an existing record with the same identifier. Older retained deletions are replaced as newer entries are deleted; resetting demo data also removes this local recovery history. Historical backups may still contain deleted entries.
+Short-lived hashed contact and IP-based counters limit abuse. Old counters and expired challenges are cleaned when service requests run; this is not a promise of cleanup at the exact expiry time. Verified contact records remain until deletion through the controls described below or a resolved privacy request.
 
-## Bank connections and purchases
+## Separate owner-only Plaid Sandbox
 
-Bank linking through Plaid and text-message security codes are upcoming paid Premium features. Email verification remains included. Bank linking, automatic bank synchronization, subscriptions, and in-app purchases are not active in this release. PayPlace does not ask for or transmit bank sign-in credentials.
+The public Bobbie demo is separate from the approved-owner bank-testing route. Native testing only permits an allowlisted owner email and Plaid Sandbox. It requires a separately delivered code and server-issued session. A local verified-email flag or app unlock is not banking authorization. Session tokens use protected phone storage; the server keeps hashes, contact, owner ID and expiry. Reverification revokes older sessions.
 
-## Tracking and third-party services
+The server keeps encrypted provider tokens, institution labels, environment and connection IDs scoped to the authenticated user. Sandbox bank information is fictional. Read-only owner account summaries do not silently change a personal plan. Linking uses the provider's authorized interface; PayPlace does not request bank passwords in its own fields. Disconnect revokes provider access. Sign-out alone does not disconnect. Native Production access remains disabled.
 
-The current iPhone app has no configured advertising, analytics, cross-app tracking, or data-selling service. Expo, React Native, and local storage components provide the app's technical functions. PayPlace’s hosted service and Resend process email verification requests and message delivery; Porkbun hosts Annie’s reply mailbox. Apple may separately process information through the App Store, TestFlight, device backups, or operating-system services under Apple's own policies.
+Real bank synchronization, consumer credit reports, payments and transfers require approved integrations and updated disclosures before release.
 
-## Local storage and your choices
+## Notifications
 
-The security update encrypts budget entries and onboarding answers with AES-256-GCM. Its random device encryption key is held in the iOS Keychain or Android Keystore through Expo SecureStore. On iOS, the key is accessible only while the device is unlocked and does not transfer to another device. Previously saved entries migrate to the encrypted vault; legacy plaintext entries are removed only after the encrypted copy has been verified. This does not erase historical operating-system backups.
+Optional bill, subscription and Annie reminders are local mobile notifications. They contain general invitations to open PayPlace without bill names, amounts, account details or transaction information. The app does not register for remote push delivery. Devices may delay or block reminders. Disable them in app or device settings. Restoring a backup leaves bill and subscription reminders off until you enable them.
 
-On phones with configured device authentication, app lock is on by default. It uses Face ID, Touch ID, supported Android biometrics, or the device passcode. The app locks on launch, after thirty seconds away, or after five minutes without interaction. App screens are covered while the app is inactive. You can turn the lock off after device authentication. A device without a configured passcode cannot enable the app lock. Device authentication unlocks this app; it is separate from verified email, cloud sign-in, and authorization of future bank payments.
+## Deletion and your choices
 
-You can create an optional password-protected backup containing your manual budget and selected onboarding profile fields. A new backup password must contain at least twelve characters. Backup files use AES-256-GCM with PBKDF2-SHA256 at 600,000 iterations and a fresh random salt. You choose where the file is saved or shared; that destination's privacy and retention policies apply. Export/import temporarily uses the app cache for encrypted files and removes its temporary copy afterward. Backup passwords are not sent to PayPlace. PayPlace cannot reset a forgotten backup password. Restoring replaces local entries after confirmation and requires fresh email verification and letter consent; verification claims and consent do not transfer through the backup.
+The hosted preview now offers Privacy & data controls in its header and welcome screen. The mobile controls are prepared for the next TestFlight update; Build 42 does not include them. After installing that update, open Security & backup, then Delete account & data, or use Privacy & data controls on the welcome screen. Using the website clears the current browser, not entries stored separately on your phone.
 
-PayPlace cannot remotely access or recover your local entries. You can edit or remove bills and debts inside the app. Removing the app or clearing storage can make entries inaccessible. Operating-system backups are not a guaranteed recovery path because the device key may be unavailable after restoration or transfer. Keep an exported backup and its password if you need portable recovery. iOS Keychain items can survive reinstallations; do not rely on that behavior to recover a plan.
+Email-confirmed deletion removes the service contact/consent records, relevant code challenges and native sessions for that email. Applicable provider access is revoked before connection records are removed, then the current device's saved plan, profile and local recovery history are cleared. Phones also clear their bank session and scheduled/presented notifications. The app confirms completion. A server failure preserves the local plan. A device-cleanup failure after server deletion offers a local cleanup retry.
 
-The browser version encrypts saved entries with a key in IndexedDB and has no native device-authentication app lock. Encryption in the browser does not prevent access by scripts running on the same website. Clearing browser data can remove both entries and the key.
+Delete this device's data only is a separate choice: it clears local entries/profile but leaves service records and bank connections. Different emails require separate confirmations. Web provider records tied to a signed-in ChatGPT identity require the corresponding sign-in email. PayPlace deletion does not delete Apple or ChatGPT accounts, cancel Apple subscriptions or erase mailbox copies.
 
-## Support
+Short-lived security counters, provider operational records and correspondence may be handled separately for security, service operation or applicable retention obligations. Contact the privacy address about these records. We do not promise to erase independently held Apple/provider records or files you exported elsewhere.
 
-For help or privacy questions, see [PayPlace Support](SUPPORT.md). Support requests made through GitHub are handled by GitHub and may be public. Share only the information needed to describe an app issue. Never include financial account details, passwords, personal notes, or private contact information in a public issue.
+## Recovery and backups
 
-## Future changes
+Mobile builds retain the latest 20 deleted bills/debts in the local encrypted vault for undo, and include them in backups. Full device cleanup removes the current local history; individual deletion does not erase older backups.
 
-If online accounts, bank linking, analytics, or purchases are introduced, this policy and the App Store privacy disclosures will be updated before those features are released.
+Password-protected backups contain a manual plan and selected profile fields. Verification and optional-letter consent must be completed again after restore. You choose the file destination. PayPlace cannot reset its password, remotely erase exported copies or recover lost local entries. Uninstalling is not a server-deletion request. Manage exported copies and mailbox records separately.
+
+## Providers, tracking and future changes
+
+The configured mobile beta has no advertising network, cross-app tracking, data-selling service or third-party analytics integration. Libraries support technical functions; Resend handles delivery, Porkbun handles reply mail, the hosted service handles the limited records described here, and Plaid handles restricted Sandbox testing. Apple separately handles App Store/TestFlight/operating-system data. We are responsible for our providers and SDKs and will require protection appropriate to shared data.
+
+We request data needed for the described features. No configured feature sends your personal plan to an AI provider; mascot-art creation does not send app user data to AI. Before new collection, purposes, providers, real banking or purchases, we will update this policy and App Store disclosures and obtain required consent.
+
+## Support and feedback
+
+[PayPlace Support](https://payplace-dave.davelabranchejr.chatgpt.site/support) explains private help. TestFlight feedback goes to the developer through Apple. Optional GitHub issue drafts are public: use fictional examples and avoid private financial/contact details in text and screenshots. You can email the privacy address above for private questions.
