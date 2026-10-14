@@ -87,7 +87,8 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     }, { filename: file });
     return module.exports;
   }
-  return { App: load(path.join(root, 'App.js')).default, records,
+  return { App: load(path.join(root, 'App.js')).default,
+    Mirror: load(path.join(root, 'src/BobbieSmartMirror.js')).default, records,
     finance: () => JSON.parse(records.get(vaultModel.FINANCE_KEY)),
     authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
     setAppState: state => { appState.currentState = state; listeners.forEach(fn => fn(state)); },
@@ -106,6 +107,44 @@ function assertIllustrationFits(illustration) {
   assert.equal(style.overflow, 'hidden');
   assert.ok(style.aspectRatio > 0, 'the enclosing frame has a resolved height');
 }
+
+test('Smart Mirror keeps all four panels inside the measured phone viewport after resizing', async () => {
+  const harness = appHarness();
+  let renderer;
+  await act(async () => { renderer = create(React.createElement(harness.Mirror, {
+    finance: { balance: 300, bills: [], debts: [] }, onAction: () => true, onBudget: () => {},
+  })); });
+  const byId = id => renderer.root.findAll(node => node.props.testID === id && typeof node.type === 'string')[0];
+  const flatten = style => Object.assign({}, ...[style].flat(Infinity).filter(Boolean));
+  try {
+    await act(() => byId('bobbie-smart-mirror').props.onPress());
+    for (const width of [320, 353, 393, 430, 568, 844]) {
+      await act(() => byId('smart-mirror-scroll').props.onLayout({ nativeEvent: { layout: { width } } }));
+      for (const tab of ['check', 'treat', 'balance', 'looks']) {
+        await act(() => byId(`mirror-tab-${tab}`).props.onPress());
+        const scroll = byId('smart-mirror-scroll');
+        assert.equal(flatten(scroll.props.contentContainerStyle).width, width,
+          'vertical scroll content must have the viewport width, rather than an intrinsic image width');
+        assert.equal(scroll.props.horizontal, undefined);
+        const content = flatten(byId('smart-mirror-content').props.style);
+        assert.equal(content.width, '100%');
+        assert.ok(content.maxWidth <= 600, 'wide screens keep readable content');
+        assert.equal(flatten(byId('smart-mirror-panel').props.style).width, '100%');
+        assertIllustrationFits(renderer.root.findAll(n => n.type?.name === 'ContainedIllustration')[0]);
+        assert.equal(renderer.root.findAllByType('TouchableOpacity').filter(n => n.props.accessibilityRole === 'tab').length, 4);
+        assert.ok(renderer.root.findAllByType('TextInput').every(n => !n.props.style?.width || n.props.style.width === '100%'));
+      }
+    }
+    await act(() => byId('mirror-tab-check').props.onPress());
+    const field = label => renderer.root.findAllByType('TextInput').find(n => n.props.accessibilityLabel === label);
+    await act(() => field('Full cost, including tax and fees').props.onChangeText('25.00'));
+    const ask = renderer.root.findAllByType('TouchableOpacity').find(n => n.findAllByType('Text').some(t => t.props.children === 'Ask the mirror'));
+    await act(() => ask.props.onPress());
+    assert.ok(renderer.root.findAllByType('Text').some(n => n.props.children === 'There’s room in your current plan.'));
+    await act(() => byId('close-smart-mirror').props.onPress());
+    assert.equal(renderer.root.findAllByType('ScrollView').length, 0);
+  } finally { await act(() => renderer.unmount()); }
+});
 
 test('a returning neighbor unlocks, enters Home and opens every Premium panel without a render crash', async () => {
   const harness = appHarness({ balance: 300, nextPaycheck: 500,
