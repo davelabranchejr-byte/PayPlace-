@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import ContainedIllustration from "./ContainedIllustration";
 import { checkPurchase, mirrorBudget, parseAmount } from "./smart-mirror.mjs";
 
 // Dave locked this exact room, tabby face, outfit and rear-view reflection.
@@ -34,6 +36,7 @@ function Button({ children, onPress, disabled = false, secondary = false }) {
 
 export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
   const [visible, setVisible] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(0);
   const [tab, setTab] = useState("check");
   const [purchaseName, setPurchaseName] = useState("");
   const [cost, setCost] = useState("");
@@ -83,14 +86,19 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
       <SafeAreaView style={s.safe}>
         <KeyboardAvoidingView style={s.safe} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View style={s.header}>
-            <View style={{ flex: 1 }}><Text style={s.eyebrow}>WELCOME TO BOBBIE’S HOUSE</Text><Text style={s.title}>The Smart Mirror</Text></View>
+            <View style={s.headerCopy}><Text style={s.eyebrow}>WELCOME TO BOBBIE’S HOUSE</Text><Text style={s.title}>The Smart Mirror</Text></View>
             <TouchableOpacity testID="close-smart-mirror" accessibilityRole="button" accessibilityLabel="Close Bobbie's smart mirror"
               style={s.close} onPress={() => setVisible(false)}><Ionicons name="close" size={25} color="#493349" /></TouchableOpacity>
           </View>
-          <ScrollView keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={s.scroll}>
-            <View style={s.roomFrame}><Image source={room} style={s.room} resizeMode="contain"
-              accessibilityLabel="Bobbie's approved Cher-inspired bedroom, wigs on white cat mannequins, and gold mirror showing the back of her head" /></View>
-            <View style={s.mirror}>
+          <StatusBar style="dark" />
+          <ScrollView testID="smart-mirror-scroll" style={s.viewport}
+            onLayout={({ nativeEvent }) => { const width = nativeEvent.layout.width; if (width > 0) setViewportWidth(width); }}
+            keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag"
+            contentContainerStyle={[s.scroll, { width: viewportWidth || "100%" }]}>
+            <View testID="smart-mirror-content" style={s.content}>
+            <ContainedIllustration source={room} style={s.roomFrame}
+              accessibilityLabel="Bobbie's approved Cher-inspired bedroom, wigs on white cat mannequins, and gold mirror showing the back of her head" />
+            <View testID="smart-mirror-panel" style={s.mirror}>
               <Image source={room} resizeMode="cover" style={s.reflection} accessible={false} />
               <View style={s.inkNotes}>
                 <Text style={[s.scribble, s.quotePink]}>You are allowed to want nice things. ♡</Text>
@@ -180,6 +188,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
                 </View>
               </View>
             </View>
+            </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -191,18 +200,20 @@ const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFF7F3" },
   visitCard: { flexDirection: "row", backgroundColor: "#31203E", borderRadius: 24, borderWidth: 2, borderColor: "#D8AD64", overflow: "hidden", marginTop: 14, marginBottom: 12 },
   thumbnail: { width: 108, height: 144, backgroundColor: "#EDD0BC" },
-  visitCopy: { flex: 1, padding: 14, justifyContent: "center" },
+  visitCopy: { flex: 1, minWidth: 0, padding: 14, justifyContent: "center" },
   eyebrow: { color: "#985B22", fontSize: 10, fontWeight: "800", letterSpacing: 1.1 },
   visitTitle: { color: "#FFFFFF", fontSize: 21, fontWeight: "800", marginTop: 5 },
   visitBody: { color: "#F8E5EF", fontSize: 13, lineHeight: 19, marginTop: 5 },
   visitLink: { color: "#FFD696", fontSize: 13, fontWeight: "800", marginTop: 10 },
   header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 18, paddingVertical: 12, borderBottomWidth: 1, borderColor: "#EACDA4" },
+  headerCopy: { flex: 1, minWidth: 0 },
   title: { color: "#493349", fontSize: 26, fontWeight: "800", marginTop: 3 },
-  close: { width: 48, height: 48, alignItems: "center", justifyContent: "center", borderRadius: 24, backgroundColor: "#F5E3E9" },
-  scroll: { padding: 16, paddingBottom: 40 },
-  roomFrame: { height: 280, borderWidth: 4, borderColor: "#CCA466", borderRadius: 30, overflow: "hidden", backgroundColor: "#F9DFCC", marginBottom: 16 },
-  room: { width: "100%", height: "100%" },
-  mirror: { backgroundColor: "#FFFDF9", borderWidth: 4, borderColor: "#CCA466", borderRadius: 30, overflow: "hidden" },
+  close: { width: 48, height: 48, flexShrink: 0, marginLeft: 12, alignItems: "center", justifyContent: "center", borderRadius: 24, backgroundColor: "#F5E3E9" },
+  viewport: { flex: 1, width: "100%", alignSelf: "stretch" },
+  scroll: { padding: 16, paddingBottom: 40, alignItems: "center" },
+  content: { width: "100%", maxWidth: 600, minWidth: 0 },
+  roomFrame: { width: "100%", borderWidth: 4, borderColor: "#CCA466", borderRadius: 30, overflow: "hidden", backgroundColor: "#F9DFCC", marginBottom: 16 },
+  mirror: { width: "100%", minWidth: 0, backgroundColor: "#FFFDF9", borderWidth: 4, borderColor: "#CCA466", borderRadius: 30, overflow: "hidden" },
   reflection: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%", opacity: 0.07 },
   inkNotes: { padding: 18, gap: 9 },
   scribble: { fontFamily: inkFont, fontSize: 17, fontWeight: "600" },
@@ -210,7 +221,7 @@ const s = StyleSheet.create({
   quoteTeal: { color: "#096D66", textAlign: "right", transform: [{ rotate: "2deg" }] },
   quotePurple: { color: "#6341AF", textAlign: "center", transform: [{ rotate: "-1deg" }] },
   tabs: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 12, paddingBottom: 12, gap: 8 },
-  tab: { flexGrow: 1, flexBasis: "44%", minHeight: 54, justifyContent: "center", alignItems: "center", borderRadius: 13, paddingHorizontal: 6, paddingVertical: 8, borderWidth: 2, borderColor: "transparent" },
+  tab: { flexGrow: 1, flexShrink: 1, flexBasis: "44%", minWidth: 0, minHeight: 54, justifyContent: "center", alignItems: "center", borderRadius: 13, paddingHorizontal: 6, paddingVertical: 8, borderWidth: 2, borderColor: "transparent" },
   tabLabel: { fontSize: 17, textAlign: "center" },
   panel: { padding: 18, backgroundColor: "#FFFFFFDF", borderTopWidth: 1, borderColor: "#E9D6BD" },
   panelTitle: { color: "#493349", fontSize: 23, lineHeight: 30, fontWeight: "800", marginBottom: 9 },
