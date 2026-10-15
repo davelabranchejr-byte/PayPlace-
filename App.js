@@ -41,6 +41,7 @@ import PetSpa from "./src/PetSpa";
 import NeighborhoodNav, { buildingArtwork } from "./src/NeighborhoodNav";
 import { NEIGHBOR_DESTINATIONS } from "./src/neighborhood-destinations.mjs";
 import BankWelcomeCard from "./src/BankWelcomeCard";
+import SeasonalWelcome from "./src/SeasonalWelcome";
 import FeatureLinks from "./src/FeatureLinks";
 import NeighborRoom from "./src/NeighborRooms";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
@@ -1735,7 +1736,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowThree} />
 
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
+        <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} reduceAnimation={quiet.reduceAnimation} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
 
         {tab === "Home" && (
@@ -2148,7 +2149,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
   );
 }
 
-function Header({ onSecurity, onHelp, tab, compact = false }) {
+function Header({ onSecurity, onHelp, tab, compact = false, reduceAnimation = false }) {
   return (
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
@@ -2174,6 +2175,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
         {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
+      <LivingNeighborhood reduceAnimation={reduceAnimation} />
     </View>
   );
 }
@@ -2262,7 +2264,6 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </Modal>
 
       <View style={styles.neighborhoodHero}>
-        <LivingNeighborhood reduceAnimation={reduceAnimation} />
         <View style={styles.heroEdgeShade} pointerEvents="none" />
 
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
@@ -2381,6 +2382,7 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+      <SeasonalWelcome/>
       <BankWelcomeCard onDemo={onBankDemo} onBanking={onPremium}/>
       <View style={[styles.safeHeroCard,{padding:20}]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND · ENTERED PLAN</Text>
