@@ -14,7 +14,7 @@ const cellHeight = atlasSize.height / 2;
 export function buildingArtwork(id) {
   if (id === 'Neighborhood') id = 'Home';
   const place = NEIGHBORHOOD_DESTINATIONS.find(item => item.id === id);
-  if (id === 'Premium') return require('../assets/characters/bobbie-premium-clubhouse.png');
+  if (id === 'Premium') return require('../assets/characters/nav-plaid-bank.png');
   if (id === 'Bills') return bills;
   if (id === 'Debt') return debt;
   if (id === 'Spa') return spa;
