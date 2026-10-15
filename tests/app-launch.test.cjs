@@ -39,7 +39,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     StyleSheet: { create: value => value, absoluteFillObject: { position: 'absolute' } },
     BackHandler: { addEventListener: () => ({ remove() {} }) }, Alert: { alert: (...args) => alerts.push(args) }, Linking: { openURL: async url => openedURLs.push(url), openSettings: async () => {} },
     AccessibilityInfo: { isReduceMotionEnabled: async () => true, addEventListener: () => ({ remove() {} }) },
-    Animated: { Value: class { setValue() {} interpolate() { return 0; } }, Text: 'AnimatedText' },
+    Animated: { Value: class { setValue() {} interpolate() { return 0; } }, Text: 'AnimatedText', View: 'AnimatedView', Image },
   });
   const cache = new Map();
   const imageIds = new Map();
@@ -176,7 +176,8 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(button('Open Extra Paycheck Calendar'),undefined,'payday tools have one home in Budget');
     assert.equal(button('Open Subscription Detective'),undefined,'manual subscriptions live in Bills');
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
-    assert.equal(home.findByType('ScrollView').children[0].type.name,'BankWelcomeCard','the banking demo is the first Home feature');
+    assert.equal(home.findByType('ScrollView').children[0].type.name,'SeasonalWelcome','Annie welcomes visitors before the banking section');
+    assert.equal(home.findByType('ScrollView').children[1].type.name,'BankWelcomeCard','the banking demo follows the welcome scene');
     const priorDemo=JSON.stringify(harness.finance());
     await act(()=>button('Try Bobbie’s banking demo').props.onPress());
     assert.ok(button('Open Bobbie’s banking demo'),'Home opens the demo directly without account setup');
