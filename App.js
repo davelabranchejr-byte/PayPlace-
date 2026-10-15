@@ -42,6 +42,7 @@ import NeighborhoodNav, { buildingArtwork } from "./src/NeighborhoodNav";
 import { NEIGHBOR_DESTINATIONS } from "./src/neighborhood-destinations.mjs";
 import BankWelcomeCard from "./src/BankWelcomeCard";
 import SeasonalWelcome from "./src/SeasonalWelcome";
+import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import NeighborRoom from "./src/NeighborRooms";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
@@ -1736,7 +1737,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowThree} />
 
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} reduceAnimation={quiet.reduceAnimation} />
+        <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
 
         {tab === "Home" && (
@@ -1812,6 +1813,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         />}
 
         {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+          <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} />
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
             {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
@@ -2149,7 +2151,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
   );
 }
 
-function Header({ onSecurity, onHelp, tab, compact = false, reduceAnimation = false }) {
+function Header({ onSecurity, onHelp, tab, compact = false }) {
   return (
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
@@ -2175,13 +2177,13 @@ function Header({ onSecurity, onHelp, tab, compact = false, reduceAnimation = fa
         {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
-      <LivingNeighborhood reduceAnimation={reduceAnimation} />
     </View>
   );
 }
 
 
 function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremium, reduceAnimation }) {
+  const neighborhoodArtwork = useNeighborhoodArtwork();
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("door");
   const [familyMember, setFamilyMember] = useState(null);
@@ -2264,6 +2266,8 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </Modal>
 
       <View style={styles.neighborhoodHero}>
+        <FittedArtwork source={neighborhoodArtwork.source} style={styles.heroArtwork} testID="neighborhood-map-artwork"
+          accessibilityLabel="Annie's neighborhood map. Choose a treehouse to visit." />
         <View style={styles.heroEdgeShade} pointerEvents="none" />
 
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Annie's red stained-glass door"
