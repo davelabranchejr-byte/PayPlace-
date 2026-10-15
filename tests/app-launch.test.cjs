@@ -178,6 +178,12 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
     assert.equal(home.findByType('ScrollView').children[0].type.name,'SeasonalWelcome','Annie welcomes visitors before the banking section');
     assert.equal(home.findByType('ScrollView').children[1].type.name,'BankWelcomeCard','the banking demo follows the welcome scene');
+    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama is absent from Home and its shared header');
+    await act(()=>button('Open Neighborhood').props.onPress());
+    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,1,'Neighborhood has exactly one animated panorama');
+    assert.ok(renderer.root.findAllByType('ScrollView').some(node=>node.children[0]?.type?.name==='LivingNeighborhood'),'the panorama is at the top of the Neighborhood page');
+    await act(()=>button('Open Home').props.onPress());
+    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama unmounts when leaving Neighborhood');
     const priorDemo=JSON.stringify(harness.finance());
     await act(()=>button('Try Bobbie’s banking demo').props.onPress());
     assert.ok(button('Open Bobbie’s banking demo'),'Home opens the demo directly without account setup');
