@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, AppState, Easing, Image, View, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Animated, AppState, Easing, View, StyleSheet } from 'react-native';
+import FittedArtwork from './FittedArtwork';
 import { isNeighborhoodNight } from './neighborhood-time.mjs';
 import useNeighborhoodClock from './useNeighborhoodClock';
 const day=require('../assets/characters/neighborhood-panorama-day.png');
@@ -71,19 +72,18 @@ export default function LivingNeighborhood({reduceAnimation=false}) {
   },[]);
   const dark=isNeighborhoodNight(now);
   const playing=active&&!reduce&&!reduceAnimation;
-  return <View style={s.scene} onLayout={event=>setWidth(event.nativeEvent.layout.width)} accessible accessibilityRole="image"
+  return <FittedArtwork source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={event=>setWidth(event.nativeEvent.layout.width)}
     accessibilityLabel={dark?'PayPlace at night: glowing lanterns, twinkling lights and blinking fireflies.':'PayPlace by day: realistic monarch butterflies flutter among the treehouses.'}>
-    <Image source={dark?night:day} resizeMode="contain" style={s.image} accessible={false}/>
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
       {dark?<>
         {lamps.map(([x,y],index)=><Glow key={`lamp-${index}`} x={x} y={y} index={index} playing={playing}/>)}
         {flies.map(([x,y],index)=><Glow key={`fly-${index}`} x={x} y={y} index={index} playing={playing} firefly/>)}
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
     </View>
-  </View>;
+  </FittedArtwork>;
 }
 const s=StyleSheet.create({
-  scene:{width:'100%',aspectRatio:3,overflow:'hidden',borderRadius:14,marginTop:8,backgroundColor:'#173C50'},image:{width:'100%',height:'100%'},
+  scene:{borderRadius:14,marginTop:8,backgroundColor:'#173C50'},
   glow:{position:'absolute',width:24,height:24,marginLeft:-12,marginTop:-12,alignItems:'center',justifyContent:'center'},
   halo:{position:'absolute',width:24,height:24,borderRadius:12,backgroundColor:'#FFCD5C33',shadowColor:'#FFD36C',shadowOpacity:0.9,shadowRadius:9,shadowOffset:{width:0,height:0}},
   flyHalo:{width:10,height:10,borderRadius:5,backgroundColor:'#C5FA6933',shadowColor:'#D4FF74',shadowRadius:5},
