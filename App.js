@@ -60,6 +60,7 @@ import { normalizePremiumBeta } from "./src/premium-beta.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
+import BobbieCabaret, { BobbieCabaretEntry } from "./src/BobbieCabaret";
 import ScreenHelp from "./src/ScreenHelp";
 import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
@@ -1212,6 +1213,7 @@ function PayPlaceApp() {
   const [premiumVisit, setPremiumVisit] = useState(0);
   const [tabHelpVisible, setTabHelpVisible] = useState(false);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
+  const [cabaretVisible, setCabaretVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   function openPremium(panel = null) { setPremiumPanel(panel); setPremiumVisit(current => current + 1); setTab("Premium"); }
@@ -1822,6 +1824,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
               <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:75}} resizeMode="contain" accessible={false}/><Text style={{fontSize:15,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
             </TouchableOpacity>)}
           </View>
+          <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
           <FeatureLinks items={[{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
           <ExpandableSection title="A little care from Annie">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
@@ -1862,6 +1865,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onUndo={undoRecordedPayment} onCorrect={correctRecordedPayment} onFirstWin={saveFirstWin} onSample={startSample} onPersonal={endSample}/>
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
+        {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)} />}
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
           reminderStatus={subscriptionReminderStatus}
