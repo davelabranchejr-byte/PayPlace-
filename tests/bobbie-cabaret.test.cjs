@@ -18,6 +18,7 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
     if (name.endsWith('bobbie-cabaret.mjs')) return model;
     if (name.endsWith('email-api.mjs')) return { createEmailApi: () => () => {}, EMAIL_SERVICE_ORIGIN: 'https://payplace.example' };
     if (name.endsWith('/CabaretVideo')) return 'CabaretVideo';
+    if (name.endsWith('/OwnerInbox')) return 'OwnerInbox';
     if (name.endsWith('.jpeg')) return 1;
     return 'FittedArtwork';
   } };
@@ -34,6 +35,10 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
     await act(async()=>button('Send to Bobbie’s mailbag').props.onPress());
     assert.equal(calls.length,0);
     await act(()=>field('Your question').props.onChangeText('How can I save a little money each week?'));
+    await act(()=>button('Owner inbox').props.onPress());
+    assert.equal(renderer.root.findAllByType('OwnerInbox').length,1);
+    await act(()=>button('Back to Cabaret').props.onPress());
+    assert.equal(field('Your question').props.value,'How can I save a little money each week?');
     await act(()=>button('Watch the Show — Meowgarita & Money').props.onPress());
     assert.equal(renderer.root.findAllByType('CabaretVideo').length,1);
     assert.equal(field('Your question'),undefined);
