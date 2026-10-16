@@ -50,6 +50,13 @@
         {
           "enableBackgroundRemoteNotifications": false
         }
+      ],
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
       ]
     ]
   }

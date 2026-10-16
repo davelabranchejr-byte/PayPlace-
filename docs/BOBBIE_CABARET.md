@@ -4,7 +4,7 @@ Uses Dave’s supplied, unaltered artwork and 24.63-second Meowgarita & Money mo
 
 Public room: https://payplace-dave.davelabranchejr.chatgpt.site/club
 
-Native entrance: Neighborhood → The Bobbie Darlending Show. The room uses measured contain artwork, an on-demand question form, and browser playback of the hosted movie. It builds on ux/compact-money-pages (c3545df), preserving the six-tab navigation and compact forms. No new native video dependency.
+Native entrance: Neighborhood → The Bobbie Darlending Show. The room uses measured contain artwork, an on-demand question form, and native in-app playback of the hosted movie. It builds on ux/compact-money-pages (c3545df), preserving the six-tab navigation and compact forms. Uses SDK 54-compatible expo-video.
 
 Submissions: POST /api/cabaret/questions. The server accepts only question, stage name, topic, and explicit show-feature choice, adding a versioned consent record and submission time. No email, financial profile or bank data is attached. Consent defaults off. Missing/invalid requests, wrong origin, oversize bodies and a five-per-hour network cap fail closed. A 201 response confirms the database write; the receipt contains only an ID. There is no public read/list route.
 
@@ -12,4 +12,8 @@ Owner review: Sites → PayPlace → cabaret_questions using the connected owner
 
 Privacy: old review records are removed on new submissions after 90 days. Receipt references can be sent to annieoaktree@payplace.app for manual removal. Unsubmitted native drafts exist in memory only and clear when the room closes. Failed sends retain the open draft. No automated replies or email campaigns are configured.
 
-Validation: native form interaction/retry/duplicate-tap test; source binding checks; app regression suite; SQLite-backed backend tests for private submission, consent, validation, rate limits, failure and retention; Expo exports. Browser and physical-device playback still require manual verification. Native TestFlight availability requires a subsequent app build.
+Validation: native form interaction/retry/duplicate-tap test; source binding checks; app regression suite; SQLite-backed backend tests for private submission, consent, validation, rate limits, failure and retention; Expo exports. Browser and physical-device playback still require manual verification. Build 47 adds the native player. TestFlight availability requires the signed build to finish uploading and Apple processing to complete.
+
+## Build 47 — in-app video
+
+Watch the Show opens an embedded native video screen inside the existing cabaret modal. The player fills the available window with contentFit=contain, preserving the full frame without stretching or cropping. Native controls provide play/pause, seeking and fullscreen. Returning to the cabaret releases the player and preserves the question draft. Playback pauses on background/inactive events and does not resume automatically. The remote movie loads asynchronously, and network errors offer an in-app retry. Background audio and picture-in-picture are disabled.

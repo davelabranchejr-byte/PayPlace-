@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import FittedArtwork from './FittedArtwork';
-import { createEmailApi, EMAIL_SERVICE_ORIGIN } from './email-api.mjs';
+import CabaretVideo from './CabaretVideo';
+import { createEmailApi } from './email-api.mjs';
 import { prepareQuestion, QUESTION_TOPICS } from './bobbie-cabaret.mjs';
 
 const artwork = require('../assets/characters/bobbie-darlending-show.jpeg');
@@ -16,6 +17,7 @@ export function BobbieCabaretEntry({ onOpen }) {
   </TouchableOpacity>;
 }
 export default function BobbieCabaret({ visible, onClose, submitQuestion = api }) {
+  const [watching, setWatching] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [stageName, setStageName] = useState('');
@@ -39,21 +41,18 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
     } catch (error) { setMessage(error.message || 'Could not send your question. Your draft is still here.'); }
     finally { pending.current = false; setBusy(false); }
   }
-  async function watch() {
-    try { await Linking.openURL(`${EMAIL_SERVICE_ORIGIN}/club#watch`); }
-    catch { setMessage('Could not open the show. Please check your connection and try again.'); }
-  }
-  return <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+  function back() { if (watching) setWatching(false); else onClose(); }
+  return <Modal visible={visible} animationType="slide" onRequestClose={back}>
     <SafeAreaView style={s.safe}><KeyboardAvoidingView style={s.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.header}><Text accessibilityRole="header" style={s.title}>Bobbie’s Cabaret</Text><Button secondary label="Back to Neighborhood" onPress={onClose} /></View>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <View style={s.header}><Text accessibilityRole="header" style={s.title}>Bobbie’s Cabaret</Text><Button secondary label={watching ? 'Back to Cabaret' : 'Back to Neighborhood'} onPress={back} /></View>
+      {visible && watching ? <CabaretVideo /> : <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <FittedArtwork source={artwork} aspectRatio={1312 / 1199} accessibilityLabel="Bobbie Darlending, a green-eyed tabby in a red wig and blue sequined gown, on a gold-lit cabaret stage." />
         <Text style={s.eyebrow}>LIVE FROM THE PAYPLACE CLUBHOUSE</Text>
         <Text accessibilityRole="header" style={s.title}>The Bobbie Darlending Show</Text>
         <Text style={s.quote}>“Darling, bring your questions. I’ve already brought the drama.”</Text>
         <Text style={s.body}>Real questions. Ridiculous situations. Zero shame. Just a little sparkle.</Text>
-        <Button label="Watch the Show — Meowgarita & Money" onPress={watch} />
-        <Text style={s.note}>Opens the episode in your browser. Playback starts when you press play.</Text>
+        <Button label="Watch the Show — Meowgarita & Money" onPress={() => setWatching(true)} />
+        <Text style={s.note}>Watch right here in PayPlace. The whole video stays visible, with playback controls.</Text>
         <Button secondary label={formOpen ? 'Close question form' : 'Ask Bobbie'} onPress={() => setFormOpen(!formOpen)} />
         {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}
         {formOpen && <View style={s.form}>
@@ -71,7 +70,7 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
           <Button label={busy ? 'Sending your question…' : 'Send to Bobbie’s mailbag'} disabled={busy} onPress={send} />
         </View>}
         <Text style={s.note}>Comedy and general money education. Submissions are reviewed by the team before any public use.</Text>
-      </ScrollView>
+      </ScrollView>}
     </KeyboardAvoidingView></SafeAreaView>
   </Modal>;
 }
