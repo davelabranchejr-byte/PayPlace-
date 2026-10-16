@@ -56,6 +56,13 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
       if (name === 'react-native') return ui;
       if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
       if (name === 'expo-status-bar') return { StatusBar: 'StatusBar' };
+      if (name === 'expo-video') return { VideoView: 'VideoView', useVideoPlayer: (_, setup) => {
+        const [player] = React.useState(() => {
+          const instance = { replaceAsync: async () => {}, play() {}, pause() {}, addListener: () => ({ remove() {} }) };
+          setup?.(instance); return instance;
+        });
+        return player;
+      } };
       if (name === 'expo-crypto') return { getRandomBytes: count => new Uint8Array(count) };
       if (name === 'expo-secure-store') return { getItemAsync: async () => 'enabled', setItemAsync: async () => {} };
       if (name === 'expo-local-authentication') return { SecurityLevel: { SECRET: 1 }, getEnrolledLevelAsync: async () => 2,
