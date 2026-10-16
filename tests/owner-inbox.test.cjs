@@ -7,7 +7,7 @@ test('owner inbox verifies a code, shows consent, manages questions, clears priv
   const ui = Object.fromEntries(['ActivityIndicator','ScrollView','Text','TextInput','TouchableOpacity','View'].map(name => [name,name]));
   const listeners = new Set(), timers = new Map(); let timerId = 0;
   ui.Platform = { OS: 'ios' }; ui.StyleSheet = { create: value => value }; ui.AppState = { currentState: 'active', addEventListener(name, fn) { listeners.add(fn); return { remove: () => listeners.delete(fn) }; } };
-  const sandbox = { exports: {}, console, Date, setInterval: fn => { const id = ++timerId; timers.set(id, fn); return id; }, clearInterval: id => timers.delete(id), setTimeout: () => ++timerId, clearTimeout() {}, require: name => name === 'react' ? React : name === 'react-native' ? ui : name.endsWith('owner-inbox-api.mjs') ? { createOwnerInboxApi: () => () => {} } : name.endsWith('owner-session') ? { ownerSessionStore: {} } : { EMAIL_SERVICE_ORIGIN: 'https://payplace.example' } };
+  const sandbox = { exports: {}, console, Date, setInterval: fn => { const id = ++timerId; timers.set(id, fn); return id; }, clearInterval: id => timers.delete(id), setTimeout: () => ++timerId, clearTimeout() {}, require: name => name === 'react' ? React : name === 'react-native' ? ui : name.endsWith('/QuestionGlass') ? 'QuestionGlass' : name.endsWith('owner-inbox-api.mjs') ? { createOwnerInboxApi: () => () => {} } : name.endsWith('owner-session') ? { ownerSessionStore: {} } : { EMAIL_SERVICE_ORIGIN: 'https://payplace.example' } };
   vm.runInNewContext(code, sandbox);
   let signedIn = false, saved = null, status = 'new', renderer;
   const calls = [], question = { id: 'receipt-1', stageName: 'Chapo', question: 'Where are my snacks?', featureConsent: false, createdAt: Date.now(), topic: 'Spending & saving' };
@@ -32,6 +32,7 @@ test('owner inbox verifies a code, shows consent, manages questions, clears priv
     assert.equal(calls.at(-1).authenticated, false);
     await act(() => field('Owner security code').props.onChangeText('ABCDEFGH'));
     await act(async () => button('Unlock owner inbox').props.onPress());
+    assert.equal(button('Approve for Bobbie’s glass').props.disabled, true);
     assert.ok(saved); assert.match(JSON.stringify(renderer.toJSON()), /1 new/); assert.match(JSON.stringify(renderer.toJSON()), /Permission to feature: NO/);
     await act(async () => button('Mark read').props.onPress());
     assert.equal(status, 'read'); assert.match(JSON.stringify(renderer.toJSON()), /0 new/); assert.match(JSON.stringify(renderer.toJSON()), /Permission to feature: NO/);
