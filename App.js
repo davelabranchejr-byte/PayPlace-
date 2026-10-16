@@ -44,6 +44,8 @@ import BankWelcomeCard from "./src/BankWelcomeCard";
 import SeasonalWelcome from "./src/SeasonalWelcome";
 import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
+import ExpandableSection from "./src/ExpandableSection";
+import EntrySheet from "./src/EntrySheet";
 import NeighborRoom from "./src/NeighborRooms";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
@@ -1821,8 +1823,12 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             </TouchableOpacity>)}
           </View>
           <FeatureLinks items={[{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
+          <ExpandableSection title="A little care from Annie">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
+          </ExpandableSection>
+          <ExpandableSection title="Annie’s porch & today’s poster">
           <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={()=>setDetectiveVisible(true)} onPremium={()=>openPremium()}/>
+          </ExpandableSection>
         </ScrollView>}
         {['Spa','Calm'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" onPress={()=>setTab('Neighborhood')} style={{minHeight:44,padding:12}}><Text style={{color:palette.purple,fontWeight:'800'}}>← Neighborhood</Text></TouchableOpacity>}
         {tab === "Calm" && (
@@ -2463,6 +2469,7 @@ function HomeScreen({
 }
 
 function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions }) {
+  const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
   due: "",
@@ -2581,7 +2588,10 @@ const importDemoBills = () => {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SectionTitle title="Bills" subtitle="Add bills and record payments you make elsewhere." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
-      <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Your entered subscriptions and renewal reminders.',onPress:onSubscriptions}]} />
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
+        <Text style={styles.primaryButtonText}>Add bill</Text>
+      </TouchableOpacity>
+
 
 {selectedReviewBill && (
   <Modal
@@ -2809,6 +2819,45 @@ const importDemoBills = () => {
   </Modal>
 )}
 
+      {bills.length === 0 ? (
+        <EmptyCard text="No bills yet. Tap Add bill when you’re ready." />
+      ) : (
+        bills.map((bill) => (
+          <View key={bill.id} style={styles.billCard}>
+            <BillRow bill={bill} />
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[
+                  styles.smallButton,
+                  { backgroundColor: bill.status === "Paid" ? palette.muted : palette.teal },
+                ]}
+                onPress={() => toggleBillPaid(bill.id)}
+              >
+                <Text style={styles.smallButtonText}>
+                  {bill.status === "Paid" || bill.paid ? "Undo record" : "Record payment"}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+  style={[styles.smallButton, { backgroundColor: palette.goldDark }]}
+  onPress={() => openReviewModal(bill)}
+>
+  <Text style={styles.smallButtonText}>Review</Text>
+</TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                onPress={() => deleteBill(bill.id)}
+              >
+                <Ionicons name="trash" size={18} color={palette.coralDark} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))
+      )}
+      <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Your entered subscriptions and renewal reminders.',onPress:onSubscriptions}]} />
+      <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a bill</Text>
 
@@ -3011,43 +3060,7 @@ const importDemoBills = () => {
   </View>
 )}
 
-      {bills.length === 0 ? (
-        <EmptyCard text="No bills yet. Add your first one above." />
-      ) : (
-        bills.map((bill) => (
-          <View key={bill.id} style={styles.billCard}>
-            <BillRow bill={bill} />
-
-            <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[
-                  styles.smallButton,
-                  { backgroundColor: bill.status === "Paid" ? palette.muted : palette.teal },
-                ]}
-                onPress={() => toggleBillPaid(bill.id)}
-              >
-                <Text style={styles.smallButtonText}>
-                  {bill.status === "Paid" || bill.paid ? "Undo record" : "Record payment"}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-  style={[styles.smallButton, { backgroundColor: palette.goldDark }]}
-  onPress={() => openReviewModal(bill)}
->
-  <Text style={styles.smallButtonText}>Review</Text>
-</TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
-                onPress={() => deleteBill(bill.id)}
-              >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))
-      )}
+      </EntrySheet>
     </ScrollView>
   );
 }
@@ -3070,7 +3083,7 @@ function BudgetScreen({
         artworkLabel="Daddy plans a colorful budget while Chapo adds a coin to their savings jar"
       />
 
-      <FeatureLinks items={[{title:'Until next payday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},{title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},{title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings}]} />
+
 
       <View style={styles.safeSpendCard}>
         <Text style={styles.cardLabelLight}>Safe to Spend</Text>
@@ -3115,6 +3128,7 @@ function BudgetScreen({
         </View>
       </View>
 
+      <ExpandableSection title="Edit money info">
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Edit money info</Text>
 
@@ -3182,6 +3196,9 @@ function BudgetScreen({
 
       </View>
 
+      </ExpandableSection>
+      <FeatureLinks items={[{title:'Until next payday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},{title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},{title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings}]} />
+
       <View style={styles.noteCard}>
         <Ionicons name="save" size={22} color={palette.purple} />
         <Text style={styles.noteText}>
@@ -3198,6 +3215,7 @@ function BudgetScreen({
 }
 
 function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
+  const [addingDebt, setAddingDebt] = useState(false);
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3230,6 +3248,65 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
         }
       />
 
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a debt" style={styles.primaryButtonTight} onPress={() => setAddingDebt(true)}>
+        <Text style={styles.primaryButtonText}>Add debt</Text>
+      </TouchableOpacity>
+
+      {sortedDebts.length === 0 ? (
+        <EmptyCard text="No debts entered yet. Tap Add debt when you’re ready; we’ll help choose your next target." />
+      ) : (
+        sortedDebts.map((debt, index) => (
+          <View key={debt.id} style={styles.debtCard}>
+            <View style={styles.debtHeader}>
+              <View style={styles.flexOne}>
+                <Text style={[styles.debtRank, { color: modeColor }]}>
+                  Priority #{index + 1}
+                </Text>
+                <Text style={styles.debtName}>{debt.name}</Text>
+              </View>
+
+              {index === 0 ? (
+                <View style={[styles.targetBadge, { backgroundColor: modeSoft }]}>
+                  <Text style={[styles.targetBadgeText, { color: modeColor }]}>
+                    Target
+                  </Text>
+                </View>
+              ) : null}
+
+              <View style={styles.aprPill}>
+                <Text style={styles.aprText}>{Number(debt.apr || 0)}% APR</Text>
+              </View>
+            </View>
+
+            <Text style={styles.debtBalance}>{money(debt.balance)}</Text>
+            <Text style={styles.cardSub}>Minimum payment: {money(debt.minimum)}</Text>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity
+                style={[styles.smallButton, { backgroundColor: modeColor }]}
+                onPress={() => payDebt(debt.id, 25)}
+              >
+                <Text style={styles.smallButtonText}>Pay $25</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.smallButton, { backgroundColor: palette.purple }]}
+                onPress={() => payDebt(debt.id, 100)}
+              >
+                <Text style={styles.smallButtonText}>Pay $100</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                onPress={() => deleteDebt(debt.id)}
+              >
+                <Ionicons name="trash" size={18} color={palette.coralDark} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))
+      )}
+      <ExpandableSection title="Payoff strategy & guidance">
       <View style={styles.payoffToggleCard}>
         <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
 
@@ -3285,6 +3362,8 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
         </View>
       ) : null}
 
+      </ExpandableSection>
+      <EntrySheet visible={addingDebt} title="Add a debt" onClose={() => setAddingDebt(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a debt</Text>
 
@@ -3344,60 +3423,7 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
         </TouchableOpacity>
       </View>
 
-      {sortedDebts.length === 0 ? (
-        <EmptyCard text="No debts entered yet. Add one and PayPlace will help choose your next target." />
-      ) : (
-        sortedDebts.map((debt, index) => (
-          <View key={debt.id} style={styles.debtCard}>
-            <View style={styles.debtHeader}>
-              <View style={styles.flexOne}>
-                <Text style={[styles.debtRank, { color: modeColor }]}>
-                  Priority #{index + 1}
-                </Text>
-                <Text style={styles.debtName}>{debt.name}</Text>
-              </View>
-
-              {index === 0 ? (
-                <View style={[styles.targetBadge, { backgroundColor: modeSoft }]}>
-                  <Text style={[styles.targetBadgeText, { color: modeColor }]}>
-                    Target
-                  </Text>
-                </View>
-              ) : null}
-
-              <View style={styles.aprPill}>
-                <Text style={styles.aprText}>{Number(debt.apr || 0)}% APR</Text>
-              </View>
-            </View>
-
-            <Text style={styles.debtBalance}>{money(debt.balance)}</Text>
-            <Text style={styles.cardSub}>Minimum payment: {money(debt.minimum)}</Text>
-
-            <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.smallButton, { backgroundColor: modeColor }]}
-                onPress={() => payDebt(debt.id, 25)}
-              >
-                <Text style={styles.smallButtonText}>Pay $25</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.smallButton, { backgroundColor: palette.purple }]}
-                onPress={() => payDebt(debt.id, 100)}
-              >
-                <Text style={styles.smallButtonText}>Pay $100</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
-                onPress={() => deleteDebt(debt.id)}
-              >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))
-      )}
+      </EntrySheet>
     </ScrollView>
   );
 }
