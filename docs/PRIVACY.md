@@ -1,6 +1,6 @@
 # PayPlace Privacy Policy
 
-Last updated: October 14, 2026
+Last updated: October 16, 2026
 
 PayPlace is operated by David LaBranche, Jr. Contact [annieoaktree@payplace.app](mailto:annieoaktree@payplace.app) for support or privacy questions. This policy covers the mobile beta, hosted preview, email service and restricted owner bank testing. The current beta does not move real money, pay bills or retrieve a real consumer credit score.
 
@@ -57,6 +57,15 @@ Password-protected backups contain a manual plan and selected profile fields. Ve
 The configured mobile beta has no advertising network, cross-app tracking, data-selling service or third-party analytics integration. Libraries support technical functions; Resend handles delivery, Porkbun handles reply mail, the hosted service handles the limited records described here, and Plaid handles restricted Sandbox testing. Apple separately handles App Store/TestFlight/operating-system data. We are responsible for our providers and SDKs and will require protection appropriate to shared data.
 
 We request data needed for the described features. No configured feature sends your personal plan to an AI provider; mascot-art creation does not send app user data to AI. Before new collection, purposes, providers, real banking or purchases, we will update this policy and App Store disclosures and obtain required consent.
+
+
+## Bobbie’s Cabaret question mailbag
+
+The Bobbie Darlending Show accepts optional write-in questions. Sending a question shares its text, selected topic, optional stage name, show-feature permission, consent version and submission time with the PayPlace team in a private hosted review queue. No email, verified contact, budget, balance, bank information or profile is automatically attached. Avoid including private information in your question. Leaving the stage name blank records “Anonymous neighbor”; this does not remove technical logs maintained by the hosting provider.
+
+Permission to feature your question and stage name publicly in the show or PayPlace social posts is separate, optional and off by default. The team reviews submissions before public use; submitting does not guarantee a reply or appearance. Requests to feature a question do not publish it automatically.
+
+There is no public question directory or read endpoint. Review records older than 90 days are removed when the mailbag next receives a submission. Short-lived, hourly hashed network identifiers limit spam and are cleaned up on subsequent submissions after two hours. Hosting logs may have separate retention. For a question removal request, contact annieoaktree@payplace.app and include your submission reference. Already published episodes or social posts may require separate edits or removal.
 
 ## Support and feedback
 
