@@ -22,3 +22,10 @@ Watch the Show opens an embedded native video screen inside the existing cabaret
 ## Build 48 — owner inbox
 
 The native owner inbox stays inside the cabaret modal. Returning to the cabaret preserves the unsent question draft. Questions refresh every 30 seconds while the inbox is open and active; private question text is cleared when the app backgrounds. An inbox count is not a push or email notification. Owner sign-in emails are transactional codes only. The browser inbox uses the existing Sites ChatGPT sign-in and the same owner allowlist; no question content is embedded in public HTML. Server tests cover authorization, challenge replay/expiry/guess limits, session expiry/revocation, pagination, retention, consent preservation and origin checks. Native tests cover sign-in, private view, actions, background clearing and logout.
+
+
+## Build 49 — preapproved question glass
+
+Owner review adds Approve for Bobbie’s glass and Remove from glass. Only unarchived submissions with explicit permission to feature can be approved; approval cannot change the sender’s consent. Archiving withdraws an undrawn approval. Show mode displays the giant transparent stemmed meowgarita glass with folded colored slips, based on Dave’s supplied reference. It shows only the number of approved slips until Let Bobbie choose a question is pressed. The authenticated server selects one approved question at random and marks it drawn in the same database operation. Drawn questions cannot reenter the pool. A request ID makes a network retry recover the same draw. The revealed slip is for recording Bobbie’s answer; drawing does not automatically publish or generate a spoken answer.
+
+Art: built-in image generation, transparent-background question-glass asset, using the reference’s clear wide bowl and stem. Prompt: giant clear meowgarita glass with folded pink, coral, turquoise, purple, and yellow paper slips; full rim, bowl, stem and base visible; no liquid, readable questions, characters, logos or backdrop.
