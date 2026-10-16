@@ -3,16 +3,18 @@ import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet,
 import { ownerSessionStore } from './owner-session';
 import { createOwnerInboxApi } from './owner-inbox-api.mjs';
 import { EMAIL_SERVICE_ORIGIN } from './email-api.mjs';
+import QuestionGlass from './QuestionGlass';
 const defaultApi = createOwnerInboxApi({ sessionStore: ownerSessionStore });
 function Button({ label, onPress, disabled, selected }) { return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled, selected: !!selected }} disabled={disabled} onPress={onPress} style={[s.button, selected && s.selected, disabled && { opacity: 0.5 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>; }
 export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessionStore }) {
   const [signedIn, setSignedIn] = useState(false), [checking, setChecking] = useState(true), [email, setEmail] = useState(''), [code, setCode] = useState(''), [challenge, setChallenge] = useState(null);
   const [filter, setFilter] = useState('new'), [questions, setQuestions] = useState([]), [counts, setCounts] = useState(null), [nextOffset, setNextOffset] = useState(null), [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [foreground, setForeground] = useState(AppState.currentState === 'active');
+  const [showGlass, setShowGlass] = useState(false);
   const generation = useRef(0), mounted = useRef(true), pending = useRef(false), filterRef = useRef(filter);
   const [canResend, setCanResend] = useState(true);
   filterRef.current = filter;
   function clearPrivateData() { generation.current++; setQuestions([]); setCounts(null); setNextOffset(null); }
-  function failed(error) { if (error.signIn) { clearPrivateData(); setSignedIn(false); setChecking(false); setBusy(false); } setMessage(error.message); }
+  function failed(error) { if (error.signIn) { setShowGlass(false); clearPrivateData(); setSignedIn(false); setChecking(false); setBusy(false); } setMessage(error.message); }
   useEffect(() => {
     if (!challenge) { setCanResend(true); return; }
     setCanResend(false);
@@ -65,12 +67,19 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
     catch (error) { if (mounted.current) failed(error); }
     finally { pending.current = false; if (mounted.current) setBusy(false); }
   }
+  async function approve(id, approved) {
+    if (pending.current) return; pending.current = true; setBusy(true); setMessage('');
+    try { await api('glass-approval', { id, approved }); if (mounted.current) await load(); }
+    catch (error) { if (mounted.current) failed(error); }
+    finally { pending.current = false; if (mounted.current) setBusy(false); }
+  }
   async function logout() {
-    if (pending.current) return; pending.current = true; setBusy(true); clearPrivateData(); setSignedIn(false);
+    if (pending.current) return; pending.current = true; setBusy(true); clearPrivateData(); setSignedIn(false); setShowGlass(false);
     try { await api('logout', {}); } catch (error) { if (mounted.current) setMessage(error.signIn ? '' : 'Signed out on this phone. The server could not be reached to revoke the session; it will expire automatically.'); }
     finally { await sessionStore.clear(); pending.current = false; if (mounted.current) { setBusy(false); setCode(''); setChallenge(null); } }
   }
   if (Platform.OS === 'web') return <ScrollView contentContainerStyle={s.content}><Text style={s.title}>Owner inbox</Text><Text style={s.text}>Open the private mailbag and sign in with the ChatGPT account that owns PayPlace.</Text><Button label="Open secure owner inbox" onPress={() => Linking.openURL(`${EMAIL_SERVICE_ORIGIN}/owner-inbox`)} /></ScrollView>;
+  if (signedIn && showGlass) return <QuestionGlass api={api} count={counts?.glass} visible={foreground} onBack={() => setShowGlass(false)} onAuthError={failed} onDraw={() => load()} />;
   return <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
     <Text accessibilityRole="header" style={s.title}>Bobbie’s private mailbag</Text>
     {checking ? <ActivityIndicator accessibilityLabel="Opening owner inbox" color="#FFE1A0" /> : !signedIn ? <>
@@ -82,11 +91,15 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
       <Text accessibilityRole="header" accessibilityLiveRegion="polite" style={s.title}>{counts ? `${counts.unread} new · ${counts.total} total` : 'Loading questions…'}</Text>
       <View style={s.actions}>{[['new', 'New'], ['all', 'All'], ['archived', 'Archived']].map(([value, label]) => <Button key={value} label={label} selected={filter === value} disabled={busy} onPress={() => setFilter(value)} />)}</View>
       <View style={s.actions}><Button label="Refresh inbox" disabled={busy} onPress={() => load()} /><Button label="Sign out of owner inbox" disabled={busy} onPress={logout} /></View>
-      <Text style={s.note}>Refreshes every 30 seconds while open. Questions are kept for up to 90 days. Archiving does not publish anything or change permission.</Text>
+      <Button label="Open Bobbie’s question glass" disabled={busy} onPress={() => setShowGlass(true)} />
+      <Text style={s.note}>{counts?.glass ?? 0} approved slips in the glass. Approve questions below; only submissions with permission to feature can enter.</Text>
+      <Text style={s.note}>Refreshes every 30 seconds while open. Shows questions from the last 90 days. Archiving does not publish anything or change permission.</Text>
       {foreground && questions.map(q => <View key={q.id} style={s.card}>
         <Text accessibilityRole="header" style={s.title}>{q.stageName}</Text><Text style={s.note}>{q.topic} · {new Date(q.createdAt).toLocaleString()} · {q.status === 'new' ? 'Unread' : q.status === 'read' ? 'Read' : 'Archived'}</Text>
         <Text selectable style={s.question}>{q.question}</Text>
         <Text style={[s.permission, q.featureConsent && s.allowed]}>{q.featureConsent ? 'Permission to feature: YES — question and stage name may be featured.' : 'Permission to feature: NO — private review only.'}</Text>
+        <Text style={s.note}>{q.showStatus === 'approved' ? 'In Bobbie’s glass' : q.showStatus === 'drawn' ? 'Already drawn — will not repeat' : 'Not in the glass'}</Text>
+        {q.status !== 'archived' && q.showStatus !== 'drawn' && <Button label={q.showStatus === 'approved' ? 'Remove from glass' : 'Approve for Bobbie’s glass'} disabled={busy || !q.featureConsent} onPress={() => approve(q.id, q.showStatus !== 'approved')} />}
         <Text selectable style={s.note}>Reference: {q.id}</Text>
         <View style={s.actions}>{q.status === 'archived' ? <Button label="Restore as unread" disabled={busy} onPress={() => update(q.id, 'new')} /> : <><Button label={q.status === 'new' ? 'Mark read' : 'Mark unread'} disabled={busy} onPress={() => update(q.id, q.status === 'new' ? 'read' : 'new')} /><Button label="Archive" disabled={busy} onPress={() => update(q.id, 'archived')} /></>}</View>
       </View>)}
