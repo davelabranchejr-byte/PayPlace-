@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import FittedArtwork from './FittedArtwork';
 import CabaretVideo from './CabaretVideo';
+import OwnerInbox from './OwnerInbox';
 import { createEmailApi } from './email-api.mjs';
 import { prepareQuestion, QUESTION_TOPICS } from './bobbie-cabaret.mjs';
 
@@ -18,6 +19,7 @@ export function BobbieCabaretEntry({ onOpen }) {
 }
 export default function BobbieCabaret({ visible, onClose, submitQuestion = api }) {
   const [watching, setWatching] = useState(false);
+  const [ownerInbox, setOwnerInbox] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [stageName, setStageName] = useState('');
@@ -41,11 +43,11 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
     } catch (error) { setMessage(error.message || 'Could not send your question. Your draft is still here.'); }
     finally { pending.current = false; setBusy(false); }
   }
-  function back() { if (watching) setWatching(false); else onClose(); }
+  function back() { if (ownerInbox) setOwnerInbox(false); else if (watching) setWatching(false); else onClose(); }
   return <Modal visible={visible} animationType="slide" onRequestClose={back}>
     <SafeAreaView style={s.safe}><KeyboardAvoidingView style={s.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.header}><Text accessibilityRole="header" style={s.title}>Bobbie’s Cabaret</Text><Button secondary label={watching ? 'Back to Cabaret' : 'Back to Neighborhood'} onPress={back} /></View>
-      {visible && watching ? <CabaretVideo /> : <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+      <View style={s.header}><Text accessibilityRole="header" style={s.title}>{ownerInbox ? 'Owner inbox' : 'Bobbie’s Cabaret'}</Text><Button secondary label={watching || ownerInbox ? 'Back to Cabaret' : 'Back to Neighborhood'} onPress={back} /></View>
+      {visible && ownerInbox ? <OwnerInbox /> : visible && watching ? <CabaretVideo /> : <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <FittedArtwork source={artwork} aspectRatio={1312 / 1199} accessibilityLabel="Bobbie Darlending, a green-eyed tabby in a red wig and blue sequined gown, on a gold-lit cabaret stage." />
         <Text style={s.eyebrow}>LIVE FROM THE PAYPLACE CLUBHOUSE</Text>
         <Text accessibilityRole="header" style={s.title}>The Bobbie Darlending Show</Text>
@@ -70,6 +72,8 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
           <Button label={busy ? 'Sending your question…' : 'Send to Bobbie’s mailbag'} disabled={busy} onPress={send} />
         </View>}
         <Text style={s.note}>Comedy and general money education. Submissions are reviewed by the team before any public use.</Text>
+        <Button secondary label="Owner inbox" onPress={() => setOwnerInbox(true)} />
+        <Text style={s.note}>Private mailbag access for the PayPlace owner.</Text>
       </ScrollView>}
     </KeyboardAvoidingView></SafeAreaView>
   </Modal>;
