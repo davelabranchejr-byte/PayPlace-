@@ -19,8 +19,20 @@ const code = babel.transformSync([
 ].join('\n'), { configFile: false, babelrc: false,
   plugins: [[require('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]],
 }).code;
+const disclosureCode = babel.transformSync(fs.readFileSync(require('node:path').join(__dirname, '../src/ExpandableSection.js'), 'utf8'), {
+  configFile: false, babelrc: false,
+  plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'],
+}).code;
+const disclosureModule = { exports: {} };
+vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosureModule.exports, require: name => {
+  if (name === 'react') return React;
+  if (name === 'react-native') return { View:'View', TouchableOpacity:'TouchableOpacity', StyleSheet:{create:value=>value} };
+  if (name === './Privacy') return { Text:'Text' };
+  throw new Error(name);
+}});
 const sandbox = {
   require: asset => ({ uri: asset }),
+  ExpandableSection: disclosureModule.exports.default,
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
     'FeatureLinks', 'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
@@ -54,7 +66,12 @@ test('budget cents remain editable, saved and usable after reopening', async () 
   const input = label => renderer.root.findAllByType('TextInput')
     .find(item => item.props.accessibilityLabel === label);
   await act(() => { renderer = create(render()); });
+  const openEditor = async () => {
+    assert.equal(input('Current bank balance'), undefined, 'editor starts collapsed');
+    await act(() => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === 'Edit money info').props.onPress());
+  };
   try {
+    await openEditor();
     for (const [label, key] of [['Current bank balance', 'balance'], ['Next paycheck amount', 'nextPaycheck'],
       ['Daily allowance', 'allowance'], ['Emergency buffer', 'buffer']]) {
       assert.equal(input(label).props.keyboardType, 'decimal-pad');
@@ -86,6 +103,7 @@ test('budget cents remain editable, saved and usable after reopening', async () 
     await createVaultStorage(adapters).setItem(FINANCE_KEY, JSON.stringify(finance));
     finance = JSON.parse(await createVaultStorage(adapters).getItem(FINANCE_KEY));
     await act(() => { renderer = create(render()); });
+    await openEditor();
     assert.equal(input('Current bank balance').props.value, '123.45');
     assert.equal(input('Next paycheck amount').props.value, '123.10');
     assert.equal(input('Emergency buffer').props.value, '10.10');

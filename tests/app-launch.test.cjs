@@ -481,3 +481,56 @@ test('privacy links open the public policy and confirmed device deletion does no
     assert.doesNotMatch([...harness.records.values()].join(' '), /Secret Bill|private@example/);
   } finally { await act(() => renderer.unmount()); }
 });
+
+test('compact money pages keep entries visible and open forms and neighborhood extras on demand', async () => {
+  const harness = appHarness({ balance: 1900, firstWinComplete: true,
+    bills: [{ id:'rent', name:'Rent', amount:'500', status:'Upcoming', due:'2026-10-23' }],
+    debts: [{ id:'card', name:'Card', balance:600, apr:20, minimum:25 }], quietMode:{reduceAnimation:true} });
+  let renderer, pending;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => { assert.ok(button(label), label); await act(() => button(label).props.onPress()); };
+  const input = label => renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === label);
+  try {
+    await act(async () => { renderer = create(React.createElement(harness.App)); });
+    await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
+    await act(async () => { harness.completeAuthentication({success:true}); await pending; });
+    assert.ok(renderer.root.find(node => node.type?.name === 'SeasonalWelcome'), 'gentle welcome remains on Home');
+    await press('Open Bills');
+    assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
+    assert.equal(input('Bill name'), undefined);
+    await press('Add a bill');
+    await act(() => input('Bill name').props.onChangeText('Internet draft'));
+    await press('Close add a bill');
+    assert.equal(input('Bill name'), undefined);
+    await press('Add a bill');
+    assert.equal(input('Bill name').props.value, 'Internet draft', 'closing the form keeps the draft');
+    await act(() => renderer.root.findByType('Modal').props.onRequestClose());
+    assert.equal(input('Bill name'), undefined, 'native dismiss closes the add sheet');
+    await press('Open Debt');
+    assert.equal(input('Debt name'), undefined);
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'DebtBuddyScene').length, 0);
+    await press('Add a debt');
+    assert.ok(input('Debt name'));
+    await press('Close add a debt');
+    await press('Payoff strategy & guidance');
+    assert.ok(renderer.root.find(node => node.type?.name === 'DebtBuddyScene'));
+    await press('Payoff strategy & guidance');
+    await press('Open Budget');
+    assert.equal(input('Current bank balance'), undefined);
+    await press('Edit money info');
+    assert.ok(input('Current bank balance'));
+    await press('Edit money info');
+    assert.equal(input('Current bank balance'), undefined);
+    await press('Open Neighborhood');
+    assert.ok(renderer.root.find(node => node.type?.name === 'LivingNeighborhood'));
+    assert.ok(button('Open Em’s Pet Spa'));
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'NeighborhoodWelcome').length, 0);
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'NeighborCare').length, 0);
+    await press('Annie’s porch & today’s poster');
+    assert.ok(renderer.root.find(node => node.type?.name === 'NeighborhoodWelcome'));
+    await press('Annie’s porch & today’s poster');
+    await press('A little care from Annie');
+    assert.ok(renderer.root.find(node => node.type?.name === 'NeighborCare'));
+    assert.equal(renderer.root.findAllByProps({accessibilityRole:'tab'}).length, 6);
+  } finally { if (renderer) await act(() => renderer.unmount()); }
+});
