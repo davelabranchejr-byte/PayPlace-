@@ -69,7 +69,7 @@ import DebtMethodComparison from "./src/DebtMethodComparison";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
-const payplaceLogo = require("./assets/branding/payplace-locked-logo.jpeg");
+import { payplaceLogo, payplaceLogoLabel } from "./src/brand";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -2166,7 +2166,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
         <View style={styles.brandWrap}>
-          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel="PayPlace official logo: a white P with a paw and checkmark on teal, yellow, purple, and coral" />
+          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel={payplaceLogoLabel} />
 
           <View style={styles.wordmark}>
             <Text style={[styles.logoDark, compact && { fontSize: 23 }]}>Pay</Text>
