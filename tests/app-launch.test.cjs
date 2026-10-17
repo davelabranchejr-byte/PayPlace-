@@ -17,7 +17,7 @@ test.before(async () => {
 });
 
 // Execute the real app and its components. Only native/device services are mocked.
-function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }) {
+function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }, scanner = {}) {
   const vaultModel = models.get(path.join(root, 'src/vault-storage.mjs'));
   const records = new Map([
     [vaultModel.PROFILE_KEY, JSON.stringify(profile)],
@@ -54,6 +54,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     function dependency(name) {
       if (name === 'react') return React;
       if (name === 'react-native') return ui;
+      if (name.endsWith('/bill-photo')) return { supportsBillPhoto:true, scanBillPhoto:scanner.scanPhoto || (async () => null) };
       if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
       if (name === 'expo-status-bar') return { StatusBar: 'StatusBar' };
       if (name === 'expo-video') return { VideoView: 'VideoView', useVideoPlayer: (_, setup) => {
@@ -97,6 +98,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     return module.exports;
   }
   return { App: load(path.join(root, 'App.js')).default,
+    Scanner: load(path.join(root, 'src/BillScanner.js')).default,
     Mirror: load(path.join(root, 'src/BobbieSmartMirror.js')).default, records, alerts, openedURLs,
     finance: () => JSON.parse(records.get(vaultModel.FINANCE_KEY)),
     authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
@@ -506,6 +508,11 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
     assert.equal(input('Bill name'), undefined);
     await press('Add a bill');
+    const methodNodes = renderer.root.findAll(node => node.type === 'TouchableOpacity' || node.type?.name === 'BillScanner');
+    const scanIndex = methodNodes.findIndex(node => node.type?.name === 'BillScanner');
+    const manualIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'submitBill');
+    const westleyIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'importDemoBills');
+    assert.ok(manualIndex < scanIndex && scanIndex < westleyIndex, 'Tate, Billiam, then Westley');
     await act(() => input('Bill name').props.onChangeText('Internet draft'));
     await press('Close add a bill');
     assert.equal(input('Bill name'), undefined);
@@ -540,4 +547,64 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.ok(renderer.root.find(node => node.type?.name === 'NeighborCare'));
     assert.equal(renderer.root.findAllByProps({accessibilityRole:'tab'}).length, 6);
   } finally { if (renderer) await act(() => renderer.unmount()); }
+});
+
+test('Billiam contains the full artwork, reviews before saving and prevents duplicate saves', async () => {
+  const harness = appHarness({}, undefined, {scanPhoto:async () => 'City Water\nAmount Due: $25.00\nDue date: 2026-11-20'});
+  let renderer;
+  const saved = [];
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => { assert.ok(button(label),label); await act(() => button(label).props.onPress()); };
+  try {
+    await act(async () => {renderer = create(React.createElement(harness.Scanner, {bills:[], onAdd:bill => {saved.push(bill); return true;}}));});
+    const frame = renderer.root.findAllByType('View').find(node => node.props.testID === 'billiam-scanner-artwork');
+    for (const width of [248,318,358]) {
+      await act(() => frame.props.onLayout({nativeEvent:{layout:{width,height:128}}}));
+      const image = renderer.root.findByProps({testID:'billiam-scanner-artwork-image'});
+      assert.equal(image.props.resizeMode,'contain');
+      assert.equal(image.props.style.width,width); assert.equal(image.props.style.height,128);
+    }
+    await press('Billiam’s bill scanning');
+    await press('Choose a bill photo');
+    assert.equal(saved.length,0,'OCR must not automatically add a bill');
+    const amount = renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === 'Scanned amount');
+    await act(() => amount.props.onChangeText('30.50'));
+    const save = button('Add reviewed bill');
+    await act(() => {save.props.onPress(); save.props.onPress();});
+    assert.equal(saved.length,1); assert.equal(saved[0].amount,'30.50');
+    await press('Choose a bill photo');
+    await press('Cancel bill scan');
+    assert.equal(saved.length,1);
+  } finally {await act(() => renderer.unmount());}
+});
+
+test('Billiam duplicate review requires an explicit separate-bill confirmation', async () => {
+  const harness = appHarness({}, undefined, {scanPhoto:async () => 'City Water\nAmount Due: $25.00\nDue date: 2026-11-20'});
+  let renderer, saves=0;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => {await act(() => button(label).props.onPress());};
+  try {
+    await act(async () => {renderer=create(React.createElement(harness.Scanner,{bills:[{name:'City Water',amount:25,due:'2026-11-20'}],onAdd:() => {saves++;return true;}}));});
+    await press('Billiam’s bill scanning'); await press('Take a bill photo');
+    assert.equal(button('Add reviewed bill').props.disabled,true);
+    await press('Add reviewed bill'); assert.equal(saves,0);
+    await press('This is a separate bill');
+    assert.equal(button('Add reviewed bill').props.disabled,false);
+    await press('Add reviewed bill'); assert.equal(saves,1);
+  } finally {await act(() => renderer.unmount());}
+});
+
+test('canceling or leaving a pending Billiam scan never saves the result', async () => {
+  let finish;
+  const harness = appHarness({},undefined,{scanPhoto:() => new Promise(resolve => {finish=resolve;})});
+  let renderer, pending, saves=0;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  try {
+    await act(async () => {renderer=create(React.createElement(harness.Scanner,{onAdd:() => {saves++;}}));});
+    await act(() => button('Billiam’s bill scanning').props.onPress());
+    await act(() => {pending=button('Choose a bill photo').props.onPress();});
+    await act(() => button('Cancel bill scan').props.onPress());
+    await act(async () => {finish('City Water\nAmount Due: $25.00\nDue date: 2026-11-20');await pending;});
+    assert.equal(renderer.root.findAllByType('TextInput').length,0); assert.equal(saves,0);
+  } finally {await act(() => renderer.unmount());}
 });
