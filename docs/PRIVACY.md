@@ -70,3 +70,9 @@ There is no public question directory or read endpoint. Review records older tha
 ## Support and feedback
 
 [PayPlace Support](https://payplace-dave.davelabranchejr.chatgpt.site/support) explains private help. TestFlight feedback goes to the developer through Apple. Optional GitHub issue drafts are public: use fictional examples and avoid private financial/contact details in text and screenshots. You can email the privacy address above for private questions.
+
+## Billiam’s bill photo scanner
+
+In a compatible iPhone or Android build, you can photograph a bill or choose a single existing photo. Camera access is requested when you choose to take a photo. PayPlace uses Google ML Kit text recognition on the device; PayPlace does not upload the selected image or recognized text to its servers or an AI service. The scanner currently reads Latin-script text and suggests US-dollar amounts and full US/ISO due dates. Always check the suggestions.
+
+The scanner attempts to remove its temporary photo and normalized-image cache copies after recognition, including failed scans. It does not delete your original photo-library image. Dismissing a scan discards its draft. Only the bill fields you review and explicitly add become part of your local plan and its normal storage/backup lifecycle; the image and full recognized text are not saved with the bill. Google ML Kit separately sends SDK performance and usage metrics to Google, as described in [Google’s ML Kit terms and privacy information](https://developers.google.com/ml-kit/terms).
