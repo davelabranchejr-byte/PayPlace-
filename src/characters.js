@@ -12,7 +12,7 @@ function reference(source, width, height, crop, label) {
 
 export const annieArtwork = Object.freeze({
   portrait: reference(annieCanonical, 864, 1536, [245, 45, 375, 500], "Great Annie's approved grandmotherly bark face framed by white flowers"),
-  welcome: reference(annieCanonical, 864, 1536, [100, 20, 665, 1180], "Great Annie welcoming you through her red stained-glass PayPlace door"),
+  welcome: reference(require('../assets/characters/annie-front-door-mailbox.png'), 941, 1672, [0, 0, 941, 1672], "Great Annie welcoming you through her red stained-glass PayPlace door"),
 });
 
 export const portraits = Object.freeze({
@@ -29,7 +29,7 @@ export const CHARACTER_LOCK = Object.freeze({
   version: "2026-10-03-annie-canonical",
   daddy: Object.freeze({ updated: '2026-10-13', reference: 'assets/characters/references/family-reference.png', fixed: ['closely buzzed salt-and-pepper hair', 'dark rectangular glasses', 'short salt-and-pepper beard', 'broad friendly smile'], style: 'dimensional PayPlace storybook cartoon matching the approved spa-day and flashlight illustrations' }),
   bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
-  westley: Object.freeze({ species: "white West Highland Terrier", fixed: ["face", "white fur", "pointed Westie ears", "body proportions"] }),
+  westley: Object.freeze({ species: "white West Highland Terrier", eyes: "two regular dark-brown eyes with round black pupils, natural highlights and coordinated gaze; no cloudy, milky, mismatched or distorted eye", fixed: ["face", "white fur", "pointed Westie ears", "body proportions", "two regular natural-looking eyes"] }),
   tate: Object.freeze({
     species: "tan Chihuahua",
     fixed: ["Chihuahua identity", "oversized ears", "long goofy tongue"],

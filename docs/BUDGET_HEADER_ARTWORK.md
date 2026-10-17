@@ -6,7 +6,11 @@ Asset: `assets/characters/header-budget-daddy-chapo.png`.
 
 The Budget screen uses the existing illustrated SectionTitle layout, placing this transparent vignette to the right of the heading. The entire image uses `contain`; the subtitle remains below the heading at full width. This is decorative artwork with an accessible description, not a new action.
 
-## Final generation prompt
+## Current identity rule
+
+Daddy uses closely cropped salt-and-pepper hair and a short neat salt-and-pepper beard with his black rectangular glasses. Use `assets/characters/references/family-reference.png` for every new depiction. The current asset follows this reference; the older prompt below records its generation history and its curly-hair wording is superseded.
+
+## Historical original generation prompt
 
 Use case: illustration-story. Asset type: original PayPlace Budget screen upper-right header vignette, genuine transparent background.
 Input image 1 is a style/rendering reference (Debt header); image 2 is identity reference for Daddy and Chapo from the art studio. Create an entirely new composition, not a copy.

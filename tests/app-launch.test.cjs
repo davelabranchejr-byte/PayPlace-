@@ -17,7 +17,7 @@ test.before(async () => {
 });
 
 // Execute the real app and its components. Only native/device services are mocked.
-function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }) {
+function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }, scanner = {}) {
   const vaultModel = models.get(path.join(root, 'src/vault-storage.mjs'));
   const records = new Map([
     [vaultModel.PROFILE_KEY, JSON.stringify(profile)],
@@ -54,6 +54,8 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     function dependency(name) {
       if (name === 'react') return React;
       if (name === 'react-native') return ui;
+      if (name.endsWith('/bill-import')) return {supportsBillImport:true,importBillDocuments:scanner.importDocuments || (async()=>null),importBillBatch:scanner.importBatch || (async()=>null)};
+      if (name.endsWith('/bill-photo')) return { supportsBillPhoto:true, scanBillPhoto:scanner.scanPhoto || (async () => null) };
       if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
       if (name === 'expo-status-bar') return { StatusBar: 'StatusBar' };
       if (name === 'expo-video') return { VideoView: 'VideoView', useVideoPlayer: (_, setup) => {
@@ -97,6 +99,9 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     return module.exports;
   }
   return { App: load(path.join(root, 'App.js')).default,
+    Scanner: load(path.join(root, 'src/BillScanner.js')).default,
+    Billiam: load(path.join(root, 'src/BilliamHome.js')).default,
+    Household: load(path.join(root, 'src/HouseholdPlan.js')).default,
     Mirror: load(path.join(root, 'src/BobbieSmartMirror.js')).default, records, alerts, openedURLs,
     finance: () => JSON.parse(records.get(vaultModel.FINANCE_KEY)),
     authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
@@ -179,7 +184,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(() => harness.setAppState('active'));
     assert.ok(button('Open Plaid Banking'), 'the neighborhood renders after unlock');
     assert.ok(button('Try Bobbie’s banking demo'), 'the demo has a prominent Home entrance');
-    assert.equal(renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab').length,6,'all six primary destinations fit in one row');
+    assert.equal(renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab').length,7,'seven destinations stay readable in a horizontal tab strip');
     assert.equal(button('Open Extra Paycheck Calendar'),undefined,'payday tools have one home in Budget');
     assert.equal(button('Open Subscription Detective'),undefined,'manual subscriptions live in Bills');
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
@@ -506,6 +511,11 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
     assert.equal(input('Bill name'), undefined);
     await press('Add a bill');
+    const methodNodes = renderer.root.findAll(node => node.type === 'TouchableOpacity' || node.type?.name === 'BilliamShortcut');
+    const scanIndex = methodNodes.findIndex(node => node.type?.name === 'BilliamShortcut');
+    const manualIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'submitBill');
+    const westleyIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'importDemoBills');
+    assert.ok(manualIndex < scanIndex && scanIndex < westleyIndex, 'Tate, Billiam, then Westley');
     await act(() => input('Bill name').props.onChangeText('Internet draft'));
     await press('Close add a bill');
     assert.equal(input('Bill name'), undefined);
@@ -538,6 +548,131 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Annie’s porch & today’s poster');
     await press('A little care from Annie');
     assert.ok(renderer.root.find(node => node.type?.name === 'NeighborCare'));
-    assert.equal(renderer.root.findAllByProps({accessibilityRole:'tab'}).length, 6);
+    assert.equal(renderer.root.findAllByProps({accessibilityRole:'tab'}).length, 7);
   } finally { if (renderer) await act(() => renderer.unmount()); }
+});
+
+test('Billiam contains the full artwork, reviews before saving and prevents duplicate saves', async () => {
+  const harness = appHarness({}, undefined, {scanPhoto:async () => 'City Water\nAmount Due: $25.00\nDue date: 2026-11-20'});
+  let renderer;
+  const saved = [];
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => { assert.ok(button(label),label); await act(() => button(label).props.onPress()); };
+  try {
+    await act(async () => {renderer = create(React.createElement(harness.Scanner, {bills:[], onAdd:bill => {saved.push(bill); return true;}}));});
+    const frame = renderer.root.findAllByType('View').find(node => node.props.testID === 'billiam-scanner-artwork');
+    for (const width of [248,318,358]) {
+      await act(() => frame.props.onLayout({nativeEvent:{layout:{width,height:128}}}));
+      const image = renderer.root.findByProps({testID:'billiam-scanner-artwork-image'});
+      assert.equal(image.props.resizeMode,'contain');
+      assert.equal(image.props.style.width,width); assert.equal(image.props.style.height,128);
+    }
+    await press('Billiam’s bill scanning');
+    await press('Choose a bill photo');
+    assert.equal(saved.length,0,'OCR must not automatically add a bill');
+    const amount = renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === 'Scanned amount');
+    await act(() => amount.props.onChangeText('30.50'));
+    const save = button('Add reviewed bill');
+    await act(() => {save.props.onPress(); save.props.onPress();});
+    assert.equal(saved.length,1); assert.equal(saved[0].amount,'30.50');
+    await press('Choose a bill photo');
+    await press('Cancel bill scan');
+    assert.equal(saved.length,1);
+  } finally {await act(() => renderer.unmount());}
+});
+
+test('Billiam duplicate review requires an explicit separate-bill confirmation', async () => {
+  const harness = appHarness({}, undefined, {scanPhoto:async () => 'City Water\nAmount Due: $25.00\nDue date: 2026-11-20'});
+  let renderer, saves=0;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => {await act(() => button(label).props.onPress());};
+  try {
+    await act(async () => {renderer=create(React.createElement(harness.Scanner,{bills:[{name:'City Water',amount:25,due:'2026-11-20'}],onAdd:() => {saves++;return true;}}));});
+    await press('Billiam’s bill scanning'); await press('Take a bill photo');
+    assert.equal(button('Add reviewed bill').props.disabled,true);
+    await press('Add reviewed bill'); assert.equal(saves,0);
+    await press('This is a separate bill');
+    assert.equal(button('Add reviewed bill').props.disabled,false);
+    await press('Add reviewed bill'); assert.equal(saves,1);
+  } finally {await act(() => renderer.unmount());}
+});
+
+test('canceling or leaving a pending Billiam scan never saves the result', async () => {
+  let finish;
+  const harness = appHarness({},undefined,{scanPhoto:() => new Promise(resolve => {finish=resolve;})});
+  let renderer, pending, saves=0;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  try {
+    await act(async () => {renderer=create(React.createElement(harness.Scanner,{onAdd:() => {saves++;}}));});
+    await act(() => button('Billiam’s bill scanning').props.onPress());
+    await act(() => {pending=button('Choose a bill photo').props.onPress();});
+    await act(() => button('Cancel bill scan').props.onPress());
+    await act(async () => {finish('City Water\nAmount Due: $25.00\nDue date: 2026-11-20');await pending;});
+    assert.equal(renderer.root.findAllByType('TextInput').length,0); assert.equal(saves,0);
+  } finally {await act(() => renderer.unmount());}
+});
+
+test('Billiam mailbox renders all seven original task buttons with bounded uncropped images',async()=>{
+  const harness=appHarness();let renderer;
+  try{
+    await act(async()=>{renderer=create(React.createElement(harness.Billiam,{finance:{bills:[]},onAdd:()=>true,onUpdate:()=>true,onTemplates:()=>{},onHousehold:()=>{}}));});
+    const tasks=renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityLabel?.startsWith('Billiam: '));
+    assert.equal(tasks.length,7);
+    const ids=['scan','import','batch','compare','recurring','breakdown','household'];
+    for(const phone of [320,390,430]){
+      for(const id of ids){
+        const frame=renderer.root.findAllByType('View').find(n=>n.props.testID===`billiam-${id}-artwork`);
+        const width=(phone-32)*0.48;
+        await act(()=>frame.props.onLayout({nativeEvent:{layout:{width,height:100}}}));
+        const img=renderer.root.findByProps({testID:`billiam-${id}-artwork-image`});
+        assert.equal(img.props.resizeMode,'contain');assert.equal(img.props.style.width,width);assert.equal(img.props.style.height,100);
+        const card=renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.testID===`billiam-task-${id}`);
+        assert.equal(card.props.style.height,undefined,'text must grow for native font scaling');
+        assert.equal(card.props.style.maxHeight,undefined);
+      }
+    }
+    assert.equal(renderer.root.findAllByType('Modal').length,0,'forms stay closed until a task is chosen');
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('Billiam imports a stack with editable per-bill review, skip and no automatic saves',async()=>{
+  const harness=appHarness({},undefined,{importBatch:async()=>[
+    {label:'Bill 1',draft:{name:'Water',amount:'12.34',due:'2026-12-20',breakdown:{lateFees:'0.00'}}},
+    {label:'Bill 2',error:'Unreadable photo'},
+    {label:'Bill 3',draft:{name:'Internet',amount:'50.00',due:'2026-12-21',breakdown:{}}}
+  ]});let renderer,saved=[];
+  const button=label=>renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.accessibilityLabel===label);
+  const press=async label=>{assert.ok(button(label),label);await act(()=>button(label).props.onPress());};
+  try{
+    await act(async()=>{renderer=create(React.createElement(harness.Billiam,{finance:{bills:[]},onAdd:b=>{saved.push(b);return true;},onUpdate:()=>true,onTemplates:()=>{},onHousehold:()=>{}}));});
+    await press('Billiam: Review a stack of bills');await press('Choose bill photo stack');
+    assert.equal(saved.length,0);
+    const amount=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel==='Scanned amount');
+    await act(()=>amount.props.onChangeText('15.00'));
+    const save=button('Add reviewed bill');await act(()=>{save.props.onPress();save.props.onPress();});
+    assert.equal(saved.length,1);assert.equal(saved[0].amount,'15.00');
+    await press('Skip unreadable bill');await press('Skip this bill');assert.equal(saved.length,1);
+    assert.ok(button('Choose bill photo stack'));
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('Billiam household defaults to private, saves assignments, and previews selected bills only',async()=>{
+  const harness=appHarness();let renderer,value,finance={bills:[{id:'water',name:'Water',amount:'50.01',due:'2026-12-20'},{id:'secret',name:'Secret Bill',amount:'40.00',due:'2026-12-22'}]};
+  const render=()=>React.createElement(harness.Household,{bills:finance.bills,value,onChange:next=>{value=next;renderer.update(render());}});
+  const button=label=>renderer.root.findAllByType('TouchableOpacity').find(n=>n.props.accessibilityLabel===label);
+  const input=label=>renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel===label);
+  const press=async label=>{assert.ok(button(label),label);await act(()=>button(label).props.onPress());};
+  try{
+    await act(async()=>{renderer=create(render());});
+    assert.equal(button('Share Water with household').props.accessibilityState.checked,false);
+    assert.equal(button('Create encrypted household share file').props.disabled,true);
+    await press('Save household name');
+    await act(()=>input('New household member').props.onChangeText('Roommate'));await press('Add household member');
+    await press('Split Water equally');assert.equal(value.assignments.water.split.reduce((sum,p)=>sum+p.cents,0),5001);
+    await press('Share Water with household');await press('Preview selected household bills');
+    assert.equal(button('Create encrypted household share file').props.disabled,false);
+    assert.equal(value.assignments.secret,undefined);
+    await press('Share Water with household');
+    assert.equal(button('Create encrypted household share file').props.disabled,true,'changing selection invalidates the preview');
+  }finally{await act(()=>renderer.unmount());}
 });

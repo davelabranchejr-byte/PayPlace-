@@ -28,6 +28,7 @@ export default function NeighborRoom({ destination, finance, upcomingTotal, onHo
     <Text accessibilityRole="header" style={s.title}>{title}</Text>
     <Text style={s.body}>{introductions[destination]}</Text>
     {destination === 'Annie' && <>
+      {action('Visit Billiam’s mailbox outside', 'Billiam')}
       <FamilyWall onSelect={setStory} />
       <BelongingQuilt onOpen={() => setQuilt(true)} />
     </>}
