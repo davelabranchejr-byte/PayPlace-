@@ -1,0 +1,113 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput } from './Privacy';
+import FittedArtwork from './FittedArtwork';
+import { scanBillPhoto, supportsBillPhoto } from './bill-photo';
+import { duplicateScannedBill, parseBillText, reviewedScannedBill } from './bill-scanner.mjs';
+
+const artwork = require('../assets/characters/billiam-bill-scanner.png');
+
+export default function BillScanner({ bills = [], onAdd }) {
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState(null);
+  const [message, setMessage] = useState('');
+  const [confirmedDuplicate, setConfirmedDuplicate] = useState(false);
+  const active = useRef(true), request = useRef(0), working = useRef(false), saving = useRef(false);
+  useEffect(() => { active.current = true; return () => { active.current = false; request.current++; }; }, []);
+  const duplicate = draft && duplicateScannedBill(draft, bills);
+  function close() {
+    request.current++;
+    setOpen(false); setDraft(null); setMessage(''); setConfirmedDuplicate(false);
+  }
+  async function scan(source) {
+    if (working.current) return;
+    working.current = true;
+    const token = ++request.current;
+    setBusy(true); setMessage('');
+    try {
+      const text = await scanBillPhoto(source);
+      if (!active.current || token !== request.current || text === null) return;
+      setDraft(parseBillText(text)); setConfirmedDuplicate(false);
+      setMessage('Check every field against your bill. Nothing has been saved yet.');
+    } catch (error) {
+      if (active.current && token === request.current) setMessage(error.message || 'The photo could not be read. Please try again.');
+    } finally {
+      working.current = false;
+      if (active.current) setBusy(false);
+    }
+  }
+  function edit(field, value) {
+    setDraft(current => ({...current, [field]:value})); setConfirmedDuplicate(false); setMessage('');
+  }
+  function save() {
+    if (saving.current || working.current) return;
+    try {
+      const reviewed = reviewedScannedBill(draft);
+      if (duplicateScannedBill(reviewed, bills) && !confirmedDuplicate) {
+        setMessage('This looks like a bill already in your list. Confirm it is separate before adding it.'); return;
+      }
+      saving.current = true;
+      if (onAdd(reviewed) === false) { saving.current = false; return; }
+      setDraft(null); setConfirmedDuplicate(false); setMessage('Bill added. Billiam is ready for another photo.');
+      // Guard synchronous double taps, then permit a new scan/review cycle.
+    } catch (error) { saving.current = false; setMessage(error.message); }
+  }
+  const action = (label, onPress, disabled = false) => <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={[s.action, disabled && s.disabled]}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
+  return <View style={s.card} testID="billiam-scanner-card">
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Billiam’s bill scanning" accessibilityState={{expanded:open}} onPress={() => open ? close() : setOpen(true)}>
+      <FittedArtwork source={artwork} style={s.artwork} testID="billiam-scanner-artwork" accessible={false} />
+      <View style={s.caption}>
+        <Text style={s.title}>Billiam’s bill scanning</Text>
+        <Text style={s.description}>A photo shoot with Daddy. A simpler way to add your bills.</Text>
+        <Text style={s.link}>{open ? 'Close scanner' : 'Scan a bill photo'}</Text>
+      </View>
+    </TouchableOpacity>
+    {open && <View style={s.review}>
+      <Text style={s.description}>Take or choose a photo, then review the details before adding your bill. PayPlace reads the photo on your device.</Text>
+      {supportsBillPhoto ? <>
+        {action('Take a bill photo', () => { saving.current = false; scan('camera'); }, busy)}
+        {action('Choose a bill photo', () => { saving.current = false; scan('library'); }, busy)}
+      </> : <Text style={s.notice}>Photo scanning is available in the iPhone and Android app. You can still add bills manually here.</Text>}
+      {busy && <View accessibilityLiveRegion="polite"><ActivityIndicator /><Text style={s.description}>Billiam is reading your photo…</Text></View>}
+      {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}
+      {draft && <View>
+        <Text style={s.title}>Review scanned bill</Text>
+        {[
+          ['name','Scanned bill name','Company or bill name'],
+          ['amount','Scanned amount','125.00'],
+          ['due','Scanned due date','YYYY-MM-DD'],
+          ['accountNumberLast4','Scanned account last four digits','Optional'],
+          ['notes','Scanned bill notes','Optional'],
+        ].map(([field, label, placeholder]) => <View key={field} style={s.field}>
+          <Text style={s.label}>{label}</Text>
+          <TextInput accessibilityLabel={label} value={draft[field]} placeholder={placeholder} onChangeText={value => edit(field,value)} editable={!busy}
+            keyboardType={field === 'amount' ? 'decimal-pad' : field === 'accountNumberLast4' ? 'number-pad' : 'default'}
+            autoCapitalize={field === 'name' || field === 'notes' ? 'sentences' : 'none'}
+            maxLength={field === 'accountNumberLast4' ? 4 : field === 'notes' ? 1000 : 100} style={s.input} />
+        </View>)}
+        {duplicate && <View>
+          <Text style={s.notice}>A bill with this name, amount, and due date is already in your list.</Text>
+          <TouchableOpacity accessibilityRole="checkbox" accessibilityLabel="This is a separate bill" accessibilityState={{checked:confirmedDuplicate}} onPress={() => setConfirmedDuplicate(value => !value)} style={s.action}>
+            <Text style={s.actionText}>{confirmedDuplicate ? '✓ ' : '○ '}This is a separate bill</Text>
+          </TouchableOpacity>
+        </View>}
+        {action('Add reviewed bill', save, busy || (!!duplicate && !confirmedDuplicate))}
+      </View>}
+      {action('Cancel bill scan', close)}
+    </View>}
+  </View>;
+}
+
+const s = StyleSheet.create({
+  card:{width:'100%', marginTop:16, marginBottom:12, borderRadius:20, borderWidth:2, borderColor:'#D8CCFF', backgroundColor:'#F8F5FF', overflow:'hidden'},
+  // A measured frame bounds BOTH native image dimensions. Text has its own space.
+  artwork:{height:128, maxHeight:128, backgroundColor:'#F7EEDB'},
+  caption:{padding:14, gap:6}, title:{fontSize:18, fontWeight:'800', color:'#243447'},
+  description:{fontSize:14, lineHeight:21, color:'#44546A'}, link:{fontSize:15, fontWeight:'800', color:'#5B3AB8'},
+  review:{padding:14, paddingTop:0, gap:10}, notice:{fontSize:14, lineHeight:21, color:'#44336C', paddingVertical:8},
+  action:{minHeight:48, padding:13, borderRadius:14, backgroundColor:'#6545B9', marginTop:8, justifyContent:'center'},
+  actionText:{fontSize:16, fontWeight:'700', textAlign:'center', color:'#FFFFFF', flexShrink:1}, disabled:{opacity:0.5},
+  field:{marginTop:12}, label:{fontSize:14, fontWeight:'700', color:'#243447', marginBottom:6},
+  input:{minHeight:48, borderWidth:1, borderColor:'#A69ABD', borderRadius:12, padding:12, backgroundColor:'#FFFFFF', color:'#243447', fontSize:16},
+});
