@@ -46,6 +46,7 @@ import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
+import BillScanner from "./src/BillScanner";
 import NeighborRoom from "./src/NeighborRooms";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
@@ -1430,14 +1431,14 @@ function PayPlaceApp() {
   function addBill(newBill) {
   if (!newBill.name || !newBill.name.trim()) {
     Alert.alert("Missing bill name", "Give the bill a name first.");
-    return;
+    return false;
   }
 
   const amount = cleanNumber(newBill.amount);
 
   if (amount <= 0) {
     Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-    return;
+    return false;
   }
 
   const savedBill = {
@@ -1461,6 +1462,7 @@ function PayPlaceApp() {
     ...current,
     bills: [...(current.bills || []), savedBill],
   }));
+  return true;
 }
 
 
@@ -2964,6 +2966,7 @@ const importDemoBills = () => {
           <Text style={styles.primaryButtonText}>Add bill</Text>
         </TouchableOpacity>
 
+        <BillScanner bills={bills} onAdd={addBill} />
 
 <View
   style={[
