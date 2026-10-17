@@ -46,7 +46,8 @@ import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
-import BillScanner from "./src/BillScanner";
+import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
+import { recordBilliamReadings, reviewedBreakdown } from "./src/billiam-tools.mjs";
 import NeighborRoom from "./src/NeighborRooms";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
@@ -1234,7 +1235,7 @@ function PayPlaceApp() {
     ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
     ...(sampleFinance || clearingData ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance,clearingData]);
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
-  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, typeof update === "function" ? update(current) : update))); }
+  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, recordBilliamReadings(current, typeof update === "function" ? update(current) : update)))); }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
@@ -1442,7 +1443,7 @@ function PayPlaceApp() {
   }
 
   const savedBill = {
-    id: newBill.id || `bill_${Date.now()}`,
+    id: newBill.id || `bill_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     name: newBill.name,
     amount: amount.toFixed(2),
 
@@ -1454,6 +1455,7 @@ function PayPlaceApp() {
     paymentAddress: newBill.paymentAddress || "",
     accountNumberLast4: newBill.accountNumberLast4 || "",
     notes: newBill.notes || "",
+    breakdown: reviewedBreakdown(newBill.breakdown || {}),
     source: newBill.source || "Manual entry",
     confidence: newBill.confidence || "Confirmed",
   };
@@ -1469,19 +1471,19 @@ function PayPlaceApp() {
   function updateBill(updatedBill) {
     if (!updatedBill || !updatedBill.id) {
       Alert.alert("Bill not found", "This bill could not be updated.");
-      return;
+      return false;
     }
 
     const amount = cleanNumber(updatedBill.amount);
 
     if (!updatedBill.name || !updatedBill.name.trim()) {
       Alert.alert("Missing bill name", "Give the bill a name first.");
-      return;
+      return false;
     }
 
     if (amount <= 0) {
       Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-      return;
+      return false;
     }
 
     setFinance((current) => ({
@@ -1506,6 +1508,7 @@ function PayPlaceApp() {
           : bill
       ),
     }));
+    return true;
   }
 
   function toggleBillPaid(id) {
@@ -1771,10 +1774,15 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             toggleBillPaid={toggleBillPaid}
             reviewBill={reviewBill}
             deleteBill={deleteBill}
+            onBilliam={() => setTab("Billiam")}
             onHistory={() => setEssentialsPanel("history")}
             onSubscriptions={() => setDetectiveVisible(true)}
           />
         )}
+
+        {tab === "Billiam" && <BilliamHome finance={finance} onAdd={addBill} onUpdate={updateBill}
+          onTemplates={next => setFinance(current => ({...current,billiamRecurring:next}))}
+          onHousehold={next => setFinance(current => ({...current,householdPlan:next}))} />}
 
         {tab === "Budget" && (
           <BudgetScreen
@@ -1827,7 +1835,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             </TouchableOpacity>)}
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
-          <FeatureLinks items={[{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
+          <FeatureLinks items={[{title:'Billiam’s Mailbox',body:'His home outside Annie Oak Tree — scans, bill tools and household planning.',onPress:()=>setTab('Billiam')},{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
           <ExpandableSection title="A little care from Annie">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
@@ -2474,7 +2482,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2966,7 +2974,7 @@ const importDemoBills = () => {
           <Text style={styles.primaryButtonText}>Add bill</Text>
         </TouchableOpacity>
 
-        <BillScanner bills={bills} onAdd={addBill} />
+        <BilliamShortcut onPress={onBilliam} />
 
 <View
   style={[
