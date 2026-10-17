@@ -3,19 +3,22 @@ import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-nat
 import { Text, TextInput } from './Privacy';
 import FittedArtwork from './FittedArtwork';
 import { scanBillPhoto, supportsBillPhoto } from './bill-photo';
-import { duplicateScannedBill, parseBillText, reviewedScannedBill } from './bill-scanner.mjs';
+import { parseBillText } from './bill-scanner.mjs';
+import { parseBreakdown } from './billiam-tools.mjs';
+import BillDraftReview from './BillDraftReview';
 
 const artwork = require('../assets/characters/billiam-bill-scanner.png');
 
-export default function BillScanner({ bills = [], onAdd }) {
-  const [open, setOpen] = useState(false);
+export default function BillScanner({ bills = [], onAdd, onUpdate, history = [], templates = [], onRecurring, initialOpen = false }) {
+  const [open, setOpen] = useState(initialOpen);
   const [busy, setBusy] = useState(false);
   const [draft, setDraft] = useState(null);
+  const [reviewKey, setReviewKey] = useState(0);
   const [message, setMessage] = useState('');
   const [confirmedDuplicate, setConfirmedDuplicate] = useState(false);
   const active = useRef(true), request = useRef(0), working = useRef(false), saving = useRef(false);
   useEffect(() => { active.current = true; return () => { active.current = false; request.current++; }; }, []);
-  const duplicate = draft && duplicateScannedBill(draft, bills);
+
   function close() {
     request.current++;
     setOpen(false); setDraft(null); setMessage(''); setConfirmedDuplicate(false);
@@ -28,7 +31,7 @@ export default function BillScanner({ bills = [], onAdd }) {
     try {
       const text = await scanBillPhoto(source);
       if (!active.current || token !== request.current || text === null) return;
-      setDraft(parseBillText(text)); setConfirmedDuplicate(false);
+      setDraft({...parseBillText(text),breakdown:parseBreakdown(text)}); setReviewKey(v=>v+1); setConfirmedDuplicate(false);
       setMessage('Check every field against your bill. Nothing has been saved yet.');
     } catch (error) {
       if (active.current && token === request.current) setMessage(error.message || 'The photo could not be read. Please try again.');
@@ -36,22 +39,6 @@ export default function BillScanner({ bills = [], onAdd }) {
       working.current = false;
       if (active.current) setBusy(false);
     }
-  }
-  function edit(field, value) {
-    setDraft(current => ({...current, [field]:value})); setConfirmedDuplicate(false); setMessage('');
-  }
-  function save() {
-    if (saving.current || working.current) return;
-    try {
-      const reviewed = reviewedScannedBill(draft);
-      if (duplicateScannedBill(reviewed, bills) && !confirmedDuplicate) {
-        setMessage('This looks like a bill already in your list. Confirm it is separate before adding it.'); return;
-      }
-      saving.current = true;
-      if (onAdd(reviewed) === false) { saving.current = false; return; }
-      setDraft(null); setConfirmedDuplicate(false); setMessage('Bill added. Billiam is ready for another photo.');
-      // Guard synchronous double taps, then permit a new scan/review cycle.
-    } catch (error) { saving.current = false; setMessage(error.message); }
   }
   const action = (label, onPress, disabled = false) => <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={[s.action, disabled && s.disabled]}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
   return <View style={s.card} testID="billiam-scanner-card">
@@ -71,29 +58,10 @@ export default function BillScanner({ bills = [], onAdd }) {
       </> : <Text style={s.notice}>Photo scanning is available in the iPhone and Android app. You can still add bills manually here.</Text>}
       {busy && <View accessibilityLiveRegion="polite"><ActivityIndicator /><Text style={s.description}>Billiam is reading your photo…</Text></View>}
       {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}
-      {draft && <View>
-        <Text style={s.title}>Review scanned bill</Text>
-        {[
-          ['name','Scanned bill name','Company or bill name'],
-          ['amount','Scanned amount','125.00'],
-          ['due','Scanned due date','YYYY-MM-DD'],
-          ['accountNumberLast4','Scanned account last four digits','Optional'],
-          ['notes','Scanned bill notes','Optional'],
-        ].map(([field, label, placeholder]) => <View key={field} style={s.field}>
-          <Text style={s.label}>{label}</Text>
-          <TextInput accessibilityLabel={label} value={draft[field]} placeholder={placeholder} onChangeText={value => edit(field,value)} editable={!busy}
-            keyboardType={field === 'amount' ? 'decimal-pad' : field === 'accountNumberLast4' ? 'number-pad' : 'default'}
-            autoCapitalize={field === 'name' || field === 'notes' ? 'sentences' : 'none'}
-            maxLength={field === 'accountNumberLast4' ? 4 : field === 'notes' ? 1000 : 100} style={s.input} />
-        </View>)}
-        {duplicate && <View>
-          <Text style={s.notice}>A bill with this name, amount, and due date is already in your list.</Text>
-          <TouchableOpacity accessibilityRole="checkbox" accessibilityLabel="This is a separate bill" accessibilityState={{checked:confirmedDuplicate}} onPress={() => setConfirmedDuplicate(value => !value)} style={s.action}>
-            <Text style={s.actionText}>{confirmedDuplicate ? '✓ ' : '○ '}This is a separate bill</Text>
-          </TouchableOpacity>
-        </View>}
-        {action('Add reviewed bill', save, busy || (!!duplicate && !confirmedDuplicate))}
-      </View>}
+      {draft && <BillDraftReview key={reviewKey} initial={draft} bills={bills} history={history} templates={templates} onUpdate={onUpdate} onRecurring={onRecurring} onSave={reviewed=>{
+        if (onAdd(reviewed) === false) return false;
+        setDraft(null); setMessage('Bill added. Billiam is ready for another photo.'); return true;
+      }} />}
       {action('Cancel bill scan', close)}
     </View>}
   </View>;

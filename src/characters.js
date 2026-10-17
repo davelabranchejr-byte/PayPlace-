@@ -12,7 +12,7 @@ function reference(source, width, height, crop, label) {
 
 export const annieArtwork = Object.freeze({
   portrait: reference(annieCanonical, 864, 1536, [245, 45, 375, 500], "Great Annie's approved grandmotherly bark face framed by white flowers"),
-  welcome: reference(annieCanonical, 864, 1536, [100, 20, 665, 1180], "Great Annie welcoming you through her red stained-glass PayPlace door"),
+  welcome: reference(require('../assets/characters/annie-front-door-mailbox.png'), 941, 1672, [0, 0, 941, 1672], "Great Annie welcoming you through her red stained-glass PayPlace door"),
 });
 
 export const portraits = Object.freeze({
