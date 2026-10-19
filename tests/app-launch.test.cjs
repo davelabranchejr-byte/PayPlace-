@@ -109,6 +109,50 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   };
 }
 
+test('Annie’s library preserves the empty shelf, reader room, purchase link and checkout after relaunch', async () => {
+  const harness = appHarness({balance:321.45, bills:[], debts:[]});
+  let renderer, pending;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const press = async label => {assert.ok(button(label), label); await act(() => button(label).props.onPress());};
+  const unlock = async () => {
+    await act(async () => {renderer = create(React.createElement(harness.App));});
+    await act(() => {pending = button('Unlock PayPlace').props.onPress();});
+    await act(async () => {harness.completeAuthentication({success:true}); await pending;});
+  };
+  const id = 'before-you-call-me-difficult';
+  try {
+    await unlock();
+    await press('Open Neighborhood'); await press('Open Annie’s House');
+    let slot = renderer.root.findByProps({testID:'library-slot-A1'});
+    assert.equal(slot.findAllByType('Image').length, 1);
+    const shelfButton = slot.findByType('TouchableOpacity');
+    await act(() => shelfButton.props.onPress());
+    await press('Choose Bobbie as reader');
+    const borrow = button('Borrow for Bobbie');
+    await act(() => {borrow.props.onPress(); borrow.props.onPress();});
+    assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'bobbie');
+    assert.equal(harness.finance().neighborhoodLibrary.history.length, 1, 'duplicate tap cannot duplicate loan');
+    await press('Back to Annie’s library');
+    slot = renderer.root.findByProps({testID:'library-slot-A1'});
+    assert.equal(slot.findAllByType('Image').length, 0, 'borrowed cover really leaves the reserved shelf');
+    await press('Open Neighborhood'); await press('Open Bobbie’s Boutique');
+    await press('Bobbie is reading Before You Call Me Difficult. Open book details');
+    await press('View Emma’s book on Amazon');
+    assert.equal(harness.openedURLs.at(-1), 'https://a.co/d/09P0VmeL');
+    await press('Back to reading');
+    await act(() => renderer.unmount());
+    await unlock();
+    assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'bobbie');
+    await press('Open Neighborhood'); await press('Open Annie’s House');
+    slot = renderer.root.findByProps({testID:'library-slot-A1'});
+    await act(() => slot.findByType('TouchableOpacity').props.onPress());
+    await press('Return to shelf A1'); await press('Back to Annie’s library');
+    assert.equal(renderer.root.findByProps({testID:'library-slot-A1'}).findAllByType('Image').length, 1);
+    assert.equal(harness.finance().neighborhoodLibrary.history.length, 2);
+    assert.equal(harness.finance().balance, 321.45);
+  } finally {if (renderer) await act(() => renderer.unmount());}
+});
+
 function assertIllustrationFits(illustration) {
   const image = illustration.findByType('Image');
   assert.equal(image.props.resizeMode, 'contain');
