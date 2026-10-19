@@ -44,3 +44,20 @@ test('returned copies stay home for the day and ledger is bounded', () => {
   assert.equal(state.history.length, 60);
   assert.deepEqual(normalizeLibrary({loans:{[id]:{reader:'unknown',at:1}},history:[{bookId:'bad'}]}).loans, {});
 });
+
+
+test('all illustrated book targets stay inside the visible shelf and Daddy is beside Emma', async () => {
+  const { MASCOT_BOOKS, MASCOT_SHELF_BOUNDS, EM_SHELF_BOUNDS, LIBRARY_VISIBLE_HEIGHT, shelfTarget } = await import('../src/library-stories.mjs');
+  assert.equal(MASCOT_BOOKS.length, MASCOT_SHELF_BOUNDS.length);
+  assert.equal(new Set(MASCOT_BOOKS.map(b => b.id)).size, MASCOT_BOOKS.length);
+  for (const bounds of [EM_SHELF_BOUNDS, ...MASCOT_SHELF_BOUNDS]) {
+    assert.ok(bounds.left >= 0 && bounds.left + bounds.width <= 1);
+    assert.ok(bounds.top >= 0 && bounds.top + bounds.height <= LIBRARY_VISIBLE_HEIGHT);
+    assert.ok(parseFloat(shelfTarget(bounds).top) + parseFloat(shelfTarget(bounds).height) <= 100);
+  }
+  const i = MASCOT_BOOKS.findIndex(b => b.author === 'Daddy');
+  const daddy = MASCOT_SHELF_BOUNDS[i];
+  assert.ok(Math.abs(daddy.left + daddy.width - EM_SHELF_BOUNDS.left) < .001);
+  assert.equal(MASCOT_BOOKS[i].title, 'Everyone Belongs Here');
+  assert.equal(MASCOT_BOOKS[i].subtitle, 'Money without shame.');
+});
