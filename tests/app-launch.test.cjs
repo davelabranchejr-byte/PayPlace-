@@ -173,6 +173,46 @@ test('Annie’s illustrated shelves, Daddy story and natural spa reading survive
   } finally {if (renderer) await act(() => renderer.unmount());}
 });
 
+
+test('an existing Daddy checkout shows the couch reading scene after unlock and relaunch, then returns to A1', async () => {
+  const {checkoutBook} = models.get(path.join(root, 'src/neighborhood-library.mjs'));
+  const id = 'before-you-call-me-difficult';
+  const savedLibrary = checkoutBook(undefined, id, 'daddy');
+  const harness = appHarness({balance:88.21,bills:[],debts:[],neighborhoodLibrary:savedLibrary});
+  let renderer, pending;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(n => n.props.accessibilityLabel === label);
+  const press = async label => {assert.ok(button(label), label); await act(() => button(label).props.onPress());};
+  const openLibrary = async () => {
+    await act(async () => {renderer = create(React.createElement(harness.App));});
+    await act(() => {pending = button('Unlock PayPlace').props.onPress();});
+    await act(async () => {harness.completeAuthentication({success:true}); await pending;});
+    await press('Open Neighborhood'); await press('Open Annie’s House');
+  };
+  try {
+    await openLibrary();
+    const scene = renderer.root.findByProps({testID:'library-reading-scene-daddy'});
+    assert.ok(scene.props.source, 'saved Daddy loans must have actual artwork');
+    assert.equal(scene.findAllByType('Image').length, 1, 'the held book and pet pile are one complete scene');
+    assert.match(scene.props.accessibilityLabel, /Daddy reclining on Annie’s couch/);
+    assert.match(scene.props.accessibilityLabel, /Bobbie, Westley, Tate and Chapo/);
+    assertIllustrationFits(scene);
+    const away = renderer.root.findByProps({testID:'library-shelf-artwork'}).props.source;
+    const target = renderer.root.findByProps({testID:'library-slot-A1'}).props.style({pressed:false});
+    await press('Daddy is reading Before You Call Me Difficult. Open book details');
+    await press('Back to Annie’s library');
+    await act(() => renderer.unmount());
+    await openLibrary();
+    assert.ok(renderer.root.findByProps({testID:'library-reading-scene-daddy'}));
+    assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'daddy');
+    await press('Daddy is reading Before You Call Me Difficult. Open book details');
+    await press('Return to shelf A1'); await press('Back to Annie’s library');
+    assert.equal(renderer.root.findAllByProps({testID:'library-reading-scene-daddy'}).length, 0);
+    assert.notEqual(renderer.root.findByProps({testID:'library-shelf-artwork'}).props.source, away);
+    assert.deepEqual(renderer.root.findByProps({testID:'library-slot-A1'}).props.style({pressed:false}), target);
+    assert.equal(harness.finance().balance, 88.21);
+  } finally {if (renderer) await act(() => renderer.unmount());}
+});
+
 function assertIllustrationFits(illustration) {
   const image = illustration.findByType('Image');
   assert.equal(image.props.resizeMode, 'contain');
