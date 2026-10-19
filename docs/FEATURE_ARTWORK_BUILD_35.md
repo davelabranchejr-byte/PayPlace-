@@ -6,7 +6,9 @@ All four illustrations are original raster scenes; no stock images or reused fea
 scenes. Original generated files are preserved separately. Consuming code:
 `src/LaunchEssentials.js`, four separately tappable Home cards with contained 3:2 art.
 
-Prompt set:
+Current identity rule (October 17, 2026): Westley's illustrations use two regular dark-brown eyes, round black pupils and natural catchlights. No cloudy, milky, mismatched or distorted eyes. This supersedes the impaired-eye wording in the historical generation constraints below. See WESTLEY_EYE_AUDIT.md.
+
+Historical prompt set:
 
 - `assets/characters/feature-until-payday.png`: Chapo at a cozy sunny neighborhood
   planning table organizes a payday calendar, bill envelopes, a grocery basket, a

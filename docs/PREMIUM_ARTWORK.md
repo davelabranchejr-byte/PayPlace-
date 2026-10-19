@@ -1,8 +1,8 @@
 # Premium artwork and brand lock
 
-The user supplied the locked PayPlace logo on October 11, 2026. `assets/branding/payplace-locked-logo.jpeg` is a byte-for-byte copy of that original, SHA-256 `f48af4b4f31db5dbc9ef0b81a0b2fda46777b6e30da7d203640a2df471af7afb`.
+The current approved master is `assets/branding/payplace-icon.png`, confirmed against Dave's October 17, 2026 upload. Every decoded RGB pixel matches his supplied reference. PNG SHA-256: `82d6c2c7d9d64bf946726e9ab096e608ddef1562e40c3b242b468231cd7fa406`.
 
-Keep the white P, white paw and teal checkmark, and teal/yellow/purple/coral sections unchanged. Display the original as a separate React Native Image with contain scaling. Never ask image generation to redraw the logo. The existing square launcher icon remains in app.json; its core mark follows the same approved design.
+All standalone app logos import `payplaceLogo` from `src/brand.js`. Expo launcher icons and the browser favicon use that same PNG. The older portrait JPEG was a different crop and is retired. Keep the full white P, white paw and teal checkmark, and turquoise/yellow/purple/coral sections unchanged; display with contain scaling and a square frame. Never ask image generation to redraw the logo. See `LOGO_AUDIT.md` for remaining embedded-artwork limitations.
 
 Seven original project illustrations live in `assets/characters/premium-*.png`: Bobbie's transparent gala portrait, round-up savings, the emergency cushion, bill-shock garage, catch-up bridge, detective money watch and credit desk. The built-in Image Generation tool produced them, then corrected the generated brand patches. The original locked logo is shown separately in the header and on each feature card.
 

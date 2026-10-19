@@ -7,6 +7,7 @@ import BobbieSmartMirror from './BobbieSmartMirror';
 import { SmallSteps } from './NeighborCare';
 import { buildingArtwork } from './NeighborhoodNav';
 import { neighborhoodLabel } from './neighborhood-destinations.mjs';
+import NeighborhoodLibrary, { LibraryReader } from './NeighborhoodLibrary';
 
 const introductions = {
   Annie: 'The red door is open. Come inside, meet the family, and see the quilt that makes room for everyone.',
@@ -16,7 +17,7 @@ const introductions = {
   Chapo: 'Everyone deserves a place at the table. Let’s plan a little breathing room for your next extra paycheck.',
 };
 
-export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange }) {
+export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange, onLibraryChange }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
   const title = neighborhoodLabel(destination);
@@ -28,9 +29,12 @@ export default function NeighborRoom({ destination, finance, upcomingTotal, onHo
     <Text accessibilityRole="header" style={s.title}>{title}</Text>
     <Text style={s.body}>{introductions[destination]}</Text>
     {destination === 'Annie' && <>
+      {action('Visit Billiam’s mailbox outside', 'Billiam')}
+      <NeighborhoodLibrary value={finance.neighborhoodLibrary} onChange={onLibraryChange} onNavigate={onNavigate} />
       <FamilyWall onSelect={setStory} />
       <BelongingQuilt onOpen={() => setQuilt(true)} />
     </>}
+    {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} />}
     {destination === 'Bobbie' && <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => onNavigate('Budget')} />}
     {destination === 'Westley' && <View style={s.actions}>
       {action('Take a breath in the Calm Garden', 'Calm')}

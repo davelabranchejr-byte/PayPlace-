@@ -14,7 +14,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
@@ -46,7 +46,10 @@ import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
+import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
+import { recordBilliamReadings, reviewedBreakdown } from "./src/billiam-tools.mjs";
 import NeighborRoom from "./src/NeighborRooms";
+import { advanceReadingCircle } from "./src/neighborhood-library.mjs";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
@@ -69,7 +72,7 @@ import DebtMethodComparison from "./src/DebtMethodComparison";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
-const payplaceLogo = require("./assets/branding/payplace-locked-logo.jpeg");
+import { payplaceLogo, payplaceLogoLabel } from "./src/brand";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -1233,7 +1236,7 @@ function PayPlaceApp() {
     ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
     ...(sampleFinance || clearingData ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance,clearingData]);
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
-  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, typeof update === "function" ? update(current) : update))); }
+  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, recordBilliamReadings(current, typeof update === "function" ? update(current) : update)))); }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
@@ -1250,6 +1253,17 @@ function PayPlaceApp() {
   const [loaded, setLoaded] = useState(false);
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  useEffect(() => {
+    if (!loaded || storageError || clearingData) return;
+    const rotate = () => setFinanceRaw(current => {
+      const next = advanceReadingCircle(current.neighborhoodLibrary);
+      return JSON.stringify(next) === JSON.stringify(current.neighborhoodLibrary) ? current : {...current, neighborhoodLibrary: next};
+    });
+    rotate();
+    const timer = setInterval(rotate, 60000);
+    const listener = AppState.addEventListener('change', state => { if (state === 'active') rotate(); });
+    return () => { clearInterval(timer); listener.remove(); };
+  }, [loaded, storageError, clearingData, !!sampleFinance]);
   const [onboardingSession, setOnboardingSession] = useState(0);
   const [revisitingAnnie, setRevisitingAnnie] = useState(false);
   const onboardingFinalizing = useRef(false);
@@ -1430,18 +1444,18 @@ function PayPlaceApp() {
   function addBill(newBill) {
   if (!newBill.name || !newBill.name.trim()) {
     Alert.alert("Missing bill name", "Give the bill a name first.");
-    return;
+    return false;
   }
 
   const amount = cleanNumber(newBill.amount);
 
   if (amount <= 0) {
     Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-    return;
+    return false;
   }
 
   const savedBill = {
-    id: newBill.id || `bill_${Date.now()}`,
+    id: newBill.id || `bill_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     name: newBill.name,
     amount: amount.toFixed(2),
 
@@ -1453,6 +1467,7 @@ function PayPlaceApp() {
     paymentAddress: newBill.paymentAddress || "",
     accountNumberLast4: newBill.accountNumberLast4 || "",
     notes: newBill.notes || "",
+    breakdown: reviewedBreakdown(newBill.breakdown || {}),
     source: newBill.source || "Manual entry",
     confidence: newBill.confidence || "Confirmed",
   };
@@ -1461,25 +1476,26 @@ function PayPlaceApp() {
     ...current,
     bills: [...(current.bills || []), savedBill],
   }));
+  return true;
 }
 
 
   function updateBill(updatedBill) {
     if (!updatedBill || !updatedBill.id) {
       Alert.alert("Bill not found", "This bill could not be updated.");
-      return;
+      return false;
     }
 
     const amount = cleanNumber(updatedBill.amount);
 
     if (!updatedBill.name || !updatedBill.name.trim()) {
       Alert.alert("Missing bill name", "Give the bill a name first.");
-      return;
+      return false;
     }
 
     if (amount <= 0) {
       Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-      return;
+      return false;
     }
 
     setFinance((current) => ({
@@ -1504,6 +1520,7 @@ function PayPlaceApp() {
           : bill
       ),
     }));
+    return true;
   }
 
   function toggleBillPaid(id) {
@@ -1769,10 +1786,15 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             toggleBillPaid={toggleBillPaid}
             reviewBill={reviewBill}
             deleteBill={deleteBill}
+            onBilliam={() => setTab("Billiam")}
             onHistory={() => setEssentialsPanel("history")}
             onSubscriptions={() => setDetectiveVisible(true)}
           />
         )}
+
+        {tab === "Billiam" && <BilliamHome finance={finance} onAdd={addBill} onUpdate={updateBill}
+          onTemplates={next => setFinance(current => ({...current,billiamRecurring:next}))}
+          onHousehold={next => setFinance(current => ({...current,householdPlan:next}))} />}
 
         {tab === "Budget" && (
           <BudgetScreen
@@ -1825,7 +1847,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             </TouchableOpacity>)}
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
-          <FeatureLinks items={[{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
+          <FeatureLinks items={[{title:'Billiam’s Mailbox',body:'His home outside Annie Oak Tree — scans, bill tools and household planning.',onPress:()=>setTab('Billiam')},{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
           <ExpandableSection title="A little care from Annie">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
@@ -1847,11 +1869,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
-        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible} />}
+        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible}
+          library={finance.neighborhoodLibrary} onLibraryChange={action => setFinanceRaw(current => {
+            try {return {...current, neighborhoodLibrary:action(current.neighborhoodLibrary)};}
+            catch {return current;}
+          })} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
           onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
+          onLibraryChange={action => setFinanceRaw(current => {
+            try { return {...current, neighborhoodLibrary: action(current.neighborhoodLibrary)}; }
+            catch { return current; } // A repeated tap cannot check out the same copy twice.
+          })}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
         {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -2166,7 +2196,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
         <View style={styles.brandWrap}>
-          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel="PayPlace official logo: a white P with a paw and checkmark on teal, yellow, purple, and coral" />
+          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel={payplaceLogoLabel} />
 
           <View style={styles.wordmark}>
             <Text style={[styles.logoDark, compact && { fontSize: 23 }]}>Pay</Text>
@@ -2472,7 +2502,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2964,6 +2994,7 @@ const importDemoBills = () => {
           <Text style={styles.primaryButtonText}>Add bill</Text>
         </TouchableOpacity>
 
+        <BilliamShortcut onPress={onBilliam} />
 
 <View
   style={[

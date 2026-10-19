@@ -6,10 +6,11 @@ import { Text } from "./Privacy";
 const TAB_HELP = {
   Spa: { summary: 'Em’s cozy neighborhood pet spa.', steps: [
     'Scenes rotate every twelve seconds while the app is active. Use Previous, Next, or the thumbnails to choose a scene and pause the rotation.',
+    'When Bobbie borrows Emma’s memoir, her jacuzzi scene shows her reading it. Tap that scene to visit or return the book.',
     'Tap the character button for a little reply. Play resumes the scene rotation; reduced motion keeps the artwork still.',
-    'Use the six tabs along the bottom to open a feature group. Hide gives the artwork more room; Show brings the tabs back.',
+    'Use the tabs along the bottom to open a feature group. Hide gives the artwork more room; Show brings the tabs back.',
   ] },
-  Annie: { summary: 'Come inside Annie’s house and meet the family.', steps: ['Tap any portrait on the family wall to read their story.', 'Open the belonging quilt to see the neighborhood’s welcome.', 'Use Back or the building tabs to return to your money tools.'] },
+  Annie: { summary: 'Come inside Annie’s house, visit the library, and meet the family.', steps: ['Tap a painted book on Annie’s library shelves. The mascot books open original neighborhood stories, including Daddy’s Everyone Belongs Here beside Emma’s memoir.', 'Take a closer look enlarges the shelves; swipe across or down and tap a book.', 'Tap Emma’s book or the empty gap on shelf A1 for checkout and returns.', 'Choose a reader to borrow the illustrated copy. Its shelf stays empty until you return it; the checkout ledger remembers each visit.', 'Tap View Emma’s book on Amazon to find the memoir. Borrowing does not unlock an ebook in PayPlace.', 'Visit the mascot rooms to see their current reads. Manual loans wait for your return; the reading circle changes on a new day.', 'Tap any portrait on the family wall to read their story, or open the belonging quilt.', 'Use Back or the building tabs to return to your money tools.'] },
   Bobbie: { summary: 'Visit Bobbie’s smart mirror and boutique.', steps: ['Use the smart mirror to check a purchase against your saved budget.', 'Record a treat or save a look using the existing mirror controls.', 'Budget Corner opens your budget; the building tabs take you home.'] },
   Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Visit the Calm Garden, review your bills, or peek into Em’s Pet Spa.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
   Tate: { summary: 'One small bite at a time with Tate.', steps: ['Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
@@ -21,6 +22,7 @@ const TAB_HELP = {
     'Bills holds payment history and Subscription Detective. Plaid Banking holds accounts, savings automation, monitoring and credit.',
     'Neighborhood holds character visits, the spa and Calm Garden. One small step offers a suggested next action.',
   ] },
+  Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Swipe the bottom tabs to visit other places.']},
   Bills: { summary: 'Keep a list of what you owe and when it is due.', steps: [
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
     'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Bills payment history shows changes and lets you correct a recorded amount.',
