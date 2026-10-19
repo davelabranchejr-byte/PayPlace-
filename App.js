@@ -1869,7 +1869,11 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
-        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible} />}
+        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible}
+          library={finance.neighborhoodLibrary} onLibraryChange={action => setFinanceRaw(current => {
+            try {return {...current, neighborhoodLibrary:action(current.neighborhoodLibrary)};}
+            catch {return current;}
+          })} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
