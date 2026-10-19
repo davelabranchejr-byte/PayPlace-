@@ -1,60 +1,71 @@
-# Annie’s Neighborhood Library — next build
+# Annie’s illustrated neighborhood library
 
-Built on `fix/consistent-payplace-logo` at `ed3cdeb` to retain the latest
-Billiam tools, native OCR setup, household planning, cabaret and character fixes.
+Build 52 corrects the Build 51 portrait-and-cover reading cards. The library is
+one warm oak-tree illustration with fixed book hit targets, a matching borrowed
+state, and Westley and Chapo cuddling in their teal floor bed. The full square
+scene stays visible on phones. Take a closer look opens a larger scrollable view.
+
+## Shelves and stories
+
+Six mascot books fill the upper shelf. Daddy’s **Everyone Belongs Here**,
+subtitled **Money without shame.**, sits immediately left of Emma’s memoir on the
+lower shelf. Tap a mascot book to open its original short PayPlace story. These
+stories are fictional neighborhood writing; they are not excerpts from the memoir.
 
 Emma Acly’s **Before You Call Me Difficult: A Memoir of Foster Care, Faith,
-and Learning to Love Again** is the inaugural title. The exact approved
-October 19 PayPlace cover is bundled locally, unchanged, at
-`assets/books/before-you-call-me-difficult.jpeg`. No network image or paid
-service is required. Author permission to feature the book was provided by Dave.
+and Learning to Love Again** keeps permanent shelf A1. Its exact approved cover
+remains in `assets/books/before-you-call-me-difficult.jpeg`. Borrowing switches to
+the matching painted scene with an empty wooden gap; returning restores the same
+book in the same position. Other books and the cuddling mascots stay in place.
 
-## Behavior
+## Reading around town
 
-- Neighborhood → Annie’s House opens the library above the family wall.
-- Permanent shelf A1 stays labeled with Emma’s name and book title. Borrowing
-  removes the cover from that slot, leaving a visible empty space and borrower
-  label. Return restores the cover to A1.
-- Choose You, Bobbie, Westley, Tate, Chapo, Annie or Daddy. A single copy cannot
-  be checked out twice. Each borrow and return enters the checkout ledger.
-- The same cover appears beside the canonical portrait in reading cards.
-  Borrowed books follow Bobbie, Westley, Tate and Chapo into their rooms;
-  Annie, Daddy and the user read at the library. Tapping a reading card opens
-  details and the external Amazon link, https://a.co/d/09P0VmeL.
-- This is an illustrated neighborhood lending feature, not an in-app ebook.
-  The interface explicitly explains that the actual memoir is on Amazon.
-- The first visit leaves the book on its shelf. On subsequent local calendar
-  days, the reading circle starts with Bobbie, then Westley, Tate, Chapo,
-  Annie, and a day back on the shelf. Additional catalog titles will rotate
-  through successive circles. The app does not fabricate missed-day activity.
-- Automatic loans return before the next rotation. Manual loans remain until
-  returned. An explicit return leaves the book home for the rest of that day.
-- App opening, foregrounding and a minute timer update the current local day.
-  No background service or notification is required.
-- Loans and the last 60 ledger events live in the existing encrypted plan and
-  are included in its backups. Sample state stays separate from personal state.
-  These are per-plan checkouts, not shared worldwide inventory.
+Bobbie, Westley, Tate, Chapo and Annie each have a complete illustrated reading
+scene, with Emma’s book naturally held in paws or branches. There are no separate
+covers pasted over portraits. Bobbie’s loan also replaces PAWZINE in her existing
+Em’s Pet Spa jacuzzi scene; entering the spa opens that moment. Tap it for the book
+details, external Amazon destination (https://a.co/d/09P0VmeL), or return to A1.
+The original spa artwork comes back when the loan ends. You and Daddy can borrow
+without a fabricated character illustration.
 
-## Validation
+## Lending and storage
 
-- `npm run check`: application source bindings pass.
-- `npm test`: 153 tests pass, including daily rotation/manual-loan rules and
-  an actual app flow covering duplicate taps, empty shelf artwork, mascot room
-  reading, Amazon destination, relaunch persistence, exact return position,
-  and unchanged financial balance.
-- Expo iOS, Android and web bundle export is checked before source upload.
+Choose You, Bobbie, Westley, Tate, Chapo, Annie or Daddy. Duplicate checkouts are
+rejected. The ledger records borrow and return, keeping its last 60 entries.
+Manual loans remain until returned. The daily reading circle advances only on a
+new local calendar day, returns its own previous loan, and respects a manual loan
+or explicit same-day return. Loans are local to the existing encrypted plan,
+included in backups, and separate from sample finances.
 
-## Device review for the next native build
+This feature is an illustrated lending experience. The actual memoir is on the
+author’s Amazon page; borrowing does not unlock an in-app copy of its text.
 
-1. Open Annie’s House on a small phone and with enlarged text. Tap the cover,
-   select Bobbie, and borrow. Confirm A1 is empty and labeled.
-2. Visit Bobbie’s Boutique, tap her reading card, and open Emma’s book on Amazon.
-3. Relaunch and unlock; confirm the checkout and ledger survived. Return the
-   book and verify the cover reappears in A1.
-4. Cross a local midnight or return on the next day to check the reading circle.
-   A manual loan must stay with its chosen reader.
-5. Verify a sample checkout does not alter the personal plan, and that a
-   portable encrypted backup restores the loan and ledger.
+## Verification
 
-This source update requires a new native build to reach TestFlight. A successful
-source upload or bundle export is not confirmation of an Apple upload.
+- Source bindings: 116 files checked.
+- 154 tests pass, including the real-app shelf hit targets, enlarged view, Daddy
+  story, duplicate taps, natural reading scene, spa handoff, Amazon link, saved
+  checkout after relaunch, return from the spa and unchanged financial balance.
+- Expo export for iOS, Android and web must pass before the native release.
+- Artwork was visually reviewed for identities, book positioning and the new bed.
+
+## Phone tester script
+
+1. Open Neighborhood → Annie’s House. Find Westley and Chapo cuddling below the
+   shelves. Daddy’s teal book is immediately left of Emma’s cream/red book.
+2. Tap Daddy’s book. Confirm Everyone Belongs Here and Money without shame.
+   appear; read the short story and return to the shelves.
+3. Open Take a closer look. Swipe and tap the painted book covers. Return.
+4. Tap Emma’s book, choose Bobbie and borrow. A wooden gap should remain at A1;
+   Daddy’s book, neighboring books and the cuddling pair should stay put.
+5. Visit Bobbie’s Boutique and Em’s Pet Spa. Bobbie should naturally hold/read
+   Emma’s book in the full scene. Tap it and check the Amazon destination.
+6. Relaunch and unlock. Confirm Bobbie’s loan survived. Return it from the spa;
+   the magazine returns there and Emma’s book reappears on shelf A1.
+7. Borrow for Westley, Tate, Chapo and Annie in turn; check the corresponding
+   reading scene, then return each copy. Review the checkout ledger.
+8. Check a narrow phone, enlarged text, Quiet Mode and a manual loan across a
+   local midnight. Financial records should stay unchanged by library visits.
+
+A successful export is not proof of TestFlight delivery. The native release must
+finish its build/sign/upload workflow, then Apple must process it.
