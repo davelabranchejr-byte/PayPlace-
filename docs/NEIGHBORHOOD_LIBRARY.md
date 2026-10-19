@@ -1,5 +1,8 @@
 # Annie’s illustrated neighborhood library
 
+Build 53 adds Daddy’s missing reading scene for new and already-saved checkouts.
+Daddy reclines on Annie’s couch with all four animals cuddled on him.
+
 Build 52 corrects the Build 51 portrait-and-cover reading cards. The library is
 one warm oak-tree illustration with fixed book hit targets, a matching borrowed
 state, and Westley and Chapo cuddling in their teal floor bed. The full square
@@ -25,8 +28,10 @@ scene, with Emma’s book naturally held in paws or branches. There are no separ
 covers pasted over portraits. Bobbie’s loan also replaces PAWZINE in her existing
 Em’s Pet Spa jacuzzi scene; entering the spa opens that moment. Tap it for the book
 details, external Amazon destination (https://a.co/d/09P0VmeL), or return to A1.
-The original spa artwork comes back when the loan ends. You and Daddy can borrow
-without a fabricated character illustration.
+The original spa artwork comes back when the loan ends. Daddy’s reading card in
+Annie’s house shows him reclining on her couch, naturally holding Emma’s book,
+with Bobbie, Westley, Tate and Chapo cuddled on him. It also appears for existing
+saved Daddy loans. A personal checkout for You has no character illustration.
 
 ## Lending and storage
 
@@ -43,9 +48,10 @@ author’s Amazon page; borrowing does not unlock an in-app copy of its text.
 ## Verification
 
 - Source bindings: 116 files checked.
-- 154 tests pass, including the real-app shelf hit targets, enlarged view, Daddy
+- 155 tests pass, including the real-app shelf hit targets, enlarged view, Daddy
   story, duplicate taps, natural reading scene, spa handoff, Amazon link, saved
-  checkout after relaunch, return from the spa and unchanged financial balance.
+  checkout after relaunch, Daddy’s saved checkout and couch scene, return from the spa
+  and unchanged financial balance.
 - Expo export for iOS, Android and web must pass before the native release.
 - Artwork was visually reviewed for identities, book positioning and the new bed.
 
@@ -64,8 +70,23 @@ author’s Amazon page; borrowing does not unlock an in-app copy of its text.
    the magazine returns there and Emma’s book reappears on shelf A1.
 7. Borrow for Westley, Tate, Chapo and Annie in turn; check the corresponding
    reading scene, then return each copy. Review the checkout ledger.
-8. Check a narrow phone, enlarged text, Quiet Mode and a manual loan across a
+8. Borrow for Daddy, or open an existing Daddy loan. His card should show him
+   reclining on Annie’s couch with Bobbie, Westley, Tate and Chapo cuddled on him.
+   Tap the scene for details, relaunch to verify it stays visible, then return
+   the book to A1.
+9. Check a narrow phone, enlarged text, Quiet Mode and a manual loan across a
    local midnight. Financial records should stay unchanged by library visits.
 
 A successful export is not proof of TestFlight delivery. The native release must
 finish its build/sign/upload workflow, then Apple must process it.
+
+## Daddy scene asset
+
+`assets/library/daddy-reading-em.png` is a 1254 × 1254 complete illustration,
+created with the built-in image generation tool using Dave’s supplied Daddy
+references, the canonical family wall and the approved Emma cover. The scene
+prompt specifies Daddy reclining on Annie’s teal couch and naturally holding
+Emma’s open memoir, with Westley at his shoulder, Tate across his lap, Bobbie
+on his thighs and Chapo on his legs, in the established warm oak-tree style.
+The app displays the whole scene with contain sizing; no cover is layered over
+a portrait.
