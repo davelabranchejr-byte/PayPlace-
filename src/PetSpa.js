@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SPA_SCENES, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
 import ContainedIllustration from './ContainedIllustration';
+import { bobbieReadingEm } from './LibraryArtwork';
+import { LibraryBookDetails } from './NeighborhoodLibrary';
+import { normalizeLibrary, LIBRARY_BOOKS } from './neighborhood-library.mjs';
 
 const artwork = [
   require('../assets/characters/spa-welcome.png'),
@@ -32,16 +35,19 @@ function SpaAtmosphere({ playing, kind }) {
   </View>;
 }
 
-export default function PetSpa({ onHome, obscured = false, reduceAnimation = false }) {
-  const [index, setIndex] = useState(0);
+export default function PetSpa({ onHome, obscured = false, reduceAnimation = false, library, onLibraryChange }) {
+  const bobbieHasBook = normalizeLibrary(library).loans[LIBRARY_BOOKS[0].id]?.reader === 'bobbie';
+  const [index, setIndex] = useState(bobbieHasBook ? 3 : 0);
+  const [bookDetails, setBookDetails] = useState(false);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [active, setActive] = useState(AppState.currentState === 'active');
   const [focused, setFocused] = useState(true);
   const [reply, setReply] = useState('');
   const motionOff = reducedMotion || reduceAnimation;
-  const playing = spaCanPlay({ paused, reducedMotion: motionOff, active, focused: focused && !obscured });
-  const scene = SPA_SCENES[index];
+  const playing = spaCanPlay({ paused, reducedMotion: motionOff, active, focused: focused && !obscured && !bookDetails });
+  const currentArtwork = artwork.map((source,i) => i === 3 && bobbieHasBook ? bobbieReadingEm : source);
+  const scene = index === 3 && bobbieHasBook ? {...SPA_SCENES[index], caption:'Bobbie has borrowed Before You Call Me Difficult by Emma Acly from Annie’s library. A little self-care and a good book, darling.'} : SPA_SCENES[index];
   useEffect(() => {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then(value => { if (mounted) setReducedMotion(value); }).catch(() => {});
@@ -57,15 +63,16 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
     return () => clearInterval(timer);
   }, [playing, index]);
   const choose = next => { setIndex(next); setReply(''); setPaused(true); };
+  const illustration = <ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>
+    <SpaAtmosphere playing={playing} kind={scene.motion} />
+  </ContainedIllustration>;
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity accessibilityRole="button" onPress={onHome} style={s.back}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
     <Text style={s.eyebrow}>A LITTLE CARE GOES A LONG WAY</Text>
     <Text accessibilityRole="header" style={s.title}>Em’s Pet Spa</Text>
     <Text style={s.body}>Fresh towels, fabulous blow-outs, and all the love. Come see who is being pampered today.</Text>
     <View style={s.card}>
-      <ContainedIllustration source={artwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={`${scene.title}. ${scene.caption}`}>
-        <SpaAtmosphere playing={playing} kind={scene.motion} />
-      </ContainedIllustration>
+      {index === 3 && bobbieHasBook ? <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Emma’s book Bobbie is reading at the spa" onPress={() => setBookDetails(true)}>{illustration}</TouchableOpacity> : illustration}
       <Text style={s.sceneTitle} accessibilityRole="header">{scene.title}</Text>
       <Text style={s.body}>{scene.caption}</Text>
       <TouchableOpacity accessibilityRole="button" onPress={() => { setPaused(true); setReply(scene.reply); }} style={s.action}><Text style={s.actionText}>{scene.action}</Text></TouchableOpacity>
@@ -79,11 +86,12 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
     </View>
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.scenePicker}>
       {SPA_SCENES.map((item, i) => <TouchableOpacity key={item.id} accessibilityRole="button" accessibilityLabel={`Show ${item.title}`} accessibilityState={{ selected: i === index }} onPress={() => choose(i)} style={[s.thumbnail, i === index && s.selected]}>
-        <Image source={artwork[i]} resizeMode="contain" style={s.thumbImage} accessible={false} />
+        <Image source={currentArtwork[i]} resizeMode="contain" style={s.thumbImage} accessible={false} />
         <Text style={s.thumbText}>{['Em & family', 'Westley', 'Chapo', 'Bobbie', 'Tate'][i]}</Text>
       </TouchableOpacity>)}
     </ScrollView>
     <Text style={s.footer}>You don’t have to accomplish anything here. Sometimes a little neighborhood joy is enough.</Text>
+    {bookDetails && <LibraryBookDetails bookId={LIBRARY_BOOKS[0].id} value={library} onChange={onLibraryChange} onClose={() => setBookDetails(false)} backLabel="Back to Em’s Pet Spa" />}
   </ScrollView>;
 }
 

@@ -109,45 +109,65 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   };
 }
 
-test('Annie’s library preserves the empty shelf, reader room, purchase link and checkout after relaunch', async () => {
+test('Annie’s illustrated shelves, Daddy story and natural spa reading survive checkout and relaunch', async () => {
   const harness = appHarness({balance:321.45, bills:[], debts:[]});
   let renderer, pending;
-  const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
+  const button = label => renderer.root.findAll(node => ['TouchableOpacity','Pressable'].includes(node.type)).find(node => node.props.accessibilityLabel === label);
   const press = async label => {assert.ok(button(label), label); await act(() => button(label).props.onPress());};
   const unlock = async () => {
     await act(async () => {renderer = create(React.createElement(harness.App));});
     await act(() => {pending = button('Unlock PayPlace').props.onPress();});
     await act(async () => {harness.completeAuthentication({success:true}); await pending;});
   };
+  const shelf = () => renderer.root.findByProps({testID:'library-shelf-artwork'}).props.source;
+  const slot = () => renderer.root.findByProps({testID:'library-slot-A1'});
   const id = 'before-you-call-me-difficult';
   try {
     await unlock();
     await press('Open Neighborhood'); await press('Open Annie’s House');
-    let slot = renderer.root.findByProps({testID:'library-slot-A1'});
-    assert.equal(slot.findAllByType('Image').length, 1);
-    const shelfButton = slot.findByType('TouchableOpacity');
-    await act(() => shelfButton.props.onPress());
+    const stocked = shelf(), originalTarget = slot().props.style({pressed:false});
+    assert.equal(slot().findAllByType('Image').length, 0, 'hit target is transparent; the shelf is one complete illustration');
+    await press('Read Everyone Belongs Here by Daddy');
+    assert.ok(renderer.root.findAllByType('Text').some(n => n.props.children === 'Money without shame.'));
+    assert.ok(renderer.root.findAllByType('Text').some(n => typeof n.props.children === 'string' && n.props.children.includes('Your balance is a number. It is not a measure of your worth.')));
+    await press('Back to the library shelves');
+    await press('Take a closer look at the library');
+    assert.equal(renderer.root.findAllByProps({testID:'library-slot-A1'}).length, 2, 'enlarged shelves retain working book targets');
+    await press('Back to Annie’s library');
+    await act(() => slot().props.onPress());
     await press('Choose Bobbie as reader');
     const borrow = button('Borrow for Bobbie');
     await act(() => {borrow.props.onPress(); borrow.props.onPress();});
     assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'bobbie');
     assert.equal(harness.finance().neighborhoodLibrary.history.length, 1, 'duplicate tap cannot duplicate loan');
     await press('Back to Annie’s library');
-    slot = renderer.root.findByProps({testID:'library-slot-A1'});
-    assert.equal(slot.findAllByType('Image').length, 0, 'borrowed cover really leaves the reserved shelf');
+    const away = shelf();
+    assert.notEqual(away, stocked, 'checkout selects the painted wooden-gap scene');
+    assert.deepEqual(slot().props.style({pressed:false}), originalTarget, 'the book and its gap keep the exact same coordinates');
     await press('Open Neighborhood'); await press('Open Bobbie’s Boutique');
+    const readingScene = renderer.root.findByProps({testID:'library-reading-scene-bobbie'});
+    const paintedBook = readingScene.props.source;
+    assert.equal(readingScene.findAllByType('Image').length, 1, 'character and held book are one painted scene');
     await press('Bobbie is reading Before You Call Me Difficult. Open book details');
     await press('View Emma’s book on Amazon');
     assert.equal(harness.openedURLs.at(-1), 'https://a.co/d/09P0VmeL');
     await press('Back to reading');
+    await press('Open Neighborhood'); await press('Open Em’s Pet Spa');
+    const spaBook = button('Open Emma’s book Bobbie is reading at the spa');
+    assert.ok(spaBook, 'Bobbie’s loan opens the spa at her reading scene');
+    assert.equal(spaBook.findByType('Image').props.source, paintedBook, 'the spa displays the same naturally held book artwork');
+    await press('Open Emma’s book Bobbie is reading at the spa');
+    await press('Back to Em’s Pet Spa');
     await act(() => renderer.unmount());
     await unlock();
     assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'bobbie');
+    await press('Open Neighborhood'); await press('Open Em’s Pet Spa');
+    await press('Open Emma’s book Bobbie is reading at the spa');
+    await press('Return to shelf A1'); await press('Back to Em’s Pet Spa');
+    assert.equal(button('Open Emma’s book Bobbie is reading at the spa'), undefined, 'return restores the magazine spa scene');
     await press('Open Neighborhood'); await press('Open Annie’s House');
-    slot = renderer.root.findByProps({testID:'library-slot-A1'});
-    await act(() => slot.findByType('TouchableOpacity').props.onPress());
-    await press('Return to shelf A1'); await press('Back to Annie’s library');
-    assert.equal(renderer.root.findByProps({testID:'library-slot-A1'}).findAllByType('Image').length, 1);
+    assert.equal(shelf(), stocked, 'return restores the same fully stocked shelf');
+    assert.deepEqual(slot().props.style({pressed:false}), originalTarget);
     assert.equal(harness.finance().neighborhoodLibrary.history.length, 2);
     assert.equal(harness.finance().balance, 321.45);
   } finally {if (renderer) await act(() => renderer.unmount());}
