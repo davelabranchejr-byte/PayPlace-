@@ -10,5 +10,6 @@ const scenes = {
   tate:{source:require('../assets/library/tate-reading-em.png'),ratio:1,label:'Tate holding Emma Acly’s memoir in his little reading nook'},
   chapo:{source:require('../assets/library/chapo-reading-em.png'),ratio:1,label:'Chapo reading Emma Acly’s memoir at his kitchen table'},
   annie:{source:require('../assets/library/annie-reading-em.png'),ratio:1,label:'Annie’s oak branches gently holding Emma Acly’s memoir in her library'},
+  daddy:{source:require('../assets/library/daddy-reading-em.png'),ratio:1,label:'Daddy reclining on Annie’s couch reading Emma Acly’s memoir, with Bobbie, Westley, Tate and Chapo cuddled on him'},
 };
 export function readingArtwork(reader) {return scenes[reader] || null;}
