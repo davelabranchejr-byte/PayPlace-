@@ -14,7 +14,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
@@ -49,6 +49,7 @@ import EntrySheet from "./src/EntrySheet";
 import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
 import { recordBilliamReadings, reviewedBreakdown } from "./src/billiam-tools.mjs";
 import NeighborRoom from "./src/NeighborRooms";
+import { advanceReadingCircle } from "./src/neighborhood-library.mjs";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
@@ -1252,6 +1253,17 @@ function PayPlaceApp() {
   const [loaded, setLoaded] = useState(false);
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  useEffect(() => {
+    if (!loaded || storageError || clearingData) return;
+    const rotate = () => setFinanceRaw(current => {
+      const next = advanceReadingCircle(current.neighborhoodLibrary);
+      return JSON.stringify(next) === JSON.stringify(current.neighborhoodLibrary) ? current : {...current, neighborhoodLibrary: next};
+    });
+    rotate();
+    const timer = setInterval(rotate, 60000);
+    const listener = AppState.addEventListener('change', state => { if (state === 'active') rotate(); });
+    return () => { clearInterval(timer); listener.remove(); };
+  }, [loaded, storageError, clearingData, !!sampleFinance]);
   const [onboardingSession, setOnboardingSession] = useState(0);
   const [revisitingAnnie, setRevisitingAnnie] = useState(false);
   const onboardingFinalizing = useRef(false);
@@ -1862,6 +1874,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
           onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
+          onLibraryChange={action => setFinanceRaw(current => {
+            try { return {...current, neighborhoodLibrary: action(current.neighborhoodLibrary)}; }
+            catch { return current; } // A repeated tap cannot check out the same copy twice.
+          })}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
         {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
