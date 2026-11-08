@@ -109,6 +109,45 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   };
 }
 
+test('banking demo shares categories, spending, recurring detection and savings while Facebook opens the supplied community', async () => {
+  const harness = appHarness({ balance: 87, bills: [], debts: [] });
+  let renderer, pending;
+  const button = label => renderer.root.findAllByType('TouchableOpacity').find(n => n.props.accessibilityLabel === label);
+  const press = async label => { assert.ok(button(label), label); await act(async () => button(label).props.onPress()); };
+  const input = async (label, value) => { const field = renderer.root.findAllByType('TextInput').find(n => n.props.accessibilityLabel === label); assert.ok(field, label); await act(() => field.props.onChangeText(value)); };
+  const hub = () => renderer.root.find(n => n.type?.name === 'PremiumResilienceHub');
+  try {
+    await act(async () => { renderer = create(React.createElement(harness.App)); });
+    await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
+    await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
+    const personal = JSON.stringify(harness.finance());
+    await press('Move into the neighborhood on Facebook');
+    assert.equal(harness.openedURLs.at(-1), 'https://www.facebook.com/share/1FRdYmPwum/?mibextid=wwXIfr');
+    await press('Try Bobbie’s banking demo'); await input('Demo username', 'Bobbie'); await input('Demo password', 'litterbox'); await press('Open Bobbie’s banking demo');
+    assert.equal(hub().props.finance.bankActivity.source, 'demo');
+    await press('Open purchases and remembered categories');
+    await press('Change category for Costco, Shopping, Sample checking, $130.00');
+    await press('Choose Groceries'); await press('Remember for this account'); await press('Save my choice'); await press('← Back to my neighborhood');
+    await press('Open Automatic Money Watch');
+    assert.ok(renderer.root.findAllByType('Text').some(n => JSON.stringify(n.props.children).includes('Pawtify')));
+    await press('Open Subscription Detective'); await press('Review detected CatFlix'); await press('Save this case');
+    assert.equal(hub().props.finance.subscriptions.length, 1);
+    assert.ok(hub().props.finance.subscriptions[0].detectionKey);
+    assert.equal(button('Review detected CatFlix'), undefined, 'accepted clues do not appear twice');
+    await press('Close Detective Clubhouse'); await press('Back to Plaid Banking'); await press('Open Round Up & Save');
+    await press('Turn on sample round-ups'); await press('Simulate next purchase batch');
+    const sample = hub().props.finance;
+    assert.ok(sample.balance < 320);
+    assert.ok(sample.premiumBeta.sampleFund > 100);
+    const model = models.get(path.join(root, 'src/merchant-categories.mjs'));
+    const costco = sample.categorization.transactions.find(t => t.id === 'demo-costco-1');
+    assert.equal(model.purchaseCategory(sample.categorization, costco).category, 'Groceries');
+    assert.equal(JSON.stringify(harness.finance()), personal, 'demo data never enters the stored personal plan');
+    await press('Return to my personal plan');
+    assert.equal(harness.finance().balance, 87);
+  } finally { if (renderer) await act(() => renderer.unmount()); }
+});
+
 test('Annie’s illustrated shelves, Daddy story and natural spa reading survive checkout and relaunch', async () => {
   const harness = appHarness({balance:321.45, bills:[], debts:[]});
   let renderer, pending;
