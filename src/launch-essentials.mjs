@@ -1,4 +1,5 @@
 import { billDate } from './bill-reminders.mjs';
+import { seedDemoBank } from './bank-activity.mjs';
 export const isPaid = bill => bill.paid === true || bill.status === 'Paid';
 const cents = value => Math.round(Number(value || 0) * 100);
 export function moneyCents(text, { signed = false } = {}) {
@@ -72,9 +73,9 @@ export function emptyPlan(starter) {
 export function samplePlan(starter,now = new Date()) {
   const payday=new Date(now);payday.setDate(payday.getDate()+9);
   const due=new Date(now);due.setDate(due.getDate()+3);
-  return {...starter,planSource:'Sample',firstWinComplete:true,balanceUpdatedAt:now.getTime(),balanceSource:'Sample data',nextPaycheckDate:localDate(payday),daysUntilPayday:9,
+  return seedDemoBank({...starter,planSource:'Sample',firstWinComplete:true,balanceUpdatedAt:now.getTime(),balanceSource:'Sample data',nextPaycheckDate:localDate(payday),daysUntilPayday:9,
     bills:[{id:'sample-power',name:'Sample power bill',amount:'142.38',dueDate:localDate(due),due:localDate(due),status:'Upcoming',paid:false}],
-    paydayEssentials:{payday:localDate(payday),groceriesCents:9000,gasCents:3500},billReminders:{enabled:false},subscriptionReminders:{enabled:false},annieCare:{weekly:false,checkIn:false}};
+    paydayEssentials:{payday:localDate(payday),groceriesCents:9000,gasCents:3500},billReminders:{enabled:false},subscriptionReminders:{enabled:false},annieCare:{weekly:false,checkIn:false}},now);
 }
 export function quietSettings(value) {
   return {pauseCheckIns:value?.pauseCheckIns===true,reduceAnimation:value?.reduceAnimation===true,hideAmounts:value?.hideAmounts===true,

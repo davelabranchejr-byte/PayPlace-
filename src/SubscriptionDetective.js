@@ -4,7 +4,7 @@ import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import CharacterArtwork from './CharacterArtwork';
 import Alert from './alert';
-import { CASE_STATES, FREQUENCIES, caseSummary, subscriptionCases } from './subscription-detective.mjs';
+import { CASE_STATES, FREQUENCIES, caseSummary, subscriptionCases, recurringCandidates } from './subscription-detective.mjs';
 import { parseAmount } from './smart-mirror.mjs';
 import { requestBillReminderPermission } from './useBillReminders';
 
@@ -40,6 +40,7 @@ export default function SubscriptionDetective({ visible, onClose, finance, onAct
   const formY = useRef(0);
   const summary = useMemo(() => caseSummary(finance), [finance, visible]);
   const cases = subscriptionCases(finance);
+  const discovered = useMemo(() => recurringCandidates(finance), [finance.categorization, finance.subscriptions, finance.subscriptionDetection]);
   const displayed = cases.filter(item => filter === 'All' || (filter === 'Cancelled' ? item.status === 'Cancelled' : item.status !== 'Cancelled'));
   function edit(item) {
     setDraft({ ...item, amount: String(item.amount), billId: (finance.bills || []).some(bill => bill.id === item.billId) ? item.billId : '' });
@@ -68,7 +69,22 @@ export default function SubscriptionDetective({ visible, onClose, finance, onAct
       <ScrollView ref={scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Art /><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text>
         <Text style={s.body}>Little charges deserve a little investigation. Add your subscriptions and trials, then decide what earns a place in your life.</Text>
-        <Text style={s.note}>Premium paid feature. Available without charge during beta; purchases and automatic bank detection are not active.</Text>
+        <Text style={s.note}>Premium paid feature. Available without charge during beta. The finder checks available transaction history; the banking demo uses fictional charges. Live transaction syncing still needs the Plaid connection.</Text>
+        <View style={[s.card, { backgroundColor: '#BBF5E8' }]}>
+          <Text accessibilityRole="header" style={s.subtitle}>Bobbie found a few clues</Text>
+          <Text style={s.body}>We look for at least three settled charges on a regular schedule. These are possible subscriptions or recurring bills, not confirmed contracts. Next-charge dates are estimates.</Text>
+          {!discovered.length && <Text style={s.note}>{finance.categorization?.transactions?.length ? 'No new recurring patterns to review in the available history.' : 'No transaction history yet. Try Bobbie’s banking demo, or add your subscriptions manually below.'}</Text>}
+          {discovered.map(candidate => <View key={candidate.key} style={s.case}>
+            <Text style={s.subtitle}>{candidate.name}</Text>
+            <Text style={s.body}>{candidate.accountName} · {candidate.count} settled charges · {candidate.frequency}</Text>
+            <Text style={s.body}>Latest charge {money(candidate.amountCents / 100)} · estimated next charge {candidate.renewalDate}</Text>
+            {candidate.priceChangeCents !== 0 && <Text style={s.body}>Price {candidate.priceChangeCents > 0 ? 'increased' : 'decreased'} by {money(Math.abs(candidate.priceChangeCents) / 100)} from the previous charge.</Text>}
+            {candidate.variable && <Text style={s.note}>Amounts vary. This may be a recurring bill rather than a subscription.</Text>}
+            <Button label={`Review detected ${candidate.name}`} onPress={() => { setDraft({ ...newCase(), name: candidate.name, amount: (candidate.amountCents / 100).toFixed(2), frequency: candidate.frequency, renewalDate: candidate.renewalDate, detectionKey: candidate.key, status: 'Review' }); setMessage('Review the estimated date and price, then save the case if it belongs here.'); scroll.current?.scrollTo({ y: formY.current, animated: true }); }}/>
+            <Button secondary label={`Not a subscription: ${candidate.name}`} onPress={() => { if (onAction({ type: 'dismiss-detected', key: candidate.key })) setMessage('Clue dismissed. You can bring dismissed clues back below.'); }}/>
+          </View>)}
+          {!!finance.subscriptionDetection?.dismissed?.length && <Button secondary label="Review dismissed clues again" onPress={() => onAction({ type: 'restore-detected' })}/>}
+        </View>
         <View style={s.stats}><View style={[s.stat, { backgroundColor: '#FFD85A' }]}><Text style={s.label}>Monthly equivalent</Text><Text style={s.value}>{money(summary.monthly)}</Text></View><View style={[s.stat, { backgroundColor: '#65F4D2' }]}><Text style={s.label}>Yearly estimate</Text><Text style={s.value}>{money(summary.annual)}</Text></View></View>
         <Text style={s.note}>Estimates at the prices you entered, including the price after free trials. Weekly plans use 52 payments/year. These totals do not change your balance or Safe to Spend.</Text>
         <Button label={draft ? 'Close subscription form' : 'Add a subscription or trial'} onPress={() => { setDraft(draft ? null : newCase()); setMessage(''); }} />
