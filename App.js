@@ -26,6 +26,9 @@ import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
+import MerchantCategories, { CategoryEntry } from "./src/MerchantCategories";
+import FacebookNeighborhood from "./src/FacebookNeighborhood";
+import { demoBankAction } from "./src/bank-activity.mjs";
 import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
@@ -1212,6 +1215,7 @@ function PayPlaceApp() {
   const [storageError, setStorageError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
+  const [categoriesVisible, setCategoriesVisible] = useState(false);
   const [premiumPanel, setPremiumPanel] = useState(null);
   const [premiumVisit, setPremiumVisit] = useState(0);
   const [tabHelpVisible, setTabHelpVisible] = useState(false);
@@ -1237,6 +1241,19 @@ function PayPlaceApp() {
     ...(sampleFinance || clearingData ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance,clearingData]);
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
   function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, recordBilliamReadings(current, typeof update === "function" ? update(current) : update)))); }
+  async function saveCategories(next) {
+    if (dataDeletion.current || storageError || !loaded) throw new Error('Your plan is not ready to save. Please try again.');
+    if (!sampleFinance) {
+      // Confirm encrypted persistence before the category sheet reports success.
+      await ProtectedStorage.setItem(STORAGE_KEY, JSON.stringify({ ...savedFinance, categorization: next }));
+    }
+    setFinance(current => ({ ...current, categorization: next }));
+  }
+  function updateDemoBank(action) {
+    if (!sampleFinance || finance.bankActivity?.source !== 'demo') return false;
+    try { setFinance(demoBankAction(finance, action)); return true; }
+    catch (error) { Alert.alert('A little bank check', error.message); return false; }
+  }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
@@ -1807,6 +1824,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onPayday={() => setEssentialsPanel("payday")}
             onCalendar={() => setExtraCalendarVisible(true)}
             onSavings={() => setSavingsVisible(true)}
+            onCategories={() => setCategoriesVisible(true)}
           />
         )}
 
@@ -1832,6 +1850,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           betaState={normalizePremiumBeta(finance.premiumBeta)}
           onBetaStateChange={next => setFinance(current => ({ ...current, premiumBeta: normalizePremiumBeta(next) }))}
           onOpenBankConnections={() => setBankConnectionsVisible(true)}
+          onOpenCategories={() => setCategoriesVisible(true)}
+          onBankAction={sampleFinance ? updateDemoBank : undefined}
           onOpenSubscriptions={() => setDetectiveVisible(true)}
           onOpenBills={() => setTab("Bills")}
           onStartDemo={startBankDemo}
@@ -1841,6 +1861,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} />
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
+          <FacebookNeighborhood />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
             {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
               <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:75}} resizeMode="contain" accessible={false}/><Text style={{fontSize:15,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
@@ -1895,6 +1916,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onUndo={undoRecordedPayment} onCorrect={correctRecordedPayment} onFirstWin={saveFirstWin} onSample={startSample} onPersonal={endSample}/>
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
+        {categoriesVisible && <MerchantCategories key={`${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible
+          onClose={() => setCategoriesVisible(false)} value={finance.categorization} onChange={saveCategories} sample={!!sampleFinance} />}
         {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)} />}
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
@@ -2428,6 +2451,7 @@ function HomeScreen({
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SeasonalWelcome/>
       <BankWelcomeCard onDemo={onBankDemo} onBanking={onPremium}/>
+      <FacebookNeighborhood />
       <View style={[styles.safeHeroCard,{padding:20}]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND · ENTERED PLAN</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
@@ -3107,7 +3131,7 @@ function BudgetScreen({
   updateNumber,
   updateText,
   resetDemoData,
-  onPayday, onCalendar, onSavings,
+  onPayday, onCalendar, onSavings, onCategories,
 }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -3163,6 +3187,7 @@ function BudgetScreen({
         </View>
       </View>
 
+      {onCategories && <CategoryEntry onOpen={onCategories} />}
       <ExpandableSection title="Edit money info">
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Edit money info</Text>

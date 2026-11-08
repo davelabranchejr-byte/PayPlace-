@@ -1,5 +1,6 @@
 import { dateKey, readDate } from './paycheck-calendar.mjs';
 import { parseAmount } from './smart-mirror.mjs';
+export { recurringCandidates } from './bank-activity.mjs';
 
 export const FREQUENCIES = Object.freeze({ Monthly: 12, Yearly: 1, Quarterly: 4, Weekly: 52 });
 export const CASE_STATES = ['Keep', 'Review', 'Cancelled'];
@@ -31,11 +32,22 @@ export function saveSubscription(finance, draft) {
   const item = { id: draft.id, name, amount, frequency: draft.frequency, status: draft.status,
     renewalDate: dateKey(renewal), anchorDay: previous?.renewalDate === draft.renewalDate ? previous.anchorDay || renewal.getDate() : renewal.getDate(),
     trialEnds, manageUrl, billId };
+  const detectionKey = draft.detectionKey || previous?.detectionKey;
+  if (detectionKey) {
+    if (typeof detectionKey !== 'string' || detectionKey.length > 600) throw new Error('Invalid detected charge.');
+    item.detectionKey = detectionKey;
+    item.detectedFrom = 'Transaction history';
+  }
   return { ...finance, subscriptions: previous ? cases.map(entry => entry.id === item.id ? item : entry) : [...cases, item] };
 }
 
 export function updateSubscription(finance, action) {
   if (action.type === 'save') return saveSubscription(finance, action.entry);
+  if (action.type === 'dismiss-detected') {
+    if (typeof action.key !== 'string' || !action.key || action.key.length > 600) throw new Error('Choose a detected charge.');
+    return { ...finance, subscriptionDetection: { ...finance.subscriptionDetection, dismissed: [...new Set([...(finance.subscriptionDetection?.dismissed || []), action.key])] } };
+  }
+  if (action.type === 'restore-detected') return { ...finance, subscriptionDetection: { ...finance.subscriptionDetection, dismissed: [] } };
   const cases = subscriptionCases(finance);
   const item = cases.find(entry => entry.id === action.id);
   if (!item) throw new Error('This case is no longer available.');
