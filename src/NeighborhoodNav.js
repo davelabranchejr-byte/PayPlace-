@@ -35,9 +35,9 @@ export default function NeighborhoodNav({ current, switchTab }) {
     {PRIMARY_DESTINATIONS.map(place => {
       const selected = place.id === primaryDestination(current);
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
-        onPress={() => switchTab(place.id)} style={[s.tab, selected && {backgroundColor:place.color+'15',borderColor:place.color}]}>
+        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Neighborhood'?1.5:place.id==='Bills'?1.2:0.9}, selected && {backgroundColor:place.color+'15',borderColor:place.color}]}>
         <CharacterArtwork source={tabArtwork[place.id]} style={s.artwork} resizeMode="contain" accessible={false}/>
-        <Text style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.label}</Text>
+        <Text numberOfLines={place.id==='Bills'?2:1} adjustsFontSizeToFit minimumFontScale={0.75} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills'?'Bills &\nBanking':place.label}</Text>
         {selected && <View style={[s.selectedMark,{backgroundColor:place.color}]} />}
       </TouchableOpacity>;
     })}
@@ -45,6 +45,6 @@ export default function NeighborhoodNav({ current, switchTab }) {
 }
 const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:4,gap:3},tab:{flex:1,minHeight:76,minWidth:0,borderRadius:16,borderWidth:2,borderColor:'transparent',padding:5,alignItems:'center',justifyContent:'center'},
-  artwork:{width:46,height:32},label:{fontSize:12,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:16},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
+  strip:{flexDirection:'row',paddingHorizontal:4,gap:3},tab:{flex:1,minHeight:92,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:6,paddingHorizontal:2,alignItems:'center',justifyContent:'center'},
+  artwork:{width:'100%',maxWidth:58,height:42},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:18},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });
