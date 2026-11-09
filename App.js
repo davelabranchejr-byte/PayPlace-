@@ -1871,7 +1871,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <FacebookNeighborhood />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
             {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
-              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:75}} resizeMode="contain" accessible={false}/><Text style={{fontSize:15,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
+              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:144}} resizeMode="contain" accessible={false}/><Text style={{fontSize:18,lineHeight:24,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
             </TouchableOpacity>)}
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
@@ -2245,8 +2245,8 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
         Money without shame.
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
-        {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
+        {onHelp && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 80, flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
+        {onSecurity && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 8 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
     </View>
   );
@@ -2918,10 +2918,11 @@ const importDemoBills = () => {
 </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${bill.name}`}
+                style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteBill(bill.id)}
               >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
+                <Text style={{color:palette.coralDark,fontWeight:'900'}}>Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -3370,10 +3371,11 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${debt.name}`}
+                style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteDebt(debt.id)}
               >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
+                <Text style={{color:palette.coralDark,fontWeight:'900'}}>Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -5090,15 +5092,17 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
     marginTop: 12,
   },
   smallButton: {
     flex: 1,
+    minWidth: '44%',
     paddingVertical: 12,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
   },
   smallButtonText: {
     color: "white",
