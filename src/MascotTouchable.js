@@ -19,7 +19,7 @@ function readable(children, compact = false) {
     const name = child.type?.displayName || child.type?.name || child.type;
     if (child.type === Text || name === 'Text') {
       const original = StyleSheet.flatten(child.props.style) || {};
-      const fontSize = Math.max(original.fontSize || 14, compact ? 13 : 17);
+      const fontSize = Math.max(original.fontSize || 14, compact ? 13 : 18);
       return React.cloneElement(child, { style: [child.props.style, { fontSize, lineHeight: Math.max(original.lineHeight || 0, Math.ceil(fontSize * 1.3)), flexShrink: 1 } ] });
     }
     if (child.type === Image || /Artwork|Illustration|Scene|Portrait|Brand|Logo/.test(String(name))) return child;
@@ -30,7 +30,7 @@ function content(children, action, size, row, compact) {
   // Replace redundant stock glyphs while keeping the button's real text and
   // state. The action illustration stays decorative for screen-reader users.
   const kept = React.Children.toArray(children).filter(child => !React.isValidElement(child) || !/^(Ionicons|Icon)$/.test(child.type?.displayName || child.type?.name || ''));
-  return <><ActionArtwork action={action} size={size}/><View style={{flexShrink:1,minWidth:0,maxWidth:'100%',flexDirection:row?'row':'column',alignItems:row?'center':undefined}}>{readable(kept,compact)}</View></>;
+  return <><ActionArtwork action={action} size={size}/><View style={{flexShrink:1,minWidth:0,maxWidth:'100%',flexDirection:row?'row':'column',alignItems:'center'}}>{readable(kept,compact)}</View></>;
 }
 function ButtonRim({radius}) {
   return <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={{position:'absolute',left:2,right:2,top:2,bottom:2,borderRadius:radius-2,borderWidth:1,borderColor:'rgba(255,255,255,.55)'}}>
@@ -43,17 +43,20 @@ function decorate(style,view) {
   const frame={borderRadius:view.radius,borderWidth:2,borderColor:'rgba(255,255,255,.85)',backgroundColor:'#FFFFFF',shadowColor:'#132547',shadowOffset:{width:0,height:3},shadowOpacity:.19,shadowRadius:4,elevation:3,maxWidth:'100%'};
   const selected=view.selected?{borderColor:'#132547',borderWidth:3}:null;
   if(view.integrated)return [frame,style,{borderRadius:view.radius},selected];
-  return [frame,style,{borderRadius:view.radius,minHeight:Math.max(view.flat.minHeight||0,view.compact?44:view.stacked?100:76),padding:Math.max(view.flat.padding||0,view.compact?6:12),flexDirection:view.stacked?'column':'row',alignItems:'center',justifyContent:'center',gap:view.compact?6:12},selected];
+  return [frame,style,{borderRadius:view.radius,minHeight:Math.max(view.flat.minHeight||0,view.fixedSmall?44:view.compact?80:164),padding:Math.max(view.flat.padding||0,view.fixedSmall?4:view.compact?8:14),flexDirection:view.stacked?'column':'row',alignItems:'center',justifyContent:'center',gap:view.fixedSmall?4:view.compact?8:12},selected];
 }
-function settings({children,style,artworkMode,artworkAction,accessibilityLabel,accessibilityState,artworkSize=52,width=0}) {
+function settings({children,style,artworkMode,artworkAction,accessibilityLabel,accessibilityState,artworkSize=112,width=0}) {
   const flat=StyleSheet.flatten?.(typeof style==='function'?undefined:style)||{};
   const hotspot=artworkMode==='hotspot'||flat.position==='absolute';
   const integrated=artworkMode==='integrated'||hotspot||hasIllustration(children);
   const label=accessibilityLabel||labelText(children);
   const action=artworkAction||(accessibilityState?.expanded===false?'browse':actionForLabel(label));
-  const compact=(typeof flat.width==='number'&&flat.width<=80)||(typeof flat.height==='number'&&flat.height<=56)||!!flat.aspectRatio;
-  const stacked=!compact&&width>0&&width<240;
-  return {flat,hotspot,integrated,action,compact,stacked,size:compact?Math.min(artworkSize,36):artworkSize,row:flat.flexDirection==='row',radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
+  const fixedSmall=(typeof flat.width==='number'&&flat.width<=80)||(typeof flat.height==='number'&&flat.height<=56)||!!flat.aspectRatio;
+  const compact=artworkMode==='compact'||fixedSmall;
+  const stacked=!compact;
+  const fixedSize=typeof flat.width==='number'?Math.max(20,flat.width-16):36;
+  const size=compact?Math.min(artworkSize,fixedSmall?fixedSize:64):Math.min(artworkSize,width>0?Math.max(48,width-32):artworkSize);
+  return {flat,hotspot,integrated,action,compact,fixedSmall,stacked,size,row:compact&&flat.flexDirection==='row',radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
 }
 export const MascotTouchable=forwardRef(function MascotTouchable({artworkMode,artworkAction,artworkSize,children,style,onLayout,...props},ref){
   const [width,setWidth]=useState(0);

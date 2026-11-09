@@ -1,6 +1,6 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import FittedArtwork from './FittedArtwork';
 import { CATEGORY_CHOICES, categoryAction, categoryAmountCents, categoryState, purchaseCategory } from './merchant-categories.mjs';
@@ -99,7 +99,7 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
   const change = patch => { setDraft(current => ({ ...current, ...patch })); setError(''); };
   const purchases = state.transactions.filter(t => !accountFilter || t.accountId === accountFilter).slice().reverse();
   return <Modal visible={visible} animationType="slide" onRequestClose={() => { if (!busy) { if (draft) setDraft(null); else onClose(); } }}>
-    <KeyboardAvoidingView style={s.surface} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView style={s.surface} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" pointerEvents={busy ? 'none' : 'auto'}>
+    <SafeAreaView style={s.surface}><KeyboardAvoidingView style={s.surface} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView style={s.surface} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" pointerEvents={busy ? 'none' : 'auto'}>
       <Button title={draft ? '← My categories' : '← Back to my neighborhood'} disabled={busy} onPress={() => { if (draft) setDraft(null); else { setUndo(null); onClose(); } }} color="#FFE34F"/>
       <Text accessibilityRole="header" style={s.title}>{draft ? draft.ruleId ? `Remember ${draft.merchant}` : 'Where does this belong?' : 'Your purchases. Your categories.'}</Text>
       <Text style={s.body}>{sample ? 'Sample plan · These choices stay in the demo.' : 'Your choices stay on this device and travel with your encrypted backup.'}</Text>
@@ -163,11 +163,11 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
           </View>)}
         </>}
       </>}
-    </ScrollView>{draft && <View style={s.footer}>{error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}<Button title={busy ? 'Saving your choice…' : 'Save my choice'} color="#14C8BD" disabled={busy} onPress={save}/></View>}</KeyboardAvoidingView>
+    </ScrollView>{draft && <View style={s.footer}>{error ? <Text accessibilityRole="alert" style={s.error}>{error}</Text> : null}<Button title={busy ? 'Saving your choice…' : 'Save my choice'} color="#14C8BD" disabled={busy} onPress={save}/></View>}</KeyboardAvoidingView></SafeAreaView>
   </Modal>;
 }
 const s = StyleSheet.create({
-  surface: { flex: 1, backgroundColor: '#F6FBFF' }, page: { padding: 18, paddingTop: 58, paddingBottom: 56, gap: 16, width: '100%', maxWidth: 640, alignSelf: 'center' },
+  surface: { flex: 1, backgroundColor: '#F6FBFF' }, page: { padding: 18, paddingTop: 16, paddingBottom: 56, gap: 16, width: '100%', maxWidth: 640, alignSelf: 'center' },
   title: { color: ink, fontSize: 25, fontWeight: '900' }, heading: { color: ink, fontSize: 18, fontWeight: '800' }, body: { color: '#334660', fontSize: 16, lineHeight: 24 }, note: { color: '#43546B', fontSize: 14, lineHeight: 21 }, label: { color: ink, fontWeight: '800', fontSize: 16 },
   card: { padding: 16, borderRadius: 22, backgroundColor: 'white', gap: 12, borderWidth: 1, borderColor: '#DCE9F0' },
   button: { minHeight: 48, borderRadius: 16, padding: 14, borderWidth: 3, borderColor: 'transparent', justifyContent: 'center' }, buttonText: { fontSize: 16, fontWeight: '800', textAlign: 'center', flexShrink: 1 }, selected: { borderColor: ink },

@@ -45,6 +45,6 @@ export default function NeighborhoodNav({ current, switchTab }) {
 }
 const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:4,gap:3},tab:{flex:1,minHeight:92,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:6,paddingHorizontal:2,alignItems:'center',justifyContent:'center'},
-  artwork:{width:'100%',maxWidth:58,height:42},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:18},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
+  strip:{flexDirection:'row',paddingHorizontal:4,gap:3},tab:{flex:1,minHeight:106,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:6,paddingHorizontal:2,alignItems:'center',justifyContent:'center'},
+  artwork:{width:'100%',maxWidth:76,height:54},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:18},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });

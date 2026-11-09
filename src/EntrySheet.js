@@ -8,7 +8,7 @@ export default function EntrySheet({ visible, title, onClose, children }) {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F6FBFF' }}>
       <View style={{ paddingHorizontal: 16, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         <Text accessibilityRole="header" style={{ flex: 1, fontSize: 20, fontWeight: '800', color: '#173C50' }}>{title}</Text>
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Close ${title.toLowerCase()}`} onPress={onClose}
+        <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel={`Close ${title.toLowerCase()}`} onPress={onClose}
           style={{ minHeight: 48, minWidth: 64, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: '#6550AF', fontWeight: '800' }}>Close</Text>
         </TouchableOpacity>
