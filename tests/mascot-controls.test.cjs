@@ -4,14 +4,15 @@ async function fixture(){
   const actions=await import('../src/action-artwork.mjs'),cache=new Map();
   const Image=props=>React.createElement('Image',props);
   const flatten=s=>Array.isArray(s)?Object.assign({},...s.map(flatten)):s||{};
-  const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:'Pressable',StyleSheet:{flatten}};
-  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
-  return {...load('MascotTouchable.js'),Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
+  const NativePressable=({children,...props})=>React.createElement('Pressable',props,typeof children==='function'?children({pressed:false}):children);
+  const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,StyleSheet:{flatten,create:value=>value}};
+  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
+  return {...load('MascotTouchable.js'),FeatureLinks:load('FeatureLinks.js').default,Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
 }
 test('mascot controls preserve button behavior, disabled state and readable labels with bounded decorative artwork',async()=>{
   const f=await fixture();let renderer,taps=0;
   await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',accessibilityLabel:'Save my choice',disabled:true,onPress:()=>taps++,style:{padding:12}},React.createElement('Text',null,'Save my choice'))));
-  try{const button=renderer.root.findByType('TouchableOpacity'),image=renderer.root.findByType('Image');assert.equal(button.props.disabled,true);assert.equal(button.props.accessibilityLabel,'Save my choice');assert.equal(image.props.source,f.art.save);assert.equal(image.props.accessible,false);assert.equal(image.props.style.width,52);assert.equal(image.props.style.height,52);await act(()=>renderer.update(React.createElement(f.MascotTouchable,{artworkAction:'banking',accessibilityLabel:'Save bank',onPress:()=>taps++},React.createElement('Text',null,'Save bank'))));assert.equal(renderer.root.findByType('Image').props.source,f.art.banking,'explicit account semantics win over a user-entered name');await act(()=>renderer.root.findByType('TouchableOpacity').props.onPress());assert.equal(taps,1);}finally{await act(()=>renderer.unmount());}
+  try{const button=renderer.root.findByType('TouchableOpacity'),image=renderer.root.findByType('Image');assert.equal(button.props.disabled,true);assert.equal(button.props.accessibilityLabel,'Save my choice');assert.equal(image.props.source,f.art.save);assert.equal(image.props.accessible,false);assert.equal(image.props.style.width,112);assert.equal(image.props.style.height,112);await act(()=>renderer.update(React.createElement(f.MascotTouchable,{artworkAction:'banking',accessibilityLabel:'Save bank',onPress:()=>taps++},React.createElement('Text',null,'Save bank'))));assert.equal(renderer.root.findByType('Image').props.source,f.art.banking,'explicit account semantics win over a user-entered name');await act(()=>renderer.root.findByType('TouchableOpacity').props.onPress());assert.equal(taps,1);}finally{await act(()=>renderer.unmount());}
 });
 test('painted hotspots and already illustrated controls retain their exact artwork and hit geometry',async()=>{
   const f=await fixture();let renderer;const style={position:'absolute',left:12,top:34,width:80,height:90};
@@ -24,7 +25,7 @@ test('navigation has four visible destinations and every nested billing route re
   for(const id of ['Bills','Billiam','Premium','Debt'])assert.equal(primaryDestination(id),'Bills');
   for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Neighborhood');
 });
-test('narrow buttons stack the same illustration above a wrapping label and keep callbacks',async()=>{
+test('action tiles stack large unchanged illustrations above wrapping labels at every width',async()=>{
   const f=await fixture();let renderer,layouts=0,taps=0;
   await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',accessibilityLabel:'Remember across my accounts',onLayout:()=>layouts++,onPress:()=>taps++,style:{backgroundColor:'#7842D2'}},React.createElement('Text',{style:{fontSize:14}},'Remember across my accounts'))));
   try{
@@ -33,7 +34,11 @@ test('narrow buttons stack the same illustration above a wrapping label and keep
       await act(()=>renderer.root.findByType('TouchableOpacity').props.onLayout({nativeEvent:{layout:{width,height:100}}}));
       assert.equal(renderer.root.findByType('Image').props.source,original);
       const style=f.flatten(renderer.root.findByType('TouchableOpacity').props.style);
-      assert.equal(style.flexDirection,width<240?'column':'row');
+      assert.equal(style.flexDirection,'column');
+      const image=renderer.root.findByType('Image');
+      assert.equal(image.props.resizeMode,'contain');
+      assert.ok(image.props.style.width>=100&&image.props.style.width<=112);
+      assert.ok(image.props.style.width<=width-32);
       const label=renderer.root.findByType('Text');
       assert.ok(f.flatten(label.props.style).fontSize>=17);
       assert.equal(label.props.numberOfLines,undefined,'long labels remain free to wrap');
@@ -45,5 +50,27 @@ test('pressed style callbacks keep their selected colors and original action art
   const f=await fixture();let renderer;
   await act(()=>renderer=create(React.createElement(f.MascotPressable,{artworkAction:'save',style:({pressed})=>({backgroundColor:pressed?'#FF8479':'#14C8BD'}),onPress(){}},({pressed})=>React.createElement('Text',null,pressed?'Saving':'Save'))));
   try{const p=renderer.root.findByType('Pressable');assert.equal(f.flatten(p.props.style({pressed:true})).backgroundColor,'#FF8479');assert.equal(f.flatten(p.props.style({pressed:false})).backgroundColor,'#14C8BD');}
+  finally{await act(()=>renderer.unmount());}
+});
+test('feature shortcuts display large unchanged artwork and open the same destinations',async()=>{
+  const f=await fixture();let renderer;const opened=[];
+  const items=[{title:'Billiam’s bill tools',artworkAction:'scan',body:'Scan and organize bills.'},{title:'Plaid Banking',artworkAction:'banking'},{title:'My debt plan',artworkAction:'debt'}];
+  await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:items.map(item=>({...item,onPress:()=>opened.push(item.title)}))})));
+  try{
+    const buttons=renderer.root.findAllByType('TouchableOpacity');assert.equal(buttons.length,3);
+    for(let i=0;i<buttons.length;i++){
+      const images=buttons[i].findAllByType('Image');assert.equal(images.length,1,'no duplicate action image is added');
+      assert.equal(images[0].props.source,f.art[items[i].artworkAction]);
+      assert.equal(images[0].props.style.width,128);assert.equal(images[0].props.style.height,128);
+      assert.equal(images[0].props.resizeMode,'contain');
+      await act(()=>buttons[i].props.onPress());
+    }
+    assert.deepEqual(opened,items.map(item=>item.title));
+  }finally{await act(()=>renderer.unmount());}
+});
+test('state-based transparent portrait targets never acquire illustrations or button decoration',async()=>{
+  const f=await fixture();let renderer;
+  await act(()=>renderer=create(React.createElement(f.MascotPressable,{style:({pressed})=>[{position:'absolute',left:'20%',top:'10%',width:'25%',height:'20%'},pressed&&{borderColor:'#FFE89B'}],onPress(){},accessibilityLabel:'Meet Daddy. Read the full story.'})));
+  try{const target=renderer.root.findByType('Pressable');assert.equal(target.findAllByType('Image').length,0);assert.equal(target.findAllByType('View').length,0);for(const pressed of [false,true]){const frame=f.flatten(target.props.style({pressed}));assert.equal(frame.left,'20%');assert.equal(frame.width,'25%');assert.equal(frame.backgroundColor,undefined);}}
   finally{await act(()=>renderer.unmount());}
 });

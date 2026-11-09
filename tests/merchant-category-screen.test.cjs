@@ -17,7 +17,7 @@ async function fixture() {
     if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
-    if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, StyleSheet: { create: v => v } };
+    if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'SafeAreaView', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, StyleSheet: { create: v => v } };
     if (name === './Privacy') return { Text: 'Text', TextInput: 'TextInput' };
     if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };
     if (name === './merchant-categories.mjs') return logic;

@@ -63,6 +63,7 @@ export default function FamilyWall({ onSelect }) {
     <View testID="family-gallery" style={[s.gallery, gallerySize]}>
       <Image testID="family-gallery-artwork" source={familyWallArtwork} style={[StyleSheet.absoluteFillObject, s.galleryImage]} resizeMode="contain" accessible={false} />
       {FAMILY_STORIES.map(person => <Pressable
+        artworkMode="hotspot"
         key={person.id}
         testID={`family-portrait-${person.id}`}
         style={({ pressed }) => [s.portraitTarget, portraitFrameStyle(person.id), pressed && s.portraitPressed]}
