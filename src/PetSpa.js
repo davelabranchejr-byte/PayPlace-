@@ -1,5 +1,4 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
-import PayPlaceBrand from './PayPlaceBrand';
 import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -75,7 +74,6 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
   const choose = next => { setIndex(next); setReply(''); setPaused(true); };
   const illustration = <ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>
     <SpaAtmosphere playing={playing} kind={scene.motion} />
-    <View pointerEvents="none" accessible={false} style={{position:"absolute",top:8,left:8,backgroundColor:"rgba(255,253,248,.94)",padding:6,borderRadius:10}}><PayPlaceBrand compact/><Text style={{fontSize:10,color:"#A52167",fontWeight:"800"}}>Em’s Pet Spa</Text></View>
     <EncouragementSpot place="spa"/>
   </ContainedIllustration>;
   if(scrapbook) return <ScrollView style={s.screen} contentContainerStyle={s.content}>

@@ -36,7 +36,7 @@ function CategoryTiles({ selected, onSelect, customCategories = [] }) {
     {choices.filter((category, i) => i < 4 || expanded || category === selected).map(category => { const index = choices.indexOf(category); return <TouchableOpacity artworkMode="integrated"
       key={category} accessibilityRole="button" accessibilityLabel={`Choose ${category}`} accessibilityState={{ selected: category === selected }}
       onPress={() => onSelect(category)} style={[s.tile, { backgroundColor: colors[index % colors.length] }, selected === category && s.selected]}>
-      {<FittedArtwork source={art[category] || art.Other} style={{height:96}} accessible={false} />}
+      <FittedArtwork source={art[category] || art.Other} aspectRatio={1} accessible={false} />
       <Text style={[s.tileText, { color: index % 4 === 0 ? 'white' : ink }]}>{category === selected ? '✓ ' : ''}{category}</Text>
     </TouchableOpacity>; })}
   </View><Button title={expanded ? 'Fewer categories' : 'Choose another category'} color="#FFE34F" onPress={() => setExpanded(!expanded)}/></>;
@@ -172,7 +172,7 @@ const s = StyleSheet.create({
   card: { padding: 16, borderRadius: 22, backgroundColor: 'white', gap: 12, borderWidth: 1, borderColor: '#DCE9F0' },
   button: { minHeight: 48, borderRadius: 16, padding: 14, borderWidth: 3, borderColor: 'transparent', justifyContent: 'center' }, buttonText: { fontSize: 16, fontWeight: '800', textAlign: 'center', flexShrink: 1 }, selected: { borderColor: ink },
   input: { backgroundColor: 'white', color: ink, borderWidth: 1, borderColor: '#8797AB', minHeight: 50, padding: 12, borderRadius: 12, fontSize: 17 },
-  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, tile: { flexBasis: '47%', flexGrow: 0, minWidth: 120, borderRadius: 18, borderWidth: 3, borderColor: 'transparent', overflow: 'hidden', justifyContent: 'center', minHeight: 60 }, tileText: { fontSize: 16, fontWeight: '900', textAlign: 'center', padding: 8 },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, tile: { flexBasis: '48%', flexGrow: 0, minWidth: 120, padding: 4, borderRadius: 24, borderWidth: 3, borderColor: 'rgba(255,255,255,.9)', overflow: 'hidden', justifyContent: 'center', minHeight: 60 }, tileText: { fontSize: 18, lineHeight: 24, fontWeight: '900', textAlign: 'center', padding: 8, minHeight: 48 },
   footer: { padding: 16, paddingBottom: 34, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#DCE9F0' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, check: { minHeight: 48, paddingVertical: 10, justifyContent: 'center' }, error: { color: '#92273B', fontSize: 16, lineHeight: 24 }, notice: { padding: 16, borderRadius: 18, backgroundColor: '#DFFCF7', gap: 12 }, split: { gap: 8, borderBottomWidth: 1, borderBottomColor: '#DCE9F0', paddingBottom: 12 },
   entry: { padding: 16, backgroundColor: '#EEE7FF', borderRadius: 24, gap: 10, borderWidth: 2, borderColor: '#B799EC' }, preview: { flexDirection: 'row', gap: 8 }, previewTile: { flex: 1, borderRadius: 14, overflow: 'hidden' }, previewLabel: { fontSize: 13, fontWeight: '800', textAlign: 'center', padding: 6 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },

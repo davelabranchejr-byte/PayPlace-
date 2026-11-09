@@ -36,7 +36,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   // Native Modal does not mount hidden content.
   const Modal = ({ visible, children, ...props }) => visible ? React.createElement('Modal', props, children) : null;
   Object.assign(ui, { Image, Modal, Platform: { OS: 'ios', select: values => values.ios ?? values.default }, AppState: appState,
-    StyleSheet: { create: value => value, absoluteFillObject: { position: 'absolute' } },
+    StyleSheet: { create: value => value, flatten: function flatten(value) { return Array.isArray(value) ? Object.assign({}, ...value.map(flatten)) : value || {}; }, absoluteFillObject: { position: 'absolute' } },
     BackHandler: { addEventListener: () => ({ remove() {} }) }, Alert: { alert: (...args) => alerts.push(args) }, Linking: { openURL: async url => openedURLs.push(url), openSettings: async () => {} },
     AccessibilityInfo: { isReduceMotionEnabled: async () => true, addEventListener: () => ({ remove() {} }) },
     Animated: { Value: class { setValue() {} interpolate() { return 0; } }, Text: 'AnimatedText', View: 'AnimatedView', Image },

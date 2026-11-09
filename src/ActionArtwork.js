@@ -11,6 +11,6 @@ export const ACTION_ARTWORK = Object.freeze({
   security:require('../assets/characters/security-screen-approved.png'),community:require('../assets/characters/facebook-moving-day.jpg'),
   feedback:require('../assets/characters/daddy-neighborhood-feedback.png'),calm:require('../assets/characters/header-calm-bobbie-yoga.png'),mail:require('../assets/characters/header-bills-billiam-westley.png'),
 });
-export default function ActionArtwork({action='browse',size=30}) {
-  return <Image source={ACTION_ARTWORK[action]||ACTION_ARTWORK.browse} resizeMode="contain" accessible={false} importantForAccessibility="no" pointerEvents="none" style={{width:size,height:size,borderRadius:7,flexShrink:0}}/>;
+export default function ActionArtwork({action='browse',size=52}) {
+  return <Image source={ACTION_ARTWORK[action]||ACTION_ARTWORK.browse} resizeMode="contain" accessible={false} importantForAccessibility="no" pointerEvents="none" style={{width:size,height:size,borderRadius:12,flexShrink:0}}/>;
 }
