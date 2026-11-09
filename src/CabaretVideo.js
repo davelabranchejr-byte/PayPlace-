@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, AppState, StyleSheet, Text, View } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { EMAIL_SERVICE_ORIGIN } from './email-api.mjs';
 

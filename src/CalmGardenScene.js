@@ -1,3 +1,4 @@
+import { EncouragementSpot, EncouragementScene } from "./Encouragement";
 import React, { useEffect, useState } from "react";
 import { AppState, Image, StyleSheet, View } from "react-native";
 
@@ -22,6 +23,7 @@ function BackyardScene() {
         accessibilityLabel={isNight
           ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
           : "Annie's fenced backyard at sunset, with birds and butterflies among the flowers"} />
+      <EncouragementSpot place="garden" />
     </View>
   );
 }
@@ -111,7 +113,8 @@ const pearlScenes = {
 export default function CalmGardenScene({ pearl }) {
   const pearlScene = pearlScenes[pearl?.id];
   if (pearlScene) {
-    return <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("together-") ? "Annie" : pearl.id.startsWith("chapo-") ? "Chapo" : pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} />;
+    return <EncouragementScene place="garden" style={s.scene}>
+    <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("together-") ? "Annie" : pearl.id.startsWith("chapo-") ? "Chapo" : pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} /></EncouragementScene>;
   }
   return <BackyardScene />;
 }

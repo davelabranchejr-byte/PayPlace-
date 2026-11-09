@@ -1,3 +1,4 @@
+import { MascotTouchable as TouchableOpacity } from './src/MascotTouchable';
 /*
   PAYPLACE PERMANENT CHARACTER LOCK
   Westley: locked West Highland Terrier.
@@ -14,7 +15,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
@@ -24,6 +25,7 @@ import useBillReminders from "./src/useBillReminders";
 import { deletedItems, deleteEntry, restoreEntry } from "./src/deleted-items.mjs";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
+import { EncouragementProvider } from "./src/Encouragement";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import MerchantCategories, { CategoryEntry } from "./src/MerchantCategories";
@@ -1256,9 +1258,10 @@ function PayPlaceApp() {
   }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
+    if (sampleFinance?.bankActivity?.source === 'demo') { setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab('Premium');return; }
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
       premiumBeta:{sampleConnected:true,useSamplePlan:true}});
-    setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setTab("Premium");
+    setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab("Premium");
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
@@ -1764,6 +1767,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   return (
+    <EncouragementProvider communityEnabled={!sampleFinance}>
     <PrivacyContext.Provider value={quiet}>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -1777,6 +1781,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
         <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
+        {['Premium','Billiam','Debt'].includes(tab) && <TouchableOpacity artworkAction="browse" accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
 
         {tab === "Home" && (
           <HomeScreen
@@ -1798,6 +1803,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Bills" && (
           <BillsScreen
             bills={finance.bills}
+            onBanking={() => openPremium()}
+            onDebt={() => setTab("Debt")}
             addBill={addBill}
             updateBill={updateBill}
             toggleBillPaid={toggleBillPaid}
@@ -1863,7 +1870,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
           <FacebookNeighborhood />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
-            {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
+            {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
               <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:75}} resizeMode="contain" accessible={false}/><Text style={{fontSize:15,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
             </TouchableOpacity>)}
           </View>
@@ -1928,6 +1935,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       </KeyboardAvoidingView>
     </SafeAreaView>
     </PrivacyContext.Provider>
+    </EncouragementProvider>
   );
 }
 
@@ -2279,7 +2287,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
           )}
           {foyerStage === "door" && (
             <View style={styles.redDoorScene}>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
+              <TouchableOpacity artworkMode="hotspot" accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
                 <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               </TouchableOpacity>
               <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={[styles.foyerCloseButton, { minWidth: 48, minHeight: 48 }]} onPress={closeFoyer}>
@@ -2366,7 +2374,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </View>
 
 
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
+      <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
         style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
         <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
         <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
@@ -2450,18 +2458,14 @@ function HomeScreen({
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SeasonalWelcome/>
-      <BankWelcomeCard onDemo={onBankDemo} onBanking={onPremium}/>
-      <FacebookNeighborhood />
-      <View style={[styles.safeHeroCard,{padding:20}]}>
+            <View style={[styles.safeHeroCard,{padding:20}]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND · ENTERED PLAN</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>Until payday in {daysUntilPayday} day{daysUntilPayday === 1 ? '' : 's'}. Update your entries in Budget.</Text>
         <Text style={styles.safeHeroFootnoteText}>Balance minus unpaid bills, debt minimums and your buffer. A planning estimate.</Text>
       </View>
       <FeatureLinks items={[
-        {title:'Until next payday',body:'Review groceries, gas and the full calculation.',onPress:()=>onEssentials('payday')},
-        {title:'Your first win with Annie',body:'One payday, one bill, one next step.',onPress:()=>onEssentials('firstWin')},
-        {title:'One small step',body:nextAction,onPress:()=>setGuidanceVisible(true)},
+                {title:'One small step',body:nextAction,onPress:()=>setGuidanceVisible(true)},
       ]}/>
       <Modal
         visible={guidanceVisible}
@@ -2518,6 +2522,10 @@ function HomeScreen({
       </Modal>
 
 
+      <ExpandableSection title="Payday details & getting started"><FeatureLinks items={[
+        {title:'Until next payday',body:'Groceries, gas and your plan.',onPress:()=>onEssentials('payday')},
+        {title:'Your first win with Annie',body:'One payday, one bill, one next step.',onPress:()=>onEssentials('firstWin')},
+      ]}/></ExpandableSection>
       <SectionTitle title="Coming up" subtitle="Review your next unpaid bills in Bills."/>
       {!unpaidBills.length ? <EmptyCard text="No unpaid bills. Add or review entries in Bills."/> : unpaidBills.slice(0,2).map(bill=><BillRow key={bill.id} bill={bill}/>)}
       <FeatureLinks items={[{title:'Review my bills',onPress:()=>switchTab('Bills')},{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress:()=>switchTab('Neighborhood')}]} />
@@ -2526,7 +2534,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2645,7 +2653,12 @@ const importDemoBills = () => {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills" subtitle="Add bills and record payments you make elsewhere." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <FeatureLinks items={[
+        {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'scan',onPress:onBilliam},
+        {title:'Plaid Banking',body:'Bank connections, transaction insights and subscriptions.',artworkAction:'banking',onPress:onBanking},
+        {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
+      ]}/>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
         <Text style={styles.primaryButtonText}>Add bill</Text>
       </TouchableOpacity>
@@ -3658,7 +3671,7 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
       <Text style={styles.storyCountNote}>You tapped overwhelmed {count} time{count === 1 ? "" : "s"}. No judgment. We’re still here.</Text>
 
     </ScrollView>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to the neighborhood" accessibilityHint="Returns to Home" style={styles.neighborhoodReturnBanner} onPress={goHome}>
+      <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Back to the neighborhood" accessibilityHint="Returns to Home" style={styles.neighborhoodReturnBanner} onPress={goHome}>
         <CharacterArtwork source={neighborhood.source} style={styles.neighborhoodReturnArtwork} resizeMode="contain" accessible={false} />
         <View style={styles.neighborhoodReturnLabel}>
           <Ionicons name="arrow-back" size={19} color="white" />
@@ -3672,7 +3685,7 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
 
 function QuickCard({ artwork, label, value, sub, theme, onPress }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity artworkMode="integrated"
       accessibilityRole="button"
       accessibilityLabel={`${label}: ${value}. ${sub}`}
       style={[styles.quickCard, { backgroundColor: theme.background, borderColor: theme.border }]}
@@ -5908,4 +5921,3 @@ const styles = StyleSheet.create({
   },
 
 });
-

@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { BankBuildingMark } from './PlaidBankScene';
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
+import React from 'react';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import CharacterArtwork from './CharacterArtwork';
-import FittedArtwork from './FittedArtwork';
 import { NEIGHBORHOOD_DESTINATIONS, PRIMARY_DESTINATIONS, primaryDestination } from './neighborhood-destinations.mjs';
 
 const atlas = require('../assets/characters/neighborhood-building-tabs.png');
@@ -25,37 +24,27 @@ export function buildingArtwork(id) {
     crop: [(place.tile % 5) * cellWidth, Math.floor(place.tile / 5) * cellHeight, cellWidth, cellHeight], label: place.label };
 }
 
+const tabArtwork = {
+  Home: require('../assets/characters/feature-first-win.png'),
+  Budget: require('../assets/characters/header-budget-daddy-chapo.png'),
+  Bills: require('../assets/characters/header-bills-billiam-westley.png'),
+  Neighborhood: require('../assets/characters/facebook-moving-day.jpg'),
+};
 export default function NeighborhoodNav({ current, switchTab }) {
-  const [hidden, setHidden] = useState(false);
-  if (hidden) return <View style={s.collapsed}>
-    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Show neighborhood tabs" onPress={() => setHidden(false)} style={s.toggle}>
-      <Text style={s.toggleText}>Show neighborhood tabs ↑</Text>
-    </TouchableOpacity>
-  </View>;
-  return <View style={s.wrap}>
-    <View style={s.heading}>
-      <Text style={s.hint}>Your places · swipe for more</Text>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Hide neighborhood tabs" onPress={() => setHidden(true)} style={s.hide}><Text style={s.toggleText}>Hide ↓</Text></TouchableOpacity>
-    </View>
-    <ScrollView horizontal contentContainerStyle={s.strip} showsHorizontalScrollIndicator={false}>
-      {PRIMARY_DESTINATIONS.map(place => {
-        const selected = place.id === primaryDestination(current);
-        return <TouchableOpacity key={place.id} accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{ selected }}
-          onPress={() => switchTab(place.id)} activeOpacity={0.85}
-          style={[s.tab, selected && { backgroundColor: place.color + '15', borderColor: place.color, shadowColor: place.color, shadowOpacity: 0.3, shadowRadius: 7, elevation: 3 }]}>
-          <View style={{width:'100%'}} accessible={false} importantForAccessibility="no-hide-descendants">{place.id === 'Premium' ? <BankBuildingMark/> : place.id === 'Billiam' ? <FittedArtwork source={buildingArtwork(place.id)} style={{height:35}} testID="billiam-tab-artwork" accessible={false}/> : <CharacterArtwork source={buildingArtwork(place.id)} style={s.artwork} resizeMode="contain" accessible={false} />}</View>
-          <Text style={[s.label, { color: selected ? place.color : '#34465E' }]}>{place.label}</Text>
-          {selected && <View style={[s.selectedMark, { backgroundColor: place.color }]} />}
-        </TouchableOpacity>;
-      })}
-    </ScrollView>
-  </View>;
+  return <View style={s.wrap}><View style={s.strip}>
+    {PRIMARY_DESTINATIONS.map(place => {
+      const selected = place.id === primaryDestination(current);
+      return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
+        onPress={() => switchTab(place.id)} style={[s.tab, selected && {backgroundColor:place.color+'15',borderColor:place.color}]}>
+        <CharacterArtwork source={tabArtwork[place.id]} style={s.artwork} resizeMode="contain" accessible={false}/>
+        <Text style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.label}</Text>
+        {selected && <View style={[s.selectedMark,{backgroundColor:place.color}]} />}
+      </TouchableOpacity>;
+    })}
+  </View></View>;
 }
-
-const s = StyleSheet.create({
-  wrap: { backgroundColor: '#FFFDF8', borderTopWidth: 1, borderColor: '#E6DEEA', paddingBottom: 4 }, heading: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingLeft: 14, gap: 8 },
-  hint: { flex: 1, color: '#556277', fontSize: 11 }, hide: { minHeight: 44, minWidth: 60, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 10 }, toggleText: { color: '#6550AF', fontWeight: '800', fontSize: 12 },
-  strip: { flexDirection:'row', gap: 2, paddingHorizontal: 4, paddingBottom: 6 }, tab: { width:72, minWidth:64, borderRadius: 16, borderWidth: 2, borderColor: 'transparent', padding: 5, alignItems: 'center', backgroundColor: '#FFFFFF' },
-  artwork: { width: '100%', height: 35 }, label: { fontSize: 10, fontWeight: '800', textAlign: 'center', paddingTop: 3, minHeight: 33, lineHeight: 16 }, selectedMark: { width: 22, height: 3, borderRadius: 2, marginTop: 3 },
-  collapsed: { backgroundColor: '#FFFDF8', alignItems: 'center', borderTopWidth: 1, borderColor: '#E6DEEA' }, toggle: { minHeight: 48, justifyContent: 'center', padding: 12 },
+const s=StyleSheet.create({
+  wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
+  strip:{flexDirection:'row',paddingHorizontal:4,gap:3},tab:{flex:1,minHeight:76,minWidth:0,borderRadius:16,borderWidth:2,borderColor:'transparent',padding:5,alignItems:'center',justifyContent:'center'},
+  artwork:{width:46,height:32},label:{fontSize:12,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:16},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });

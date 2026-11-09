@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useMemo, useRef, useState } from 'react';
-import { Image, KeyboardAvoidingView, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import CharacterArtwork from './CharacterArtwork';

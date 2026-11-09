@@ -14,6 +14,8 @@ async function fixture() {
   const logic = await import('../src/merchant-categories.mjs');
   const module = { exports: {} };
   vm.runInNewContext(code, { module, exports: module.exports, Date, Math, Intl, console, require: name => {
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
     if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, StyleSheet: { create: v => v } };
     if (name === './Privacy') return { Text: 'Text', TextInput: 'TextInput' };
@@ -33,7 +35,7 @@ test('actual sheet corrects a purchase, remembers the rule, shows selected state
   const f = await fixture(); const r = f.renderer;
   try {
     await act(() => button(r, 'Change category for Costco, Shopping, Sample checking, $130.00').props.onPress());
-    assert.equal(r.root.findAllByType('FittedArtwork').length, 3);
+    assert.equal(r.root.findAllByType('FittedArtwork').length, 4);
     await act(() => button(r, 'Choose Groceries').props.onPress());
     assert.equal(button(r, 'Choose Groceries').props.accessibilityState.selected, true);
     await act(() => button(r, 'Remember across my accounts').props.onPress());

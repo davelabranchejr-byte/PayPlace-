@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import FittedArtwork from './FittedArtwork';
 import CabaretVideo from './CabaretVideo';
 import OwnerInbox from './OwnerInbox';
@@ -12,7 +13,7 @@ function Button({ label, onPress, disabled, secondary }) {
   return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} disabled={disabled} accessibilityState={{ disabled: !!disabled }} onPress={onPress} style={[s.button, secondary && s.secondary, disabled && { opacity: 0.6 }]}><Text style={[s.buttonText, secondary && { color: '#FFE1A0' }]}>{label}</Text></TouchableOpacity>;
 }
 export function BobbieCabaretEntry({ onOpen }) {
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter Bobbie Darlending’s cabaret" onPress={onOpen} style={s.entry}>
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Enter Bobbie Darlending’s cabaret" onPress={onOpen} style={s.entry}>
     <FittedArtwork source={artwork} style={s.thumbnail} accessible={false} />
     <View style={{ flex: 1 }}><Text style={s.eyebrow}>PAYPLACE CLUBHOUSE CABARET</Text><Text style={s.entryTitle}>The Bobbie Darlending Show</Text><Text style={s.body}>Watch the show · Ask Bobbie</Text></View>
   </TouchableOpacity>;

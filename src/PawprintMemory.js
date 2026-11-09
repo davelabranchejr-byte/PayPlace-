@@ -1,5 +1,6 @@
+import { MascotPressable as Pressable } from './MascotTouchable';
 import React, { useState } from "react";
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -11,7 +12,7 @@ const artworkLabel = "Westley and Tate’s paw-print garden beside Em with Westl
 export default function PawprintMemory() {
   const [enlarged, setEnlarged] = useState(false);
   return <View style={s.section}>
-    <Pressable testID="pawprint-memory-preview" accessibilityRole="button"
+    <Pressable artworkMode="integrated" testID="pawprint-memory-preview" accessibilityRole="button"
       accessibilityLabel="Enlarge Westley and Tate’s paw-print garden with Em"
       accessibilityHint="Opens the complete wall picture. Close returns to the family wall."
       onPress={() => setEnlarged(true)} style={({ pressed }) => [s.preview, pressed && s.pressed]}>

@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from 'react';
-import { Platform, TouchableOpacity, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import Alert from './alert';
 import { createEmailApi } from './email-api.mjs';

@@ -1,20 +1,23 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, AppState, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { ownerSessionStore } from './owner-session';
 import { createOwnerInboxApi } from './owner-inbox-api.mjs';
 import { EMAIL_SERVICE_ORIGIN } from './email-api.mjs';
 import QuestionGlass from './QuestionGlass';
+import EncouragementReview from './EncouragementReview';
 const defaultApi = createOwnerInboxApi({ sessionStore: ownerSessionStore });
 function Button({ label, onPress, disabled, selected }) { return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled, selected: !!selected }} disabled={disabled} onPress={onPress} style={[s.button, selected && s.selected, disabled && { opacity: 0.5 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>; }
 export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessionStore }) {
   const [signedIn, setSignedIn] = useState(false), [checking, setChecking] = useState(true), [email, setEmail] = useState(''), [code, setCode] = useState(''), [challenge, setChallenge] = useState(null);
   const [filter, setFilter] = useState('new'), [questions, setQuestions] = useState([]), [counts, setCounts] = useState(null), [nextOffset, setNextOffset] = useState(null), [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [foreground, setForeground] = useState(AppState.currentState === 'active');
   const [showGlass, setShowGlass] = useState(false);
+  const [showEncouragement, setShowEncouragement] = useState(false);
   const generation = useRef(0), mounted = useRef(true), pending = useRef(false), filterRef = useRef(filter);
   const [canResend, setCanResend] = useState(true);
   filterRef.current = filter;
   function clearPrivateData() { generation.current++; setQuestions([]); setCounts(null); setNextOffset(null); }
-  function failed(error) { if (error.signIn) { setShowGlass(false); clearPrivateData(); setSignedIn(false); setChecking(false); setBusy(false); } setMessage(error.message); }
+  function failed(error) { if (error.signIn) { setShowGlass(false); setShowEncouragement(false); clearPrivateData(); setSignedIn(false); setChecking(false); setBusy(false); } setMessage(error.message); }
   useEffect(() => {
     if (!challenge) { setCanResend(true); return; }
     setCanResend(false);
@@ -79,6 +82,7 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
     finally { await sessionStore.clear(); pending.current = false; if (mounted.current) { setBusy(false); setCode(''); setChallenge(null); } }
   }
   if (Platform.OS === 'web') return <ScrollView contentContainerStyle={s.content}><Text style={s.title}>Owner inbox</Text><Text style={s.text}>Open the private mailbag and sign in with the ChatGPT account that owns PayPlace.</Text><Button label="Open secure owner inbox" onPress={() => Linking.openURL(`${EMAIL_SERVICE_ORIGIN}/owner-inbox`)} /></ScrollView>;
+  if (signedIn && showEncouragement) return <EncouragementReview api={api} onBack={() => setShowEncouragement(false)} onAuthError={failed} />;
   if (signedIn && showGlass) return <QuestionGlass api={api} count={counts?.glass} visible={foreground} onBack={() => setShowGlass(false)} onAuthError={failed} onDraw={() => load()} />;
   return <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
     <Text accessibilityRole="header" style={s.title}>Bobbie’s private mailbag</Text>
@@ -91,6 +95,7 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
       <Text accessibilityRole="header" accessibilityLiveRegion="polite" style={s.title}>{counts ? `${counts.unread} new · ${counts.total} total` : 'Loading questions…'}</Text>
       <View style={s.actions}>{[['new', 'New'], ['all', 'All'], ['archived', 'Archived']].map(([value, label]) => <Button key={value} label={label} selected={filter === value} disabled={busy} onPress={() => setFilter(value)} />)}</View>
       <View style={s.actions}><Button label="Refresh inbox" disabled={busy} onPress={() => load()} /><Button label="Sign out of owner inbox" disabled={busy} onPress={logout} /></View>
+      <Button label="Encouragement approvals" disabled={busy} onPress={() => setShowEncouragement(true)} />
       <Button label="Open Bobbie’s question glass" disabled={busy} onPress={() => setShowGlass(true)} />
       <Text style={s.note}>{counts?.glass ?? 0} approved slips in the glass. Approve questions below; only submissions with permission to feature can enter.</Text>
       <Text style={s.note}>Refreshes every 30 seconds while open. Shows questions from the last 90 days. Archiving does not publish anything or change permission.</Text>

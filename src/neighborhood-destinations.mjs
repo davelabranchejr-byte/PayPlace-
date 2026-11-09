@@ -18,10 +18,13 @@ export function neighborhoodLabel(id) {
   return NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id)?.label || (id === 'Neighborhood' ? 'Neighborhood' : id);
 }
 
-// Keep stored route IDs stable; Billiam has his own mailbox tab.
-export const PRIMARY_DESTINATIONS = ['Home', 'Premium', 'Budget', 'Bills', 'Billiam', 'Debt', 'Neighborhood'].map(id =>
-  id === 'Neighborhood' ? {id, label:'Neighborhood', color:'#A52167', tile:0} : NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
+// Keep stored route IDs and deep links stable while grouping their front doors.
+export const PRIMARY_DESTINATIONS = ['Home', 'Budget', 'Bills', 'Neighborhood'].map(id =>
+  id === 'Neighborhood' ? {id, label:'Neighborhood', color:'#A52167', tile:0}
+    : id === 'Bills' ? {...NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id), label:'Bills & Banking'}
+      : NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
 export const NEIGHBOR_DESTINATIONS = NEIGHBORHOOD_DESTINATIONS.filter(place => ['Spa','Annie','Bobbie','Westley','Tate','Chapo','Calm'].includes(place.id));
 export function primaryDestination(id) {
+  if (['Premium', 'Billiam', 'Debt'].includes(id)) return 'Bills';
   return NEIGHBOR_DESTINATIONS.some(place => place.id === id) ? 'Neighborhood' : id;
 }

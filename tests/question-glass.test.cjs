@@ -7,7 +7,7 @@ test('glass hides the choice until the server draw, reuses a failed draw ID, blo
   const ui = Object.fromEntries(['ActivityIndicator','ScrollView','Text','TouchableOpacity','View'].map(name => [name,name]));
   ui.StyleSheet = { create: value => value }; ui.Animated = { View: 'AnimatedView', Value: class { setValue() {} interpolate() { return 0; } }, timing: () => ({ start() {} }) };
   let ids = 0;
-  const sandbox = { exports: {}, require: name => name === 'react' ? React : name === 'react-native' ? ui : name === 'expo-crypto' ? { randomUUID: () => 'request-' + ++ids } : name.endsWith('.png') ? 1 : 'FittedArtwork' };
+  const sandbox = { exports: {}, require: name => name === './MascotTouchable' ? { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' } : name === 'react' ? React : name === 'react-native' ? ui : name === 'expo-crypto' ? { randomUUID: () => 'request-' + ++ids } : name.endsWith('.png') ? 1 : 'FittedArtwork' };
   vm.runInNewContext(compiled, sandbox);
   let renderer, finish, fail = true, draws = 0; const calls = [];
   const api = async (route, data) => { calls.push({ route, data }); if (fail) throw new Error('Connection interrupted.'); return new Promise(resolve => { finish = resolve; }); };

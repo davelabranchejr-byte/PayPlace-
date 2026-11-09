@@ -25,6 +25,8 @@ const disclosureCode = babel.transformSync(fs.readFileSync(require('node:path').
 }).code;
 const disclosureModule = { exports: {} };
 vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosureModule.exports, require: name => {
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
   if (name === 'react') return React;
   if (name === 'react-native') return { View:'View', TouchableOpacity:'TouchableOpacity', StyleSheet:{create:value=>value} };
   if (name === './Privacy') return { Text:'Text' };

@@ -15,6 +15,8 @@ test('Clubhouse supports add/edit cents, review decisions and beta disclosure wi
   const ui = Object.fromEntries(['Image', 'KeyboardAvoidingView', 'Modal', 'SafeAreaView', 'ScrollView', 'Text', 'TextInput', 'TouchableOpacity', 'View'].map(name => [name, name]));
   ui.Image = { resolveAssetSource: () => ({ width: 1536, height: 1024 }) }; ui.StyleSheet = { create: value => value }; ui.Platform = { OS: 'ios' };
   const sandbox = { exports: {}, console, Date, Math, require: name => {
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
     if (name === 'react-native') return ui;
     if (name === './Privacy') return { Text: ui.Text, TextInput: ui.TextInput };

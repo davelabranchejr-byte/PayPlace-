@@ -1,3 +1,4 @@
+import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Easing, View, StyleSheet } from 'react-native';
 import FittedArtwork from './FittedArtwork';
@@ -72,7 +73,7 @@ export default function LivingNeighborhood({reduceAnimation=false}) {
   },[]);
   const dark=isNeighborhoodNight(now);
   const playing=active&&!reduce&&!reduceAnimation;
-  return <FittedArtwork source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={event=>setWidth(event.nativeEvent.layout.width)}
+  return <FittedArtwork accessible={false} source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={event=>setWidth(event.nativeEvent.layout.width)}
     accessibilityLabel={dark?'PayPlace at night: glowing lanterns, twinkling lights and blinking fireflies.':'PayPlace by day: realistic monarch butterflies flutter among the treehouses.'}>
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
       {dark?<>
@@ -80,6 +81,7 @@ export default function LivingNeighborhood({reduceAnimation=false}) {
         {flies.map(([x,y],index)=><Glow key={`fly-${index}`} x={x} y={y} index={index} playing={playing} firefly/>)}
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
     </View>
+    <EncouragementSpot place="town" />
   </FittedArtwork>;
 }
 const s=StyleSheet.create({

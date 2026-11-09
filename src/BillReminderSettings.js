@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useState } from 'react';
-import { Linking, TouchableOpacity, View } from "react-native";
+import { Linking, View } from 'react-native';
 import { Text } from "./Privacy";
 import { reminderSettings } from './bill-reminders.mjs';
 import { requestBillReminderPermission } from './useBillReminders';

@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as Crypto from 'expo-crypto';
 import FittedArtwork from './FittedArtwork';
 const glass = require('../assets/characters/bobbie-question-glass.png');

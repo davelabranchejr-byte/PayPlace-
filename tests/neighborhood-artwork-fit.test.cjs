@@ -24,12 +24,14 @@ function harness(hour=12){
     const code=babel.transformSync(fs.readFileSync(file,'utf8'),{configFile:false,babelrc:false,
       plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;
     vm.runInNewContext(code,{module,exports:module.exports,require:dep=>{
+    if (dep === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (dep === './Encouragement') return { EncouragementSpot: () => null };
       if(dep==='react')return React;
       if(dep==='react-native')return ui;
       if(dep==='./Privacy')return {Text:'Text'};
       if(dep==='./useNeighborhoodClock')return {__esModule:true,default:()=>new Date(2026,9,15,hour)};
       if(dep==='./neighborhood-time.mjs')return {neighborhoodWelcomeTheme:()=> 'halloween',isNeighborhoodNight:()=>hour>=18};
-      if(dep.endsWith('.png')||dep.endsWith('.jpeg'))return dep;
+      if(dep.endsWith('.png')||dep.endsWith('.jpeg')||dep.endsWith('.jpg'))return dep;
       if(dep.startsWith('./'))return load(dep.slice(2)+'.js');
       throw new Error('Unexpected dependency '+dep);
     }},{filename:file});

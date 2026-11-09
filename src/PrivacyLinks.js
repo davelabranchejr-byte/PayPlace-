@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Text } from './Privacy';
 import Alert from './alert';
 export const PRIVACY_URL = 'https://payplace-dave.davelabranchejr.chatgpt.site/privacy';

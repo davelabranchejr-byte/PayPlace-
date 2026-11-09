@@ -1,5 +1,6 @@
+import { MascotPressable as Pressable } from './MascotTouchable';
 import React, { useRef, useState } from 'react';
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, View, KeyboardAvoidingView, Platform } from "react-native";
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import Alert from './alert';

@@ -1,12 +1,13 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { Text } from './Privacy';
 
 import PlaidBankScene from './PlaidBankScene';
 import FittedArtwork from './FittedArtwork';
 import { payplaceLogo } from './brand';
 const daddyAndTate = require('../assets/characters/plaid-bank-daddy-tate.png');
-export default function BankWelcomeCard({ onDemo, onBanking, demoLabel = 'Try Bobbie’s banking demo' }) {
+export default function BankWelcomeCard({ onDemo, onBanking, demoLabel = 'Try Bobbie’s banking demo', demoConnected = false }) {
   return <View style={s.card} testID="banking-welcome-card">
     <View style={s.heading}>
       <View style={s.headingCopy}>
@@ -17,8 +18,8 @@ export default function BankWelcomeCard({ onDemo, onBanking, demoLabel = 'Try Bo
         accessibilityLabel="Daddy deposits colorful fictional money at Plaid Banking while Tate hands him a lollipop." />
     </View>
     <PlaidBankScene/>
-    <Text style={s.body}>Bobbie’s demo is open. Try round-ups, savings, Money Watch and credit with fictional money.</Text>
-    <TouchableOpacity accessibilityRole="button" accessibilityLabel={demoLabel} onPress={onDemo} style={s.button}><Text style={s.buttonText}>Try Bobbie’s banking demo →</Text></TouchableOpacity>
+    <Text style={s.body}>{demoConnected ? 'Your demo accounts and transactions are already loaded—you don’t need to import them again.' : 'Bobbie’s demo is open. Try round-ups, savings, Money Watch and credit with fictional money.'}</Text>
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel={demoLabel} onPress={onDemo} style={s.button}><Text style={s.buttonText}>{demoConnected ? 'View demo accounts →' : 'Try Bobbie’s banking demo →'}</Text></TouchableOpacity>
     {onBanking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Explore Plaid Banking" onPress={onBanking} style={s.secondary}><Text style={s.link}>Accounts & banking tools →</Text></TouchableOpacity>}
     <Text style={s.note}>Demo only · no real bank connection or money movement.</Text>
   </View>;

@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useMemo, useState } from 'react';
-import { BackHandler, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
+import { BackHandler, Image, Modal, SafeAreaView, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from '@expo/vector-icons';
 import { DEFAULT_PREMIUM_STATE, buildBillShockPlans, buildCatchUpPlan, roundUpForPurchase, unpaidPremiumBills } from './premium-resilience.mjs';
@@ -87,14 +88,14 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
     </View>}
       {panel && !feature && <View style={s.promise}><Text style={s.promiseTitle}>Included during beta · no charge</Text><Text style={s.body}>Banking integrations are pending. Try sample automation and credit data, or use your saved entries for recovery plans. This beta does not move money, pay bills or retrieve credit reports.</Text></View>}
       {panel && <HowItWorks guide={PREMIUM_HELP[panel]} />}
-      {panel === 'demo' && <BobbieBankDemoLogin onConnect={onStartDemo || (() => {updateBeta({sampleConnected:true,useSamplePlan:true});open(null);})} />}
+      {panel === 'demo' && (sharedBank ? <Box title="Demo banking data is already loaded"><Text style={s.body}>Your sample accounts and transactions are already loaded for this demo session. You don’t need to import them again.</Text><Button label="View demo accounts" onPress={()=>open('accounts')}/>{onOpenCategories&&<Button label="View demo transactions" onPress={onOpenCategories}/>}</Box> : <BobbieBankDemoLogin onConnect={onStartDemo || (() => {updateBeta({sampleConnected:true,useSamplePlan:true});open(null);})} />)}
       {notice && !['roundup', 'fund', 'watch', 'credit'].includes(panel) ? <Text accessibilityLiveRegion="polite" style={s.notice}>{notice}</Text> : null}
       {!panel && <>
-        <BankWelcomeCard onDemo={() => open('demo')} />
-        {sharedBank && <Box title="Your demo accounts"><Text style={s.body}>Checking {dollars(finance.balance)} · Savings {dollars(beta.sampleFund)}</Text><Text style={s.body}>{finance.categorization.transactions.length} transactions feed categories, spending totals, round-ups and Subscription Detective. All money is fictional.</Text></Box>}
+        <BankWelcomeCard demoConnected={sharedBank} demoLabel={sharedBank?'View connected demo accounts':'Try Bobbie’s banking demo'} onDemo={() => open(sharedBank?'accounts':'demo')} />
+        {sharedBank && <Box title="Your demo accounts"><Text accessibilityLiveRegion="polite" style={s.body}>Demo data loaded. Your sample transactions are already in the app; no repeat import is needed.</Text><Text style={s.body}>Checking {dollars(finance.balance)} · Savings {dollars(beta.sampleFund)}</Text><Text style={s.body}>{finance.categorization.transactions.length} transactions feed categories, spending totals, round-ups and Subscription Detective. All money is fictional.</Text></Box>}
         {onOpenCategories && <CategoryEntry onOpen={onOpenCategories} />}
         <Box title="Accounts"><Text style={s.body}>Sample accounts, provider availability and connection controls live here. Everything below uses these same banking settings.</Text><Text style={s.badge}>{sampleReady ? 'SAMPLE ACCOUNTS CONNECTED' : 'SAMPLE ACCOUNTS NOT CONNECTED YET'}</Text><Button secondary label="Account connections & beta setup" onPress={() => open('accounts')} /></Box>
-        {FEATURES.map((item, index) => <React.Fragment key={item.id}>{index === 0 && <Text style={s.panelTitle}>Savings & automation</Text>}{index === 2 && <Text style={s.panelTitle}>Recovery plans</Text>}{index === 4 && <Text style={s.panelTitle}>Monitoring & credit</Text>} <TouchableOpacity key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={s.card}>
+        {FEATURES.map((item, index) => <React.Fragment key={item.id}>{index === 0 && <Text style={s.panelTitle}>Savings & automation</Text>}{index === 2 && <Text style={s.panelTitle}>Recovery plans</Text>}{index === 4 && <Text style={s.panelTitle}>Monitoring & credit</Text>} <TouchableOpacity artworkMode="integrated" key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={s.card}>
           <View style={s.cardArt}><Image source={item.image} style={s.cardArt} resizeMode="contain" accessible={false} /><Image source={payplaceLogo} style={{ position: 'absolute', right: 3, bottom: 3, width: 22, height: 22 }} resizeMode="contain" accessible={false} /></View><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View><Ionicons name="chevron-forward" size={18} color="#6754E8" />
         </TouchableOpacity></React.Fragment>)}
       </>}
@@ -105,7 +106,7 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
           {!sampleReady && <Button label="Connect sample accounts" onPress={() => { updateBeta({ sampleConnected: true }); setNotice('Fictional accounts connected for beta testing.'); }} />}
         </Box>
         <Box title="Real banking"><Text style={s.body}>Provider eligibility and pricing are being evaluated. Live bank linking, transfers, credit data and bill payments will require approved integrations.</Text>{onOpenBankConnections && <Button secondary label="View live bank-linking availability" onPress={onOpenBankConnections} />}</Box>
-        <Button secondary label="Reset sample activity" onPress={() => { if (sharedBank) onBankAction({ type: 'reset' }); else onBetaStateChange(normalizePremiumBeta(null)); setNotice('Sample activity reset. Your personal plan is unchanged.'); }} />
+        <Button secondary label={sharedBank?"Reset demo banking data":"Reset sample activity"} onPress={() => { if (sharedBank) onBankAction({ type: 'reset' }); else onBetaStateChange(normalizePremiumBeta(null)); setNotice('Sample activity reset. Your personal plan is unchanged.'); }} />
       </>}
       {panel === 'roundup' && <>
         <Box title="Your round-up preferences"><Toggle label="Enable sample round-ups" value={beta.roundUpEnabled} onChange={value => { updateBeta({ roundUpEnabled: value }); setNotice(value ? 'Sample round-ups enabled. No live transfer is authorized.' : 'Sample round-ups paused.'); }} />
