@@ -1,5 +1,7 @@
+import { MascotPressable as Pressable, MascotTouchable as TouchableOpacity } from './MascotTouchable';
+import { EncouragementScene } from './Encouragement';
 import React, { useState } from 'react';
-import { Image, Linking, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Linking, Modal, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import CharacterArtwork from './CharacterArtwork';
 import ContainedIllustration from './ContainedIllustration';
 import ExpandableSection from './ExpandableSection';
@@ -20,7 +22,7 @@ export function IllustratedLibraryShelf({borrowed, onBook, onStory, enlarged = f
   return <View testID="illustrated-library-shelf" style={[s.shelfScene, enlarged && {width:720}]}>
     <Image testID="library-shelf-artwork" source={borrowed ? libraryAway : libraryStocked}
       resizeMode="stretch" style={s.shelfArtwork} accessible={false} />
-    <Pressable testID="library-slot-A1" style={({pressed}) => [s.shelfTarget, shelfTarget(EM_SHELF_BOUNDS), pressed && s.pressedTarget]}
+    <Pressable artworkMode="hotspot" testID="library-slot-A1" style={({pressed}) => [s.shelfTarget, shelfTarget(EM_SHELF_BOUNDS), pressed && s.pressedTarget]}
       accessibilityRole="button" accessibilityLabel={emBook.title + ', shelf A1. ' + (borrowed ? 'Empty spot; borrowed by ' + readerFor(borrowed.reader).name : 'Available to borrow')}
       accessibilityHint="Opens Emma’s book details and checkout."
       onPress={onBook} />
@@ -33,7 +35,7 @@ export function IllustratedLibraryShelf({borrowed, onBook, onStory, enlarged = f
 
 function ReadingCard({book, loan, onOpen}) {
   const reader = readerFor(loan.reader), scene = readingArtwork(reader.id);
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel={reader.name + ' is reading ' + book.title + '. Open book details'} onPress={onOpen} style={s.readingCard}>
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={reader.name + ' is reading ' + book.title + '. Open book details'} onPress={onOpen} style={s.readingCard}>
     {scene && <ContainedIllustration source={scene.source} aspectRatio={scene.ratio} style={s.readingIllustration}
       testID={'library-reading-scene-' + reader.id} accessibilityLabel={scene.label} />}
     <View style={s.readingText}>
@@ -110,7 +112,7 @@ export default function NeighborhoodLibrary({value, onChange, onNavigate, initia
         <Text accessibilityRole="header" style={s.title}>Annie’s Neighborhood Library</Text>
         <Text style={s.body}>Stories by our neighbors, with a special place for Emma’s memoir. Tap a book on the shelves to visit it.</Text>
       </View>
-      <IllustratedLibraryShelf borrowed={loan} onBook={openBook} onStory={openStory} />
+      <EncouragementScene place="library"><IllustratedLibraryShelf borrowed={loan} onBook={openBook} onStory={openStory} /></EncouragementScene>
       <View style={s.libraryContent}>
         <Button label="Take a closer look at the library" onPress={() => setEnlarged(true)} secondary />
         <Text accessibilityLiveRegion="polite" style={s.body}>{loan ? 'Emma’s book is with ' + readerFor(loan.reader).name + '. The gap on shelf A1 stays open until it comes home.' : 'Emma’s book is home on shelf A1, nestled between the neighborhood stories.'}</Text>

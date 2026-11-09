@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React,{useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,ScrollView,StyleSheet,TouchableOpacity,View} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import {Text} from './Privacy';
 import FittedArtwork from './FittedArtwork';
 import EntrySheet from './EntrySheet';
@@ -19,10 +20,10 @@ export const BILLIAM_TASKS=[
   {id:'household',title:'Our household plan',body:'Choose who covers what and what to share.',image:require('../assets/characters/billiam-household.png')},
 ];
 export function BilliamShortcut({onPress}){
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={mailbox} style={{height:112}} testID="billiam-shortcut-artwork" accessible={false}/><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></TouchableOpacity>;
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={mailbox} style={{height:112}} testID="billiam-shortcut-artwork" accessible={false}/><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></TouchableOpacity>;
 }
 export function BilliamTaskButton({task,onPress}){
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Billiam: ${task.title}`} onPress={onPress} style={s.task} testID={`billiam-task-${task.id}`}>
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Billiam: ${task.title}`} onPress={onPress} style={s.task} testID={`billiam-task-${task.id}`}>
     <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false}/><View style={s.caption}><Text style={s.taskTitle}>{task.title}</Text><Text style={s.taskBody}>{task.body}</Text></View>
   </TouchableOpacity>;
 }

@@ -1,9 +1,13 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import ActionArtwork from './ActionArtwork';
+import { actionForLabel } from './action-artwork.mjs';
+import { StyleSheet, View } from 'react-native';
 import { Text } from './Privacy';
 
 export default function FeatureLinks({ items }) {
-  return <View style={s.list}>{items.map(({title,body,onPress}) => <TouchableOpacity key={title} accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={onPress} style={s.item}>
+  return <View style={s.list}>{items.map(({title,body,onPress,artworkAction}) => <TouchableOpacity artworkMode="integrated" key={title} accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={onPress} style={s.item}>
+    <ActionArtwork action={artworkAction||actionForLabel(title)} size={36}/>
     <View style={{flex:1}}><Text style={s.title}>{title}</Text>{body && <Text style={s.body}>{body}</Text>}</View><Text style={s.arrow}>›</Text>
   </TouchableOpacity>)}</View>;
 }

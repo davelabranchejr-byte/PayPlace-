@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, View } from 'react-native';
 import { Text } from './Privacy';
 
 export default function EntrySheet({ visible, title, onClose, children }) {

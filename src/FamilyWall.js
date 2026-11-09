@@ -1,5 +1,6 @@
+import { MascotPressable as Pressable, MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useState } from "react";
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
@@ -100,7 +101,7 @@ export function CharacterStory({ person, onBack, backLabel = "Back to the family
         return <View key={i}>
           <Text style={[s.paragraph, person.id === "westley" && i === 0 && s.storyOpening, person.id === "westley" && i === person.paragraphs.length - 1 && s.storyClosing]}>{paragraph}</Text>
           {memory && <View style={s.memory}>
-            <Pressable style={[s.memoryFrame, { aspectRatio: memory.ratio }]} accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
+            <Pressable artworkMode="integrated" style={[s.memoryFrame, { aspectRatio: memory.ratio }]} accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
               <Image source={memory.source} resizeMode="contain" style={s.memoryImage} accessibilityLabel={memory.label} />
             </Pressable>
             <Text style={s.caption}>{memory.caption}</Text>

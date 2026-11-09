@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React,{useRef,useState} from 'react';
-import {StyleSheet,TouchableOpacity,View} from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import {Text,TextInput} from './Privacy';
 import {duplicateScannedBill} from './bill-scanner.mjs';
 import {BREAKDOWN_FIELDS,compareBills,previousReading,recurringMatch,reviewBilliamDraft,vendorKey} from './billiam-tools.mjs';

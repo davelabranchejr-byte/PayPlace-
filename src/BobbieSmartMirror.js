@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -70,7 +71,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
   }
 
   return <>
-    <TouchableOpacity testID="bobbie-smart-mirror" accessibilityRole="button"
+    <TouchableOpacity artworkMode="integrated" testID="bobbie-smart-mirror" accessibilityRole="button"
       accessibilityLabel="Visit Bobbie's house and smart mirror" activeOpacity={0.92}
       onPress={() => setVisible(true)} style={s.visitCard}>
       <Image source={room} resizeMode="contain" style={s.thumbnail} accessibilityLabel="Bobbie in her gold smart mirror room, with blonde curls, yellow plaid and white boots" />

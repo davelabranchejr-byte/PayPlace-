@@ -1,5 +1,7 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
+import { EncouragementScene } from './Encouragement';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import CharacterArtwork from './CharacterArtwork';
 import FamilyWall, { CharacterStory, FAMILY_STORIES } from './FamilyWall';
 import BelongingQuilt, { QuiltDetail } from './BelongingQuilt';
@@ -25,7 +27,7 @@ export default function NeighborRoom({ destination, finance, upcomingTotal, onHo
   const action = (label, target) => <TouchableOpacity key={target} accessibilityRole="button" style={s.action} onPress={() => onNavigate(target)}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" style={s.back} onPress={onHome}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
-    <CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} />
+    <EncouragementScene place="room" style={{alignSelf:"center"}}><CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} /></EncouragementScene>
     <Text accessibilityRole="header" style={s.title}>{title}</Text>
     <Text style={s.body}>{introductions[destination]}</Text>
     {destination === 'Annie' && <>

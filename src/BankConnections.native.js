@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Modal, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Modal, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { createPlaidLinkSession } from 'react-native-plaid-link-sdk';
 import { Text, TextInput } from './Privacy';
 import Alert from './alert';

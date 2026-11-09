@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from './Privacy';
 import Alert from './alert';
@@ -11,7 +12,7 @@ export default function FacebookNeighborhood() {
     try { await Linking.openURL(FACEBOOK_NEIGHBORHOOD_URL); }
     catch { Alert.alert('The neighborhood is still here', 'Facebook could not open just now. Please try again in a moment.'); }
   }
-  return <TouchableOpacity accessibilityRole="link" accessibilityLabel="Move into the neighborhood on Facebook"
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="link" accessibilityLabel="Move into the neighborhood on Facebook"
     accessibilityHint="Opens the PayPlace Facebook community outside the app" onPress={open} style={s.card}>
     <FittedArtwork source={require('../assets/characters/facebook-moving-day.jpg')} aspectRatio={3 / 2} accessible={false} />
     <View style={s.button}>

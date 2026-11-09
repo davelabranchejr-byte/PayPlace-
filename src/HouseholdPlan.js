@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React,{useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,StyleSheet,TouchableOpacity,View} from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import {getRandomBytes} from 'expo-crypto';
 import {Text,TextInput} from './Privacy';
 import {saveBackupFile,pickBackupFile} from './backup-files';

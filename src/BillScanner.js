@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import FittedArtwork from './FittedArtwork';
 import { scanBillPhoto, supportsBillPhoto } from './bill-photo';
@@ -42,7 +43,7 @@ export default function BillScanner({ bills = [], onAdd, onUpdate, history = [],
   }
   const action = (label, onPress, disabled = false) => <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={[s.action, disabled && s.disabled]}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
   return <View style={s.card} testID="billiam-scanner-card">
-    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Billiam’s bill scanning" accessibilityState={{expanded:open}} onPress={() => open ? close() : setOpen(true)}>
+    <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Billiam’s bill scanning" accessibilityState={{expanded:open}} onPress={() => open ? close() : setOpen(true)}>
       <FittedArtwork source={artwork} style={s.artwork} testID="billiam-scanner-artwork" accessible={false} />
       <View style={s.caption}>
         <Text style={s.title}>Billiam’s bill scanning</Text>
