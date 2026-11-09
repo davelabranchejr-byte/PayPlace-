@@ -21,6 +21,8 @@ function fixture() {
   const code = babel.transformSync(fs.readFileSync(require('node:path').join(__dirname, '../src/BankConnections.native.js'), 'utf8'), { configFile: false, babelrc: false, plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'] }).code;
   const module = { exports: {} };
   vm.runInNewContext(code, { module, exports: module.exports, require: name => {
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
     if (name === 'react-native') return { ActivityIndicator: 'ActivityIndicator', Modal: 'Modal', ScrollView: 'ScrollView', TouchableOpacity: 'TouchableOpacity', View: 'View', StyleSheet: { create: v => v }, Platform: { OS: 'ios' } };
     if (name === './Privacy') return { Text: 'Text', TextInput: 'TextInput' };

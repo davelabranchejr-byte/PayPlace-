@@ -121,10 +121,15 @@ test('banking demo shares categories, spending, recurring detection and savings 
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     const personal = JSON.stringify(harness.finance());
-    await press('Move into the neighborhood on Facebook');
+    await press('Open Neighborhood'); await press('Move into the neighborhood on Facebook');
     assert.equal(harness.openedURLs.at(-1), 'https://www.facebook.com/share/1FRdYmPwum/?mibextid=wwXIfr');
-    await press('Try Bobbie’s banking demo'); await input('Demo username', 'Bobbie'); await input('Demo password', 'litterbox'); await press('Open Bobbie’s banking demo');
+    await press('Open Bills & Banking'); await press('Open Plaid Banking'); await press('Try Bobbie’s banking demo'); await input('Demo username', 'Bobbie'); await input('Demo password', 'litterbox'); await press('Open Bobbie’s banking demo');
     assert.equal(hub().props.finance.bankActivity.source, 'demo');
+    const importedIds=hub().props.finance.categorization.transactions.map(t=>t.id);
+    assert.ok(button('View connected demo accounts'));
+    await press('View connected demo accounts'); await press('Back to Plaid Banking');
+    await press('View connected demo accounts'); await press('Back to Plaid Banking');
+    assert.deepEqual(hub().props.finance.categorization.transactions.map(t=>t.id),importedIds,'viewing already loaded demo data never imports it twice');
     await press('Open purchases and remembered categories');
     await press('Change category for Costco, Shopping, Sample checking, $130.00');
     await press('Choose Groceries'); await press('Remember for this account'); await press('Save my choice'); await press('← Back to my neighborhood');
@@ -171,7 +176,7 @@ test('Annie’s illustrated shelves, Daddy story and natural spa reading survive
     assert.ok(renderer.root.findAllByType('Text').some(n => typeof n.props.children === 'string' && n.props.children.includes('Your balance is a number. It is not a measure of your worth.')));
     await press('Back to the library shelves');
     await press('Take a closer look at the library');
-    assert.equal(renderer.root.findAllByProps({testID:'library-slot-A1'}).length, 2, 'enlarged shelves retain working book targets');
+    assert.equal(renderer.root.findAll(node=>node.type==='Pressable'&&node.props.testID==='library-slot-A1').length, 2, 'enlarged shelves retain working book targets');
     await press('Back to Annie’s library');
     await act(() => slot().props.onPress());
     await press('Choose Bobbie as reader');
@@ -192,16 +197,17 @@ test('Annie’s illustrated shelves, Daddy story and natural spa reading survive
     assert.equal(harness.openedURLs.at(-1), 'https://a.co/d/09P0VmeL');
     await press('Back to reading');
     await press('Open Neighborhood'); await press('Open Em’s Pet Spa');
+    await press('Open Em’s scrapbook'); await press('Open Spa-day memories'); await press('Show Bobbie’s meowgarita moment');
     const spaBook = button('Open Emma’s book Bobbie is reading at the spa');
-    assert.ok(spaBook, 'Bobbie’s loan opens the spa at her reading scene');
-    assert.equal(spaBook.findByType('Image').props.source, paintedBook, 'the spa displays the same naturally held book artwork');
+    assert.ok(spaBook, 'Bobbie’s borrowed book stays available in the past-visit scrapbook');
+    assert.equal(spaBook.findAllByType('Image').find(n=>n.props.source===paintedBook)?.props.source, paintedBook, 'the spa displays the same naturally held book artwork');
     await press('Open Emma’s book Bobbie is reading at the spa');
     await press('Back to Em’s Pet Spa');
     await act(() => renderer.unmount());
     await unlock();
     assert.equal(harness.finance().neighborhoodLibrary.loans[id].reader, 'bobbie');
     await press('Open Neighborhood'); await press('Open Em’s Pet Spa');
-    await press('Open Emma’s book Bobbie is reading at the spa');
+    await press('Open the library book Bobbie borrowed');
     await press('Return to shelf A1'); await press('Back to Em’s Pet Spa');
     assert.equal(button('Open Emma’s book Bobbie is reading at the spa'), undefined, 'return restores the magazine spa scene');
     await press('Open Neighborhood'); await press('Open Annie’s House');
@@ -253,12 +259,12 @@ test('an existing Daddy checkout shows the couch reading scene after unlock and 
 });
 
 function assertIllustrationFits(illustration) {
-  const image = illustration.findByType('Image');
+  const image = illustration.findAllByType('Image').find(n=>n.props.style?.width==='100%'&&n.props.style?.height==='100%');
   assert.equal(image.props.resizeMode, 'contain');
   assert.equal(image.props.style.width, '100%');
   assert.equal(image.props.style.height, '100%');
   assert.equal(image.props.style.position, undefined, 'native intrinsic dimensions must not override an absolute-positioned image');
-  const frame = illustration.findByType('View');
+  const frame = illustration.findAllByType('View')[0];
   const style = Object.assign({}, ...frame.props.style);
   assert.equal(style.width, '100%');
   assert.equal(style.overflow, 'hidden');
@@ -310,29 +316,29 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
   await act(async () => { renderer = create(React.createElement(harness.App)); });
   const button = label => renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === label);
   try {
-    assert.equal(button('Open Plaid Banking'), undefined, 'finances must stay unmounted before authentication');
+    assert.equal(button('Open Bills & Banking'), undefined, 'finances must stay unmounted before authentication');
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(() => button('Checking device authentication').props.onPress());
     assert.equal(harness.authCalls(), 1);
     await act(async () => { harness.completeAuthentication({ success: false, error: 'user_cancel' }); await pending; });
-    assert.equal(button('Open Plaid Banking'), undefined);
+    assert.equal(button('Open Bills & Banking'), undefined);
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(() => harness.setAppState('background'));
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
-    assert.equal(button('Open Plaid Banking'), undefined, 'background authentication cannot expose finances');
+    assert.equal(button('Open Bills & Banking'), undefined, 'background authentication cannot expose finances');
     await act(() => harness.setAppState('active'));
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(() => harness.setAppState('inactive'));
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await act(() => harness.setAppState('active'));
-    assert.ok(button('Open Plaid Banking'), 'the neighborhood renders after unlock');
-    assert.ok(button('Try Bobbie’s banking demo'), 'the demo has a prominent Home entrance');
-    assert.equal(renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab').length,7,'seven destinations stay readable in a horizontal tab strip');
+    assert.ok(button('Open Bills & Banking'), 'the four-tab navigation renders after unlock');
+    assert.equal(button('Try Bobbie’s banking demo'), undefined, 'banking has one home inside Bills & Banking');
+    assert.equal(renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab').length,4,'four fixed destinations stay visible without swiping');
     assert.equal(button('Open Extra Paycheck Calendar'),undefined,'payday tools have one home in Budget');
     assert.equal(button('Open Subscription Detective'),undefined,'manual subscriptions live in Bills');
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
     assert.equal(home.findByType('ScrollView').children[0].type.name,'SeasonalWelcome','Annie welcomes visitors before the banking section');
-    assert.equal(home.findByType('ScrollView').children[1].type.name,'BankWelcomeCard','the banking demo follows the welcome scene');
+    assert.equal(home.findAll(node=>node.type?.name==='BankWelcomeCard').length,0,'Home keeps the snapshot clear of duplicate banking cards');
     assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama is absent from Home and its shared header');
     await act(()=>button('Open Neighborhood').props.onPress());
     assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,1,'Neighborhood has exactly one animated panorama');
@@ -340,8 +346,10 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(()=>button('Open Home').props.onPress());
     assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama unmounts when leaving Neighborhood');
     const priorDemo=JSON.stringify(harness.finance());
+    await act(()=>button('Open Bills & Banking').props.onPress());
+    await act(()=>button('Open Plaid Banking').props.onPress());
     await act(()=>button('Try Bobbie’s banking demo').props.onPress());
-    assert.ok(button('Open Bobbie’s banking demo'),'Home opens the demo directly without account setup');
+    assert.ok(button('Open Bobbie’s banking demo'),'Bills & Banking opens the demo without changing account setup');
     for(const [label,value] of [['Demo username','Bobbie'],['Demo password','litterbox']]) await act(()=>renderer.root.findAllByType('TextInput').find(node=>node.props.accessibilityLabel===label).props.onChangeText(value));
     await act(()=>button('Open Bobbie’s banking demo').props.onPress());
     assert.equal(JSON.stringify(harness.finance()),priorDemo,'starting the Home demo preserves the personal vault');
@@ -358,10 +366,10 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(() => homeNav.props.switchTab('Home'));
     const destinations = models.get(path.join(root, 'src/neighborhood-destinations.mjs')).NEIGHBORHOOD_DESTINATIONS;
     const neighbors=models.get(path.join(root, 'src/neighborhood-destinations.mjs')).NEIGHBOR_DESTINATIONS;
-    const openDestination=async(id,label)=>{if(neighbors.some(place=>place.id===id))await act(()=>button('Open Neighborhood').props.onPress());await act(()=>button(`Open ${label}`).props.onPress());};
+    const openDestination=async(id,label)=>{if(neighbors.some(place=>place.id===id))await act(()=>button('Open Neighborhood').props.onPress());if(['Billiam','Premium','Debt'].includes(id))await act(()=>button('Open Bills & Banking').props.onPress());const target={Bills:'Bills & Banking',Billiam:'Billiam’s bill tools',Premium:'Plaid Banking',Debt:'My debt plan'}[id]||label;await act(()=>button(`Open ${target}`).props.onPress());};
     for (const { id, label } of destinations) {
       await openDestination(id,label);
-      const selected = button(neighbors.some(place=>place.id===id)?'Open Neighborhood':`Open ${label}`);
+      const selected = button(neighbors.some(place=>place.id===id)?'Open Neighborhood':['Bills','Billiam','Premium','Debt'].includes(id)?'Open Bills & Banking':`Open ${label}`);
       assert.equal(selected.props.accessibilityState.selected, true);
       if (id === 'Home') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 0, 'Home no longer duplicates the mirror');
       if (id === 'Bobbie') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 1, 'the working mirror lives inside Bobbie’s building');
@@ -376,21 +384,22 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       assertIllustrationFits(renderer.root.find(node => node.type?.name === 'ContainedIllustration'));
       await act(() => button('Next spa scene').props.onPress());
     }
+    await act(()=>button('Open Em’s scrapbook').props.onPress());
+    await act(()=>button('Open Spa-day memories').props.onPress());
     const beforeSpa = harness.finance();
     await act(() => button('Next spa scene').props.onPress());
     assert.ok(renderer.root.findAllByType('Text').some(node => node.props.children === 'Westley’s top-secret makeover'));
     await act(() => renderer.root.findAllByType('TouchableOpacity').find(node => node.findAllByType('Text').some(t => t.props.children === 'Keep Westley’s secret')).props.onPress());
     assert.ok(renderer.root.findAllByType('Text').some(node => String(node.props.children).includes('Daddy will never suspect')));
     await act(() => button('Previous spa scene').props.onPress());
-    await act(() => button('Hide neighborhood tabs').props.onPress());
-    assert.equal(button('Open Home'), undefined);
-    await act(() => button('Show neighborhood tabs').props.onPress());
+    assert.equal(button('Hide neighborhood tabs'), undefined, 'the four primary tabs stay visible');
     assert.ok(button('Open Home'));
     assert.deepEqual(harness.finance(), beforeSpa, 'spa interactions never change money records');
     await openDestination('Annie','Annie’s House');
     await act(() => renderer.root.findAllByType('Pressable').find(node => node.props.testID === 'family-portrait-westley').props.onPress());
     assert.ok(button('Back to Annie’s House'));
     await act(() => button('Back to Annie’s House').props.onPress());
+    await act(() => button('Open Bills & Banking').props.onPress());
     await act(() => button('Open Plaid Banking').props.onPress());
     const hub = () => renderer.root.find(node => node.type?.name === 'PremiumResilienceHub');
     const press = async label => { assert.ok(button(label), label); await act(() => button(label).props.onPress()); };
@@ -402,7 +411,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       const target = renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === label);
       assert.ok(target, label); await act(() => target.props.onChangeText(value));
     };
-    const nav = async title => press(`Open ${destinations.find(item => item.id === title).label}`);
+    const nav = async title => {if(['Premium','Billiam','Debt'].includes(title)){await press('Open Bills & Banking');await press('Open '+{Premium:'Plaid Banking',Billiam:'Billiam’s bill tools',Debt:'My debt plan'}[title]);}else await press('Open '+(title==='Bills'?'Bills & Banking':destinations.find(item=>item.id===title).label));};
     assert.equal(hub().props.embedded, true);
     for (const title of ['Round Up & Save', 'Life Happens Fund', 'Bill Shock Mode', 'Help, I’m Falling Behind', 'Automatic Money Watch', 'Credit Center']) {
       await press(`Open ${title}`);
@@ -518,16 +527,16 @@ test('launch features open, payment corrections persist, sample stays separate a
     await act(async()=>{renderer=create(React.createElement(harness.App));});
     await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
     await act(async()=>{harness.completeAuthentication({success:true});await pending;});
-    for(const [tab,title] of [['Budget','Until next payday'],['Bills','Undo & payment history'],['Home','Your first win with Annie'],['Neighborhood','Quiet Mode']]){await press(`Open ${tab}`);await press(`Open ${title}`);await press('Back to neighborhood');}
-    await press('Open Bills');
+    for(const [tab,title] of [['Budget','Until next payday'],['Bills','Undo & payment history'],['Home','Your first win with Annie'],['Neighborhood','Quiet Mode']]){await press(`Open ${tab === 'Bills' ? 'Bills & Banking' : tab}`);if(tab==='Home')await press('Payday details & getting started');await press(`Open ${title}`);await press('Back to neighborhood');}
+    await press('Open Bills & Banking');
     const paidButton=renderer.root.findAllByType('TouchableOpacity').find(n=>n.findAllByType('Text').some(t=>t.props.children==='Record payment'));
     await act(()=>paidButton.props.onPress());
     assert.equal(harness.finance().paymentHistory[0].kind,'recorded');
-    await press('Open Bills');await press('Open Undo & payment history');
+    await press('Open Bills & Banking');await press('Open Undo & payment history');
     await press('Correct amount for Power');await input('Corrected payment amount','15.05');await press('Save payment correction');
     assert.equal(harness.finance().bills[0].amount,'15.05');
     await press('Undo record change for Power');assert.equal(harness.finance().bills[0].amount,'20.05');assert.equal(harness.finance().balance,321.45);
-    await press('Back to neighborhood');await press('Open Home');await press('Open Your first win with Annie');await press('Explore the sample neighborhood');
+    await press('Back to neighborhood');await press('Open Home');await press('Payday details & getting started');await press('Open Your first win with Annie');await press('Explore the sample neighborhood');
     assert.equal(harness.finance().balance,321.45);assert.equal(harness.finance().bills[0].id,'p');
     await press('Open Budget');
     await act(()=>renderer.root.find(n=>n.type?.name==='BudgetScreen').props.resetDemoData());
@@ -542,7 +551,7 @@ test('launch features open, payment corrections persist, sample stays separate a
     await press('Open Home');
     const nativeTexts=renderer.root.findAllByType('Text').map(n=>JSON.stringify(n.props.children)).join(' ');
     assert.doesNotMatch(nativeTexts,/\$321\.45|\$20\.05/);assert.match(nativeTexts,/\$•••/);
-    await press('Open Until next payday');
+    await press('Payday details & getting started'); await press('Open Until next payday');
     const balanceInput=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel==='Current bank balance');assert.equal(balanceInput.props.secureTextEntry,true);
     await press('Back to neighborhood');
     await act(()=>renderer.unmount());
@@ -562,7 +571,7 @@ test('an unverified new neighbor can explore samples and safely return to accoun
    await act(async()=>{harness.completeAuthentication({success:true});await pending;});
    assert.ok(button('Explore sample neighborhood before setup'));
    await act(()=>button('Explore sample neighborhood before setup').props.onPress());
-   assert.ok(button('Open Until next payday'));
+   await act(()=>button('Payday details & getting started').props.onPress());assert.ok(button('Open Until next payday'));
    assert.equal(harness.finance().balance,0);assert.deepEqual(harness.finance().bills,[]);
    await act(()=>button('Return to my personal plan').props.onPress());
    assert.ok(button('Explore sample neighborhood before setup'));
@@ -606,7 +615,7 @@ test('Bobbie banking demo works without verification or network and leaves perso
   assert.equal(hub().props.betaState.roundUpEnabled,false);
   await input('Demo username','bobbie');await input('Demo password','litterbox');await press('Open Bobbie’s banking demo');
   assert.equal(hub().props.betaState.sampleConnected,true);
-  await press('Reset sample activity');assert.equal(hub().props.betaState.creditRefreshes,0);
+  await press('Reset demo banking data');assert.equal(hub().props.betaState.creditRefreshes,0);
   assert.equal(JSON.stringify(harness.finance()),personalBefore,'all demo operations leave the stored personal plan unchanged');
   await press('Return to my personal plan');
   assert.ok(button('Try Bobbie’s banking demo before setup'));
@@ -650,7 +659,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({success:true}); await pending; });
     assert.ok(renderer.root.find(node => node.type?.name === 'SeasonalWelcome'), 'gentle welcome remains on Home');
-    await press('Open Bills');
+    await press('Open Bills & Banking');
     assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
     assert.equal(input('Bill name'), undefined);
     await press('Add a bill');
@@ -666,7 +675,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(input('Bill name').props.value, 'Internet draft', 'closing the form keeps the draft');
     await act(() => renderer.root.findByType('Modal').props.onRequestClose());
     assert.equal(input('Bill name'), undefined, 'native dismiss closes the add sheet');
-    await press('Open Debt');
+    await press('Open My debt plan');
     assert.equal(input('Debt name'), undefined);
     assert.equal(renderer.root.findAll(node => node.type?.name === 'DebtBuddyScene').length, 0);
     await press('Add a debt');
@@ -691,7 +700,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Annie’s porch & today’s poster');
     await press('A little care from Annie');
     assert.ok(renderer.root.find(node => node.type?.name === 'NeighborCare'));
-    assert.equal(renderer.root.findAllByProps({accessibilityRole:'tab'}).length, 7);
+    assert.equal(renderer.root.findAll(n=>n.type==='TouchableOpacity'&&n.props.accessibilityRole==='tab').length, 4);
   } finally { if (renderer) await act(() => renderer.unmount()); }
 });
 

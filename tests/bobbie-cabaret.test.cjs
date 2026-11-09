@@ -13,6 +13,8 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
   const ui = Object.fromEntries(['KeyboardAvoidingView','Modal','SafeAreaView','ScrollView','Switch','Text','TextInput','TouchableOpacity','View'].map(name => [name,name]));
   ui.StyleSheet = { create: value => value }; ui.Platform = { OS: 'ios' }; ui.Linking = { openURL: async () => {} };
   const sandbox = { exports: {}, console, fetch: () => {}, require: name => {
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
     if (name === 'react-native') return ui;
     if (name.endsWith('bobbie-cabaret.mjs')) return model;
@@ -75,7 +77,7 @@ test('native player contains the full frame, pauses in background, retries failu
     });
     React.useEffect(()=>()=>{player.released=true;},[player]);return player;
   }};
-  const sandbox={exports:{},console,require:name=>name==='react'?React:name==='react-native'?ui:name==='expo-video'?video:{EMAIL_SERVICE_ORIGIN:'https://payplace.example'}};
+  const sandbox={exports:{},console,require:name=>name==='./MascotTouchable'?{MascotTouchable:'TouchableOpacity',MascotPressable:'Pressable'}:name==='react'?React:name==='react-native'?ui:name==='expo-video'?video:{EMAIL_SERVICE_ORIGIN:'https://payplace.example'}};
   vm.runInNewContext(code,sandbox);
   let renderer;
   await act(()=>{renderer=create(React.createElement(sandbox.exports.default));});
