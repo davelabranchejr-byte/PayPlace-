@@ -396,6 +396,13 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.ok(button('Open Home'));
     assert.deepEqual(harness.finance(), beforeSpa, 'spa interactions never change money records');
     await openDestination('Annie','Annie’s House');
+    const portraitTargets=renderer.root.findAllByType('Pressable').filter(node=>node.props.testID?.startsWith('family-portrait-'));
+    assert.equal(portraitTargets.length,6);
+    for(const portrait of portraitTargets){
+      assert.equal(portrait.findAllByType('Image').length,0,'portrait tap regions must never cover a face with button artwork');
+      assert.equal(portrait.findAllByType('View').length,0,'portrait tap regions must stay free of decorative button rims');
+      for(const pressed of [false,true])assert.equal(Object.assign({}, ...portrait.props.style({pressed}).flat(Infinity).filter(Boolean)).position,'absolute');
+    }
     await act(() => renderer.root.findAllByType('Pressable').find(node => node.props.testID === 'family-portrait-westley').props.onPress());
     assert.ok(button('Back to Annie’s House'));
     await act(() => button('Back to Annie’s House').props.onPress());
