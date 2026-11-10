@@ -9,12 +9,12 @@ const art = {
   Shopping: require('../assets/categories/bobbie-shopping.jpg'),
   Clothing: require('../assets/categories/bobbie-clothing.jpg'),
   Groceries: require('../assets/categories/daddy-groceries.jpg'),
-  Household: require('../assets/categories/household.jpg'),
-  Dining: require('../assets/categories/dining.jpg'),
+  Household: require('../assets/categories/household.png'),
+  Dining: require('../assets/categories/dining.png'),
   Transportation: require('../assets/categories/transportation.jpg'),
-  Health: require('../assets/categories/health.jpg'),
+  Health: require('../assets/categories/health.png'),
   Pets: require('../assets/categories/pets.jpg'),
-  Entertainment: require('../assets/categories/entertainment.jpg'),
+  Entertainment: require('../assets/categories/entertainment.png'),
   Other: require('../assets/categories/other.jpg'),
 };
 const colors = ['#7842D2', '#FF8479', '#14C8BD', '#FFE34F'];
