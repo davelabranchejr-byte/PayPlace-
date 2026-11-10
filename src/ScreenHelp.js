@@ -38,6 +38,7 @@ const TAB_HELP = {
   Debt: { summary: 'Choose which debt to focus on and track payments you make elsewhere.', steps: [
     'Add each debt with its balance, interest rate and minimum payment.',
     'Choose Snowball for the smallest balance first, Avalanche for the highest interest rate first, or Mixed for a quick win followed by highest interest.',
+    'Micropayments sits beside the payoff strategies. Choose a bill or debt, pick $1, $5, $10 or your own amount, then record it after paying your biller. Bill extras stay separate from the regular payment; debt extras reduce the entered balance. Undo corrects a record only.',
     'Record payments after making them with your lender. This updates your plan; it does not send money or create a repayment agreement.',
   ] },
   Calm: { summary: 'Take a pause when the money stuff feels heavy.', steps: [
