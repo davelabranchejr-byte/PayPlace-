@@ -1,0 +1,237 @@
+{
+  "date": "2026-11-10",
+  "scope": "Feature and destination artwork assignment, not certification of historical fur or embedded logos",
+  "featureCount": 16,
+  "uniqueFeatureSceneHashes": 16,
+  "features": [
+    {
+      "label": "One small step",
+      "previousAction": "browse",
+      "action": "smallStep",
+      "asset": "assets/characters/showing-up-counts-westley-tate.jpg",
+      "sha256": "24e82bfdd62f4ec9b581227c46434e4b0e193d302ce9f3e802db02ef2732e17c",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Until next payday",
+      "previousAction": "budget",
+      "action": "payday",
+      "asset": "assets/characters/feature-until-payday.png",
+      "sha256": "21be3fde99f3a365517bb4e1b5f3c80f574043443f781c217ab3fc07990a8f0f",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Your first win with Annie",
+      "previousAction": "browse",
+      "action": "firstWin",
+      "asset": "assets/characters/feature-first-win.png",
+      "sha256": "c4b58d53dccdd9beefd3cc633f62e64b75755895fc7ed8d8521b9b486ccd6fd0",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Review my bills",
+      "previousAction": "mail",
+      "action": "reviewBills",
+      "asset": "assets/characters/sample-bills-westley-mailman.png",
+      "sha256": "042ff3f9807885438c0441ed4588bf2bb9c1fbb2dbfe602831e8aa0cfab8aac0",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Neighborhood",
+      "previousAction": "browse",
+      "action": "neighborhood",
+      "asset": "assets/characters/neighborhood-panorama-day.png",
+      "sha256": "560cce039a0240b1e6e3600e4b2fc76fb488c555525bf044d853708718edfdfa",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Billiam’s Mailbox",
+      "previousAction": "mail",
+      "action": "mailbox",
+      "asset": "assets/characters/billiam-mailbox.png",
+      "sha256": "09a953a1d69af4496b3f60fb8f996907f5642bc73e9143446868dd1acc595806",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Billiam’s bill tools",
+      "previousAction": "scan",
+      "action": "billTools",
+      "asset": "assets/characters/billiam-canonical.png",
+      "sha256": "0613b46607133c31c1bd1219314be3d8344840e0694e1e1e63e127d990c589b3",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "I am overwhelmed",
+      "previousAction": "help",
+      "action": "overwhelmed",
+      "asset": "assets/characters/overwhelmed-westley-cozy.jpg",
+      "sha256": "6eaaa7c2ca9fda4f63990b597b3caafe1c61b79cdcd76dc643d5e8a001a2fbb0",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Quiet Mode",
+      "previousAction": "calm",
+      "action": "quiet",
+      "asset": "assets/characters/feature-quiet-mode.png",
+      "sha256": "ec78723ff038ccf4f0cf896a5c55e7419bfd97dac78f32fc486483adc03eb772",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Visit Annie again",
+      "previousAction": "browse",
+      "action": "welcome",
+      "asset": "assets/characters/annie-front-door-mailbox.png",
+      "sha256": "04b9b4b6fbb9ab8ce7a0f2d55662e7c00d75b1aaecbe993fb8a7dc13db12f89a",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Plaid Banking",
+      "previousAction": "banking",
+      "action": "banking",
+      "asset": "assets/characters/plaid-bank-daddy-tate.png",
+      "sha256": "9f43c2bcf21b6462160ea01430d6b4883d55771a5b4a918ba0542d9079fb750e",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "My debt plan",
+      "previousAction": "debt",
+      "action": "debt",
+      "asset": "assets/characters/header-debt-bobbie-tate.png",
+      "sha256": "1b3da8f3958e6c1bc225fbec3cb36421cb8d1da91cf4282e07c22dc7ba595671",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Undo & payment history",
+      "previousAction": "refresh",
+      "action": "paymentHistory",
+      "asset": "assets/characters/feature-payment-history.png",
+      "sha256": "bddad07909f35e03e1dc73c76708dd54a20eb4917c9b26b636fe5b87135824d1",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Subscription Detective",
+      "previousAction": "subscriptions",
+      "action": "subscriptions",
+      "asset": "assets/characters/bobbie-premium-clubhouse.png",
+      "sha256": "6ff4d6224ab95070bb2f4db1921d16a57d37f958e11985e2d2b613778415630d",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Extra Paycheck Calendar",
+      "previousAction": "budget",
+      "action": "calendar",
+      "asset": "assets/characters/snapshot-extra-check.png",
+      "sha256": "1b560d2d3993c263a33f4eeac2b879a609906e22a6cbebb07b21d434bd5a0fca",
+      "status": "original scene inspected; no image pixels changed"
+    },
+    {
+      "label": "Savings Goals",
+      "previousAction": "savings",
+      "action": "savingsGoal",
+      "asset": "assets/characters/savings-goals-button-chapo.png",
+      "sha256": "e3f44d5439bd1234cf8a65bfd2ce4f103d32c0960f885ce95ec627d2399d9526",
+      "status": "original scene inspected; no image pixels changed"
+    }
+  ],
+  "billiamTasks": [
+    {
+      "asset": "assets/characters/billiam-bill-scanner.png",
+      "sha256": "c316e68767bacbcbe2a628a46f2f1e80fbef1859bbf00e3b83ad0b779c47d169"
+    },
+    {
+      "asset": "assets/characters/billiam-import.png",
+      "sha256": "e61332d3c07ed0c1ad0fbb133a160a0136ee60a856cb3f08b4a46b45fe04ff8c"
+    },
+    {
+      "asset": "assets/characters/billiam-batch.png",
+      "sha256": "effbae27992c2686592b8e66d4249788ae9d33cdf9000ca4f07fe2cdac24811d"
+    },
+    {
+      "asset": "assets/characters/billiam-compare.png",
+      "sha256": "e41da98810e50a019854ae4386d46b21589218321457422d3a79a832bf8cc662"
+    },
+    {
+      "asset": "assets/characters/billiam-recurring.png",
+      "sha256": "4fb1e68ea802d8d21d74bce22d82f5e5718e069099e7e1d88a2f724c40e60c4d"
+    },
+    {
+      "asset": "assets/characters/billiam-breakdown.png",
+      "sha256": "7094ca8fdc0701e4da402ea6c2a4b457ca41939b8e2b86ce2c15319c689af7db"
+    },
+    {
+      "asset": "assets/characters/billiam-household.png",
+      "sha256": "4e4819b271a4ed0739d730dfcf2b72ffe7bacfd66e2c0a56ef293dc418ee8349"
+    }
+  ],
+  "bankingFeatures": [
+    {
+      "asset": "assets/characters/premium-roundup.png",
+      "sha256": "114ca35ed51eee0c969cf6593dced1c0bd2db8eb79854216069e9e8a75a9fb0b"
+    },
+    {
+      "asset": "assets/characters/premium-fund.png",
+      "sha256": "99329f1e44d357dba97e0c4b342d2078de0c4584f447508b6505cb89612ae6fc"
+    },
+    {
+      "asset": "assets/characters/premium-shock.png",
+      "sha256": "65c7c4e84546454c77e6f4c3fdd3aa7db1de49b1b5b05724d6e6b78b67a4251d"
+    },
+    {
+      "asset": "assets/characters/premium-catchup.png",
+      "sha256": "b19e75edbce325059f75b9326ee8e67b096c5622b8fc113e13f0f0cebc6b3706"
+    },
+    {
+      "asset": "assets/characters/premium-watch.png",
+      "sha256": "5bd22fc17cc3c70038319bcdf7e69485611b2d23d1b6e64f8ceaf5650a5502d4"
+    },
+    {
+      "asset": "assets/characters/premium-credit.png",
+      "sha256": "53bc4b206c7b756c992df334f3d69bef2f11474be3ea030a125928906f0dde73"
+    }
+  ],
+  "purchaseCategories": [
+    {
+      "asset": "assets/categories/bobbie-shopping.jpg",
+      "sha256": "dd3b1b9c584640172e3e763c603f32b8ffa4131a2c24b234920619c120b13504"
+    },
+    {
+      "asset": "assets/categories/bobbie-clothing.jpg",
+      "sha256": "8c8d3191cb096dd092d4c802f16cca035ac8d5f31416db12f53a4f3a0ddcdbcd"
+    },
+    {
+      "asset": "assets/categories/daddy-groceries.jpg",
+      "sha256": "5b7896975ffba17a0cdd39f824d39d30cb6d2b2bb816554ce89e250abf94b9d4"
+    },
+    {
+      "asset": "assets/categories/household.png",
+      "sha256": "3d8810dec8f94e259195dff3a723a502800fdc8c2426fd3343f13b36c72aa93b"
+    },
+    {
+      "asset": "assets/categories/dining.png",
+      "sha256": "d30b62d0d783a41f5417e2d53d3e1d77ee7ccdbfbee8bf842ba74746528d3ad6"
+    },
+    {
+      "asset": "assets/categories/transportation.jpg",
+      "sha256": "cdea6147d7326fb87e2eadfd2a3a8c007d245e1050e91010422352c50870d086"
+    },
+    {
+      "asset": "assets/categories/health.png",
+      "sha256": "9921a2b09c854b50095ecfbb80d12a36141ef96d279deece39df6e9dacc07f94"
+    },
+    {
+      "asset": "assets/categories/pets.jpg",
+      "sha256": "58da95634c05bc4207b2d1dee83aaf426e42a7926f62a532e322a6e9abe6b6a4"
+    },
+    {
+      "asset": "assets/categories/entertainment.png",
+      "sha256": "581bbcc2f6f50c1bea766bfd7cf5a30ff446f6a3b7a7af2c59fa25c56eee96c5"
+    },
+    {
+      "asset": "assets/categories/other.jpg",
+      "sha256": "e46e1ead15f3554dff917f50dc4c192290d4c6943b2a26702593215a230e8faa"
+    }
+  ],
+  "navigation": "Home and Budget use distinct cropped cells of the original building atlas; Bills & Banking uses the bank building; Neighborhood uses the town panorama. Sprite-sheet cells are different illustrations. Links to the same destination may share its artwork.",
+  "feedback": "One suggestion-box illustration inside the feedback button; duplicated preview removed.",
+  "remainingArtworkAudit": "BUILD_59_ARTWORK_AUDIT.json"
+}
