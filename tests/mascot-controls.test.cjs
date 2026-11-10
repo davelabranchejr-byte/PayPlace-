@@ -25,7 +25,7 @@ test('navigation has four visible destinations and every nested billing route re
   for(const id of ['Bills','Billiam','Premium','Debt'])assert.equal(primaryDestination(id),'Bills');
   for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Neighborhood');
 });
-test('action tiles stack large unchanged illustrations above wrapping labels at every width',async()=>{
+test('action banners adapt between wide rows and narrow tiles without changing artwork or behavior',async()=>{
   const f=await fixture();let renderer,layouts=0,taps=0;
   await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',accessibilityLabel:'Remember across my accounts',onLayout:()=>layouts++,onPress:()=>taps++,style:{backgroundColor:'#7842D2'}},React.createElement('Text',{style:{fontSize:14}},'Remember across my accounts'))));
   try{
@@ -34,7 +34,7 @@ test('action tiles stack large unchanged illustrations above wrapping labels at 
       await act(()=>renderer.root.findByType('TouchableOpacity').props.onLayout({nativeEvent:{layout:{width,height:100}}}));
       assert.equal(renderer.root.findByType('Image').props.source,original);
       const style=f.flatten(renderer.root.findByType('TouchableOpacity').props.style);
-      assert.equal(style.flexDirection,'column');
+      assert.equal(style.flexDirection,width>=300?'row':'column');
       const image=renderer.root.findByType('Image');
       assert.equal(image.props.resizeMode,'contain');
       assert.ok(image.props.style.width>=100&&image.props.style.width<=112);

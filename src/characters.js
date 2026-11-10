@@ -18,7 +18,7 @@ export const annieArtwork = Object.freeze({
 export const portraits = Object.freeze({
   daddy: reference(family, 1402, 1122, [510, 20, 330, 480], "Daddy, smiling in his teal PayPlace hoodie"),
   westley: reference(guide, 1024, 1536, [14, 330, 240, 355], "Westley, the white West Highland Terrier in his PayPlace hoodie"),
-  bobbie: reference(family, 1402, 1122, [760, 300, 365, 465], "Bobbie, the green-eyed brown tabby with glamorous hair and her pink PayPlace outfit"),
+  bobbie: reference(family, 1402, 1122, [760, 300, 365, 465], "Bobbie, the green-eyed grey tabby with glamorous hair and her pink PayPlace outfit"),
   tate: reference(guide, 1024, 1536, [515, 340, 240, 345], "Tate, the tiny tan Chihuahua with oversized ears, his long goofy tongue, and his yellow hoodie"),
   chapo: reference(guide, 1024, 1536, [770, 325, 245, 360], "Chapo, the round orange tabby wearing his teal hoodie and beanie"),
   annie: annieArtwork.portrait,
@@ -26,9 +26,9 @@ export const portraits = Object.freeze({
 });
 
 export const CHARACTER_LOCK = Object.freeze({
-  version: "2026-10-03-annie-canonical",
+  version: "2026-11-09-grey-tabby-bobbie",
   daddy: Object.freeze({ updated: '2026-10-13', reference: 'assets/characters/references/family-reference.png', fixed: ['closely buzzed salt-and-pepper hair', 'dark rectangular glasses', 'short salt-and-pepper beard', 'broad friendly smile'], style: 'dimensional PayPlace storybook cartoon matching the approved spa-day and flashlight illustrations' }),
-  bobbie: Object.freeze({ species: "brown tabby cat", eyes: "green", fixed: ["face", "fur markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
+  bobbie: Object.freeze({ species: "grey tabby cat", eyes: "green", fixed: ["face", "grey fur with black tabby markings", "body proportions"], interchangeable: ["wigs", "hair", "nails", "outfits", "accessories"] }),
   westley: Object.freeze({ species: "white West Highland Terrier", eyes: "two regular dark-brown eyes with round black pupils, natural highlights and coordinated gaze; no cloudy, milky, mismatched or distorted eye", fixed: ["face", "white fur", "pointed Westie ears", "body proportions", "two regular natural-looking eyes"] }),
   tate: Object.freeze({
     species: "tan Chihuahua",
