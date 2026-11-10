@@ -26,6 +26,12 @@ Standalone UI branding uses `src/brand.js` and the approved `assets/branding/pay
 
 ## Release status
 
-A public branch, `feat/build58-colorful-redesign`, was created from the current beta. Upload of the changed files was blocked by automatic approval review pending fresh explicit user confirmation for the payload and public destination. No redesign source files have been uploaded, no PR has been merged, and no Build 58 iOS archive has been started or submitted.
+Published and merged through PR #28 into `fix/consistent-payplace-logo`. The uploaded tree exactly matched the reviewed local package. Release source commit: `b83e4abaf2ef4dc218a39a0a73c51acdf88daf2a`.
 
-After publication is authorized, upload the reviewed files, compare them with the local versions, merge into `fix/consistent-payplace-logo`, and dispatch the existing `release-ios-expo.yml` workflow with build_number `58`, signing_only `true`, validate_only `false`. Verify the final workflow’s Apple submission result and report Apple processing separately from TestFlight availability.
+PayPlace **1.0.0 (58)** was signed with the existing Xcode 26 release configuration and successfully uploaded to Apple App Store Connect through Expo on November 9, 2026 at 8:16 p.m. Eastern. All release workflow steps completed successfully. Apple processing and tester availability remain unconfirmed.
+
+- Pull request: https://github.com/davelabranchejr-byte/PayPlace-/pull/28
+- Successful release run: https://github.com/davelabranchejr-byte/PayPlace-/actions/runs/42733387033
+- Expo submission: https://expo.dev/accounts/pilotpay/projects/payplace/submissions/deac3820-4ff7-404f-8db9-d70c77797ef4
+
+The artwork audit limitations above remain: this release does not certify every historical Bobbie image or embedded logo as corrected.
