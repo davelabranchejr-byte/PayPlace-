@@ -34,7 +34,7 @@ export const FAMILY_STORIES = [
     "Tate calls himself an explorer. Now the Tiny Win Champion celebrates each small step forward—with an enormous slobbery lick and an enthusiastic ‘I MISSED YOU!’"
   ] },
   { id: "bobbie", ...MASCOT_LORE.bobbie, promise: MASCOT_LORE.bobbie.emotionalPromise, paragraphs: [
-    "Bobbie is the family's glamorous, green-eyed brown tabby and Confidence Queen. Composed, loving, and theatrically mysterious, she reminds every neighbor to believe in themselves.",
+    "Bobbie is the family's glamorous, green-eyed grey tabby and Confidence Queen. Composed, loving, and theatrically mysterious, she reminds every neighbor to believe in themselves.",
     "She modeled on the runway when she was just a little older than a kitten. Today she leads Puuuurfect Designs, created Puuuurfect Scents, and has her own Kitty Couture Cosmetics line. Every Cat Couture article she cites happens to be written by her—an expert source is still a source.",
     "Before adoption, she was called Barbie. She and Chapo lived with an older woman in Tampa until a Florida flood left them homeless. Daddy brought them home together. Bobbie keeps her mysteries close and greets her neighbors with a glamorous blown kiss."
   ] },

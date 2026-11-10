@@ -3,6 +3,7 @@ import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SPA_SCENES, SPA_VISITS, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
+import PayPlaceBrand from './PayPlaceBrand';
 import ContainedIllustration from './ContainedIllustration';
 import { bobbieReadingEm } from './LibraryArtwork';
 import { LibraryBookDetails } from './NeighborhoodLibrary';
@@ -72,10 +73,10 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
     return () => clearInterval(timer);
   }, [playing, index, visitId]);
   const choose = next => { setIndex(next); setReply(''); setPaused(true); };
-  const illustration = <ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>
+  const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>
     <SpaAtmosphere playing={playing} kind={scene.motion} />
     <EncouragementSpot place="spa"/>
-  </ContainedIllustration>;
+  </ContainedIllustration><View style={s.brandBanner}><PayPlaceBrand compact/><Text style={s.spaBrand}>Em’s Pet Spa</Text></View></View>;
   if(scrapbook) return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity artworkAction="browse" accessibilityRole="button" style={s.back} onPress={()=>setScrapbook(false)}><Text style={s.backText}>‹ Back to Em’s Pet Spa</Text></TouchableOpacity>
     <Text accessibilityRole="header" style={s.title}>Em’s scrapbook</Text><Text style={s.body}>Favorite visits stay here, ready to open again.</Text>
@@ -118,6 +119,9 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
 }
 
 const s = StyleSheet.create({
+  artCard: {borderRadius:18,overflow:'hidden',backgroundColor:'#FFFDF8'},
+  brandBanner: {flexDirection:'row',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:10,padding:12,backgroundColor:'#E0FFF5',borderTopWidth:1,borderColor:'#B1E9D9'},
+  spaBrand: {fontSize:16,fontWeight:'800',color:'#184F48'},
   screen: { flex: 1, backgroundColor: '#FFF8F2' }, content: { padding: 18, gap: 12, paddingBottom: 26 },
   back: { minHeight: 48, justifyContent: 'center' }, backText: { color: '#6651AB', fontWeight: '800', fontSize: 15 },
   eyebrow: { color: '#A52167', fontWeight: '900', fontSize: 11, letterSpacing: 1.2 }, title: { color: '#173557', fontSize: 30, fontWeight: '900' },
