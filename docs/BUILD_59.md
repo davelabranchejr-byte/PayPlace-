@@ -1,6 +1,6 @@
-# Build 59 — artwork correction draft
+# Build 59 — reviewed artwork corrections
 
-Status: work in progress. Build 59 has not been built or submitted to Apple. Build 58 remains the latest confirmed Apple upload.
+Status: preparing an incremental artwork release. Build 59 contains the 33 approved corrections below. The remaining artwork audit stays open. Build 59 has not yet been submitted; Build 58 remains the latest confirmed Apple upload until the release receipt is recorded.
 
 ## Reviewed corrections
 
@@ -22,8 +22,8 @@ See BUILD_59_ARTWORK_AUDIT.json for per-asset status and the prompts used. Conti
 
 ## Validation
 
-Source binding checks passed in 126 application files. All 185 app tests passed after integration, including banking, budget, stored categories, subscriptions and portrait hotspots. Production iOS, Android and web exports completed successfully. A physical iPhone visual check is still needed after the full artwork set is ready.
+Source binding checks passed in 126 application files. All 185 app tests passed after integration, including banking, budget, stored categories, subscriptions and portrait hotspots. Production iOS, Android and web exports completed successfully. A physical iPhone visual check is still needed on TestFlight.
 
 ## Release
 
-Draft only. Do not label this a completed all-image correction or submit Build 59 as the finished artwork update while the remaining review items are open.
+Release the 33 reviewed corrections as Build 59 through the existing iOS workflow. This is an incremental update to the colorful redesign already in Build 58, not the completed all-image cleanup. Keep the remaining 28 mascot scenes and branding review candidates tracked for a later pass. Record the source commit, workflow run and Apple upload result after submission.
