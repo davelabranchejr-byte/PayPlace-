@@ -1,6 +1,6 @@
 # Build 59 — reviewed artwork corrections
 
-Status: preparing an incremental artwork release. Build 59 contains the 33 approved corrections below. The remaining artwork audit stays open. Build 59 has not yet been submitted; Build 58 remains the latest confirmed Apple upload until the release receipt is recorded.
+Status: PayPlace 1.0.0 (59) was signed and successfully uploaded to Apple App Store Connect on November 10, 2026 at 13:38 UTC. Apple processing and tester availability have not been confirmed. This incremental release contains 33 reviewed corrections; the remaining artwork audit stays open.
 
 ## Reviewed corrections
 
@@ -26,4 +26,15 @@ Source binding checks passed in 126 application files. All 185 app tests passed 
 
 ## Release
 
-Release the 33 reviewed corrections as Build 59 through the existing iOS workflow. This is an incremental update to the colorful redesign already in Build 58, not the completed all-image cleanup. Keep the remaining 28 mascot scenes and branding review candidates tracked for a later pass. Record the source commit, workflow run and Apple upload result after submission.
+The 33 reviewed corrections shipped as Build 59 through the existing iOS workflow. This is an incremental update to the colorful redesign already in Build 58, not the completed all-image cleanup. Keep the remaining 28 mascot scenes and branding review candidates tracked for a later pass.
+
+- Source commit: `bd13264164f7f3a9553e2e8dc5e83c291d707e05`
+- Merged artwork: [PR 29](https://github.com/davelabranchejr-byte/PayPlace-/pull/29)
+- Release run: [42823455817](https://github.com/davelabranchejr-byte/PayPlace-/actions/runs/42823455817), completed successfully
+- Expo submission: [b5cd6999-f886-4418-9fe5-bba1014ed8d0](https://expo.dev/accounts/pilotpay/projects/payplace/submissions/b5cd6999-f886-4418-9fe5-bba1014ed8d0)
+- Upload confirmed by the release log: “Submitted your app to Apple App Store Connect!” and “Your binary has been successfully uploaded to App Store Connect!”
+- Native archive and signing succeeded. The signed IPA was retained as the workflow artifact.
+- Merged-source validation run [42823272253](https://github.com/davelabranchejr-byte/PayPlace-/actions/runs/42823272253): 126 source bindings, all 185 tests, and iOS/Android/web production exports passed.
+- The beta tester script was updated for Build 59, including the remaining-artwork caveat.
+
+Do not equate upload completion with Apple processing completion or external tester availability.
