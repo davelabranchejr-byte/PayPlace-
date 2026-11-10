@@ -74,3 +74,64 @@ test('state-based transparent portrait targets never acquire illustrations or bu
   try{const target=renderer.root.findByType('Pressable');assert.equal(target.findAllByType('Image').length,0);assert.equal(target.findAllByType('View').length,0);for(const pressed of [false,true]){const frame=f.flatten(target.props.style({pressed}));assert.equal(frame.left,'20%');assert.equal(frame.width,'25%');assert.equal(frame.backgroundColor,undefined);}}
   finally{await act(()=>renderer.unmount());}
 });
+
+test('different feature destinations use distinct relevant original scenes instead of generic fallbacks',async()=>{
+  const f=await fixture();let renderer;const opened=[];
+  const cases=[
+    ['One small step','showing-up-counts-westley-tate.jpg'],
+    ['Until next payday','feature-until-payday.png'],
+    ['Your first win with Annie','feature-first-win.png'],
+    ['Review my bills','sample-bills-westley-mailman.png'],
+    ['Neighborhood','neighborhood-panorama-day.png'],
+    ['Billiam’s Mailbox','billiam-mailbox.png'],
+    ['Billiam’s bill tools','billiam-canonical.png'],
+    ['I am overwhelmed','overwhelmed-westley-cozy.jpg'],
+    ['Quiet Mode','feature-quiet-mode.png'],
+    ['Visit Annie again','annie-front-door-mailbox.png'],
+    ['Plaid Banking','plaid-bank-daddy-tate.png'],
+    ['My debt plan','header-debt-bobbie-tate.png'],
+    ['Undo & payment history','feature-payment-history.png'],
+    ['Subscription Detective','bobbie-premium-clubhouse.png'],
+    ['Extra Paycheck Calendar','snapshot-extra-check.png'],
+    ['Savings Goals','savings-goals-button-chapo.png'],
+  ];
+  await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:cases.map(([title])=>({title,onPress:()=>opened.push(title)}))})));
+  try{
+    const sources=[];
+    for(const [index,button] of renderer.root.findAllByType('TouchableOpacity').entries()){
+      const images=button.findAllByType('Image');assert.equal(images.length,1);
+      const source=images[0].props.source;sources.push(source);
+      assert.equal(source,`../assets/characters/${cases[index][1]}`);
+      await act(()=>button.props.onPress());
+    }
+    assert.equal(new Set(sources).size,cases.length,'unrelated destinations never reuse a generic image');
+    assert.deepEqual(opened,cases.map(([title])=>title),'artwork changes retain the destinations');
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('collapsing a section retains the artwork for that feature',async()=>{
+  const f=await fixture();let renderer;
+  const button=expanded=>React.createElement(f.MascotTouchable,{accessibilityLabel:'Quiet Mode',accessibilityState:{expanded}},React.createElement('Text',null,'Quiet Mode'));
+  await act(()=>renderer=create(button(false)));
+  try{
+    assert.equal(renderer.root.findByType('Image').props.source,f.art.quiet);
+    await act(()=>renderer.update(button(true)));
+    assert.equal(renderer.root.findByType('Image').props.source,f.art.quiet);
+    assert.notEqual(f.art.quiet,f.art.calm,'quiet time and the yoga garden have their own artwork');
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('brightened neutral buttons retain readable ink and selected state colors',async()=>{
+  const f=await fixture();let renderer;
+  await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityLabel:'Save my choice',style:{backgroundColor:'#FFFFFF'}},React.createElement('Text',{style:{color:'#536178'}},'Save my choice'))));
+  try{
+    const color=f.flatten(renderer.root.findByType('Text').props.style).color;
+    const background=f.flatten(renderer.root.findByType('TouchableOpacity').props.style).backgroundColor;
+    const luminance=hex=>{const channels=hex.slice(1).match(/../g).map(c=>parseInt(c,16)/255).map(c=>c<=0.04045?c/12.92:((c+0.055)/1.055)**2.4);return channels[0]*0.2126+channels[1]*0.7152+channels[2]*0.0722;};
+    const values=[luminance(color),luminance(background)].sort((a,b)=>b-a);
+    assert.ok((values[0]+0.05)/(values[1]+0.05)>=4.5,'body text remains readable on the vivid fill');
+    await act(()=>renderer.update(React.createElement(f.MascotTouchable,{accessibilityState:{selected:true},style:{backgroundColor:'#6754E8'}},React.createElement('Text',{style:{color:'#FFFFFF'}},'Selected'))));
+    assert.equal(f.flatten(renderer.root.findByType('TouchableOpacity').props.style).backgroundColor,'#6754E8');
+    assert.equal(f.flatten(renderer.root.findByType('Text').props.style).color,'#FFFFFF');
+  }finally{await act(()=>renderer.unmount());}
+});
