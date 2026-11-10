@@ -5,9 +5,9 @@ import { createHash } from 'node:crypto';
 import { normalizePremiumBeta, premiumAmount, simulatePayday, simulateRoundup } from '../src/premium-beta.mjs';
 import { DEFAULT_PREMIUM_STATE, buildBillShockPlans } from '../src/premium-resilience.mjs';
 
-test('locked logo retains the exact user-supplied bytes', () => {
-  const original = readFileSync(new URL('../assets/branding/payplace-locked-logo.jpeg', import.meta.url));
-  assert.equal(createHash('sha256').update(original).digest('hex'), 'f48af4b4f31db5dbc9ef0b81a0b2fda46777b6e30da7d203640a2df471af7afb');
+test('approved full logo retains its exact PNG bytes', () => {
+  const original = readFileSync(new URL('../assets/branding/payplace-icon.png', import.meta.url));
+  assert.equal(createHash('sha256').update(original).digest('hex'), '82d6c2c7d9d64bf946726e9ab096e608ddef1562e40c3b242b468231cd7fa406');
 });
 
 test('sample automation requires both account connection and the feature switch', () => {

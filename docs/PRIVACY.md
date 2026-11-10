@@ -70,3 +70,19 @@ There is no public question directory or read endpoint. Review records older tha
 ## Support and feedback
 
 [PayPlace Support](https://payplace-dave.davelabranchejr.chatgpt.site/support) explains private help. TestFlight feedback goes to the developer through Apple. Optional GitHub issue drafts are public: use fictional examples and avoid private financial/contact details in text and screenshots. You can email the privacy address above for private questions.
+
+## Billiam’s bill photo scanner
+
+In a compatible iPhone or Android build, you can photograph a bill or choose a single existing photo. Camera access is requested when you choose to take a photo. PayPlace uses Google ML Kit text recognition on the device; PayPlace does not upload the selected image or recognized text to its servers or an AI service. The scanner currently reads Latin-script text and suggests US-dollar amounts and full US/ISO due dates. Always check the suggestions.
+
+The scanner attempts to remove its temporary photo and normalized-image cache copies after recognition, including failed scans. It does not delete your original photo-library image. Dismissing a scan discards its draft. Only the bill fields you review and explicitly add become part of your local plan and its normal storage/backup lifecycle; the image and full recognized text are not saved with the bill. Google ML Kit separately sends SDK performance and usage metrics to Google, as described in [Google’s ML Kit terms and privacy information](https://developers.google.com/ml-kit/terms).
+
+## Billiam’s mailbox tools and household planning
+
+Billiam’s native importer can read selected PDF and image files locally. Each file represents one bill; up to 12 files, 12 pages per PDF and 20 MB per file are supported. iOS reads a PDF’s embedded text when available and recognizes rendered image pages otherwise. Android renders PDF pages for on-device recognition. No document contents are sent to PayPlace’s servers or an AI provider. Temporary app-owned document and rendered-page copies are removed after processing, including failed reads. Original photo-library and document-provider files are untouched.
+
+Reviewed statement breakdowns, comparison readings and explicitly remembered recurring templates are stored with your local plan. Changing a bill can retain earlier amounts/dates for comparison; deleting that bill removes its comparison readings. The existing local undo and backup lifecycle still applies. Recurring templates remain until you stop remembering them. Recognition and comparisons do not authorize payments or establish why a provider changed a charge.
+
+Household assignments and member nicknames are local planning records. Bills are excluded from household exports by default. You preview selected bill names, amounts, dates, paid status, member names and exact-cent responsibility splits before creating an AES-256-GCM password-protected share file. The file excludes account digits, notes, payment addresses, profile details, bank data, balances, debts and unselected bills. The password is not stored with the plan. You choose whether and where to send the file in your device’s sharing interface; PayPlace does not send invitations or automatically upload or synchronize household records.
+
+A recipient with the password can preview and save a received household snapshot without changing their personal bills or budget. A newly shared file is needed for updates. Previously shared files cannot be recalled or remotely erased. Received copies can be removed in Billiam’s household tool. Household records follow the normal local vault, device deletion and encrypted-backup lifecycle. Keep the password separate from the file and manage any exported or received copies outside PayPlace yourself.

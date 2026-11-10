@@ -3,7 +3,7 @@ import { StyleSheet, View } from "react-native";
 import { Text } from "./Privacy";
 import CharacterArtwork from "./CharacterArtwork";
 
-const logo = require("../assets/branding/payplace-locked-logo.jpeg");
+import { payplaceLogo, payplaceLogoLabel } from "./brand";
 
 export default function PayPlaceBrand({ compact = false, light = false, style }) {
   const primary = light ? "#FFFFFF" : "#173557";
@@ -12,10 +12,10 @@ export default function PayPlaceBrand({ compact = false, light = false, style })
   return (
     <View style={[s.wrap, compact && s.compactWrap, style]}>
       <CharacterArtwork
-        source={logo}
+        source={payplaceLogo}
         style={[s.logo, compact && s.compactLogo]}
         resizeMode="contain"
-        accessibilityLabel="PayPlace official logo"
+        accessibilityLabel={payplaceLogoLabel}
       />
       <View style={s.copy}>
         <Text style={[s.name, compact && s.compactName, { color: primary }]}>

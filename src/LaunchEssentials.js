@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity, Modal, StyleSheet, Image } from 'react-native';
+import { View, ScrollView, Modal, StyleSheet, Image } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import { paydaySnapshot, moneyCents, canUndoPayment, quietSettings } from './launch-essentials.mjs';
 import PayPlaceBrand from './PayPlaceBrand';
@@ -21,7 +22,7 @@ export function FeatureArtwork({source,style,testID}) {
   </View>;
 }
 export function EssentialsButtons({onOpen,reduceAnimation=false}) {
-  return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={[s.tile,{backgroundColor:tileColors[key].backgroundColor,borderColor:tileColors[key].borderColor}]} onPress={() => onOpen(key)}>
+  return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity artworkMode="integrated" key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={[s.tile,{backgroundColor:tileColors[key].backgroundColor,borderColor:tileColors[key].borderColor}]} onPress={() => onOpen(key)}>
     <FeatureArtwork source={essentialsArtwork[key]} style={s.art} testID={`feature-card-${key}`}/>
     <Text style={[s.tileTitle,{color:tileColors[key].color}]}>{title}</Text><Text style={[s.note,{color:tileColors[key].color}]}>{body}</Text>
   </TouchableOpacity>)}</View>;

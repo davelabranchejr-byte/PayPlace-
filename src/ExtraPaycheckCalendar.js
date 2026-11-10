@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ExtraPaycheckChapoScene from "./ExtraPaycheckChapoScene";
@@ -90,7 +91,7 @@ export default function ExtraPaycheckCalendar({ visible, onClose, finance, onAct
             const key = dateKey(new Date(month.getFullYear(), month.getMonth(), day, 12));
             const checks = events.filter(item => item.date === key);
             const extra = checks.some(item => item.extra);
-            return <TouchableOpacity key={i} accessibilityRole="button" accessibilityLabel={`${key}${checks.length ? `, ${checks.map(item => item.label).join(", ")}` : ", no paycheck"}`} disabled={!checks.length} onPress={() => { setSelected(checks.find(item => item.extra)?.id || checks[0].id); setBonusOpen(false); }} style={[s.cell, checks.length > 0 && s.payCell, extra && s.extraCell, event?.date === key && s.selectedCell]}><Text style={s.day}>{day}</Text><Text style={s.marker}>{extra ? "★" : checks.length ? "●" : ""}</Text></TouchableOpacity>;
+            return <TouchableOpacity artworkMode="hotspot" key={i} accessibilityRole="button" accessibilityLabel={`${key}${checks.length ? `, ${checks.map(item => item.label).join(", ")}` : ", no paycheck"}`} disabled={!checks.length} onPress={() => { setSelected(checks.find(item => item.extra)?.id || checks[0].id); setBonusOpen(false); }} style={[s.cell, checks.length > 0 && s.payCell, extra && s.extraCell, event?.date === key && s.selectedCell]}><Text style={s.day}>{day}</Text><Text style={s.marker}>{extra ? "★" : checks.length ? "●" : ""}</Text></TouchableOpacity>;
           })}</View>
           <View style={extras.length > 0 && s.extraSummary}>
             <Text style={s.note}>{extras.length ? `★ ${extras.length} extra check${extras.length === 1 ? "" : "s"} · ${dollars(extras.reduce((sum, item) => sum + item.amount, 0))} estimated` : "No extra checks this month."}</Text>

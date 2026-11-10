@@ -14,7 +14,7 @@ function load(file, dependencies) {
     plugins: ['@babel/plugin-transform-react-jsx', '@babel/plugin-transform-modules-commonjs'],
   }).code;
   const sandbox = { module: { exports: {} }, exports: {},
-    require: name => name === 'react' ? React : dependencies[name],
+    require: name => name === './MascotTouchable' ? { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' } : name === 'react' ? React : dependencies[name],
     setInterval: () => 1, clearInterval: () => {}, setTimeout, clearTimeout,
   };
   sandbox.exports = sandbox.module.exports;

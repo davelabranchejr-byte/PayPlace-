@@ -1,5 +1,6 @@
+import { MascotPressable as Pressable } from './MascotTouchable';
 import React, { useState } from "react";
-import { Image, Linking, Modal, Platform, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Image, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -24,15 +25,12 @@ export default function TesterFeedback() {
     catch { setError("Could not open feedback. Try again, or use Send Beta Feedback in TestFlight."); }
   }
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
+    <Pressable artworkMode="integrated" artworkAction="feedback" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
-      <Ionicons name="chatbubble-ellipses-outline" size={22} color="#6754C5" />
+      <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain" accessible={false}/>
       <Text style={s.entryText}>Help make the neighborhood better</Text>
+      <Text accessible={false} style={s.chevron}>›</Text>
     </Pressable>
-    <View style={s.daddyPreview}>
-      <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain"
-        accessibilityLabel="Daddy gathers neighborhood ideas beside a purple suggestion box and a miniature treehouse village" />
-    </View>
     <Modal visible={visible} animationType="slide" onRequestClose={() => setVisible(false)}>
       <SafeAreaView style={s.safe}>
         <ScrollView contentContainerStyle={s.content}>
@@ -44,7 +42,7 @@ export default function TesterFeedback() {
           <Text style={s.body}>Notice something confusing or have an idea? Tell Daddy which screen you visited, what you expected, and what happened.</Text>
           <Text style={s.heading}>A few places to explore</Text>
           <Text style={s.body}>Open every family portrait, tap Em’s paw-print picture, and visit the quilt. Try entering cents in Budget, planning an extra check, and asking Bobbie’s mirror about a pretend purchase.</Text>
-          <Text style={s.heading}>Try the new Premium tab</Text>
+          <Text style={s.heading}>Explore Bills & Banking</Text>
           <Text style={s.body}>Look for How Home works, How Bills works and the matching help button on every bottom tab. Open the instructions and return to the same tab. Every Premium feature now starts with How this works; hide and show its numbered steps. Connect sample accounts directly from a feature without leaving it. A disabled simulation should explain the missing connection, paused switch, zero amount, reached cap or completed goal beside the button.</Text>
           <Text style={s.body}>Tap every illustrated feature and check Back to Premium. In Account connections & beta setup, connect the fictional sample accounts. Turn round-ups on and off, save a cap and simulate purchases. Save a Life Happens goal, try a sample payday and an emergency, compare Bill Shock recovery plans, review the catch-up plan, refresh sample Money Watch alerts and explore the fictional credit score.</Text>
           <Text style={s.body}>Reopen the app and check that your preferences remain. Disconnect sample accounts and confirm automation pauses. Reset sample activity and check that your saved budget and bills stay intact. Sample balances, alerts and scores are fictional: this beta does not move money, pay bills or retrieve credit reports.</Text>
@@ -62,10 +60,10 @@ export default function TesterFeedback() {
 }
 
 const s = StyleSheet.create({
-  entry: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 48, padding: 16, marginTop: 18, borderRadius: 18, backgroundColor: "#F2ECFF" },
-  entryText: { flex: 1, color: "#6754C5", fontSize: 15, fontWeight: "800" },
-  daddyPreview: { width: "100%", maxWidth: 240, height: 160, alignSelf: "center", marginTop: 12, borderRadius: 18, overflow: "hidden", backgroundColor: "#F2ECFF" },
-  daddyArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
+  entry: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, minHeight: 164, padding: 12, marginTop: 18, borderRadius: 28, backgroundColor: "#DCABFF", borderWidth: 3, borderColor: "#9F3DE5" },
+  entryText: { flexGrow: 1, flexShrink: 1, flexBasis: 88, color: "#071A3A", fontSize: 22, lineHeight: 28, fontWeight: "900" },
+  daddyArtwork: { width: 128, height: 128, borderRadius: 18 },
+  chevron: { color: "#FFFFFF", backgroundColor: "#8734CF", borderColor: "#FFFFFF", borderWidth: 2, borderRadius: 20, width: 32, height: 40, textAlign: "center", fontSize: 28, lineHeight: 37, fontWeight: "900" },
   safe: { flex: 1, backgroundColor: "#FFF8EA" },
   content: { padding: 20, paddingBottom: 40, width: "100%", maxWidth: 720, alignSelf: "center" },
   close: { alignSelf: "flex-end", width: 48, height: 48, alignItems: "center", justifyContent: "center", backgroundColor: "#F2ECFF", borderRadius: 24 },

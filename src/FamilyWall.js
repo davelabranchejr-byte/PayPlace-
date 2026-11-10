@@ -1,5 +1,6 @@
+import { MascotPressable as Pressable, MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useState } from "react";
-import { Image, Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
@@ -33,7 +34,7 @@ export const FAMILY_STORIES = [
     "Tate calls himself an explorer. Now the Tiny Win Champion celebrates each small step forward—with an enormous slobbery lick and an enthusiastic ‘I MISSED YOU!’"
   ] },
   { id: "bobbie", ...MASCOT_LORE.bobbie, promise: MASCOT_LORE.bobbie.emotionalPromise, paragraphs: [
-    "Bobbie is the family's glamorous, green-eyed brown tabby and Confidence Queen. Composed, loving, and theatrically mysterious, she reminds every neighbor to believe in themselves.",
+    "Bobbie is the family's glamorous, green-eyed grey tabby and Confidence Queen. Composed, loving, and theatrically mysterious, she reminds every neighbor to believe in themselves.",
     "She modeled on the runway when she was just a little older than a kitten. Today she leads Puuuurfect Designs, created Puuuurfect Scents, and has her own Kitty Couture Cosmetics line. Every Cat Couture article she cites happens to be written by her—an expert source is still a source.",
     "Before adoption, she was called Barbie. She and Chapo lived with an older woman in Tampa until a Florida flood left them homeless. Daddy brought them home together. Bobbie keeps her mysteries close and greets her neighbors with a glamorous blown kiss."
   ] },
@@ -62,6 +63,7 @@ export default function FamilyWall({ onSelect }) {
     <View testID="family-gallery" style={[s.gallery, gallerySize]}>
       <Image testID="family-gallery-artwork" source={familyWallArtwork} style={[StyleSheet.absoluteFillObject, s.galleryImage]} resizeMode="contain" accessible={false} />
       {FAMILY_STORIES.map(person => <Pressable
+        artworkMode="hotspot"
         key={person.id}
         testID={`family-portrait-${person.id}`}
         style={({ pressed }) => [s.portraitTarget, portraitFrameStyle(person.id), pressed && s.portraitPressed]}
@@ -100,7 +102,7 @@ export function CharacterStory({ person, onBack, backLabel = "Back to the family
         return <View key={i}>
           <Text style={[s.paragraph, person.id === "westley" && i === 0 && s.storyOpening, person.id === "westley" && i === person.paragraphs.length - 1 && s.storyClosing]}>{paragraph}</Text>
           {memory && <View style={s.memory}>
-            <Pressable style={[s.memoryFrame, { aspectRatio: memory.ratio }]} accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
+            <Pressable artworkMode="integrated" style={[s.memoryFrame, { aspectRatio: memory.ratio }]} accessibilityRole="button" accessibilityLabel={`Enlarge: ${memory.label}`} onPress={() => setEnlarged(memory)}>
               <Image source={memory.source} resizeMode="contain" style={s.memoryImage} accessibilityLabel={memory.label} />
             </Pressable>
             <Text style={s.caption}>{memory.caption}</Text>

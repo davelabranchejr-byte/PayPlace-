@@ -18,6 +18,8 @@ function loadComponents(model){
   const module={exports:{}};
   const assets=new Map();
   vm.runInNewContext(code,{module,exports:module.exports,require:name=>{
+    if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
+    if (name === './Encouragement') return { EncouragementSpot: () => null };
     if(name==='react')return React;
     if(name==='react-native')return ui;
     if(name==='./Privacy')return {Text:'Text',TextInput:'TextInput'};

@@ -2,15 +2,15 @@ import * as DocumentPicker from 'expo-document-picker';
 import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import { MAX_BACKUP_BYTES } from './security-crypto.mjs';
-export async function saveBackupFile(text) {
+export async function saveBackupFile(text, options = {}) {
   if (!(await Sharing.isAvailableAsync())) throw new Error('File sharing is unavailable on this device.');
-  const uri = FileSystem.cacheDirectory + 'PayPlace-' + Date.now() + '.payplace';
+  const uri = FileSystem.cacheDirectory + (options.household ? 'PayPlace-Household-' : 'PayPlace-') + Date.now() + (options.household ? '.payplace-household' : '.payplace');
   try {
     await FileSystem.writeAsStringAsync(uri, text);
-    await Sharing.shareAsync(uri, { mimeType: 'application/octet-stream', dialogTitle: 'Save your encrypted PayPlace backup' });
+    await Sharing.shareAsync(uri, { mimeType: 'application/octet-stream', dialogTitle: options.household ? 'Share selected household bills' : 'Save your encrypted PayPlace backup' });
   } finally { await FileSystem.deleteAsync(uri, { idempotent: true }); }
 }
-export async function pickBackupFile() {
+export async function pickBackupFile(options = {}) {
   const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true, multiple: false });
   if (result.canceled) return null;
   const file = result.assets[0];

@@ -1,3 +1,4 @@
+import { MascotTouchable as TouchableOpacity } from './src/MascotTouchable';
 /*
   PAYPLACE PERMANENT CHARACTER LOCK
   Westley: locked West Highland Terrier.
@@ -14,7 +15,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
@@ -24,8 +25,12 @@ import useBillReminders from "./src/useBillReminders";
 import { deletedItems, deleteEntry, restoreEntry } from "./src/deleted-items.mjs";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
+import { EncouragementProvider } from "./src/Encouragement";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
+import MerchantCategories, { CategoryEntry } from "./src/MerchantCategories";
+import FacebookNeighborhood from "./src/FacebookNeighborhood";
+import { demoBankAction } from "./src/bank-activity.mjs";
 import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
@@ -46,7 +51,10 @@ import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
+import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
+import { recordBilliamReadings, reviewedBreakdown } from "./src/billiam-tools.mjs";
 import NeighborRoom from "./src/NeighborRooms";
+import { advanceReadingCircle } from "./src/neighborhood-library.mjs";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
@@ -69,7 +77,7 @@ import DebtMethodComparison from "./src/DebtMethodComparison";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
-const payplaceLogo = require("./assets/branding/payplace-locked-logo.jpeg");
+import { payplaceLogo, payplaceLogoLabel } from "./src/brand";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -835,12 +843,12 @@ const palette = {
   mintDark: "#10BFAE",
   teal: "#11B8A7",
   aqua: "#DFFCF7",
-  purple: "#6754E8",
-  lavender: "#EEE9FF",
+  purple: "#8435CB",
+  lavender: "#EAC5FF",
   coral: "#FF6464",
   coralDark: "#EF4444",
   blush: "#FFF0F0",
-  gold: "#FACC15",
+  gold: "#FFE344",
   goldDark: "#E8A900",
   blue: "#21B7E8",
   border: "#DDEAF4",
@@ -1209,6 +1217,7 @@ function PayPlaceApp() {
   const [storageError, setStorageError] = useState(false);
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
+  const [categoriesVisible, setCategoriesVisible] = useState(false);
   const [premiumPanel, setPremiumPanel] = useState(null);
   const [premiumVisit, setPremiumVisit] = useState(0);
   const [tabHelpVisible, setTabHelpVisible] = useState(false);
@@ -1233,12 +1242,26 @@ function PayPlaceApp() {
     ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
     ...(sampleFinance || clearingData ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance,clearingData]);
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
-  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, typeof update === "function" ? update(current) : update))); }
+  function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, recordBilliamReadings(current, typeof update === "function" ? update(current) : update)))); }
+  async function saveCategories(next) {
+    if (dataDeletion.current || storageError || !loaded) throw new Error('Your plan is not ready to save. Please try again.');
+    if (!sampleFinance) {
+      // Confirm encrypted persistence before the category sheet reports success.
+      await ProtectedStorage.setItem(STORAGE_KEY, JSON.stringify({ ...savedFinance, categorization: next }));
+    }
+    setFinance(current => ({ ...current, categorization: next }));
+  }
+  function updateDemoBank(action) {
+    if (!sampleFinance || finance.bankActivity?.source !== 'demo') return false;
+    try { setFinance(demoBankAction(finance, action)); return true; }
+    catch (error) { Alert.alert('A little bank check', error.message); return false; }
+  }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
+    if (sampleFinance?.bankActivity?.source === 'demo') { setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab('Premium');return; }
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
       premiumBeta:{sampleConnected:true,useSamplePlan:true}});
-    setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setTab("Premium");
+    setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab("Premium");
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
@@ -1250,6 +1273,17 @@ function PayPlaceApp() {
   const [loaded, setLoaded] = useState(false);
   const [onboardingLoaded, setOnboardingLoaded] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
+  useEffect(() => {
+    if (!loaded || storageError || clearingData) return;
+    const rotate = () => setFinanceRaw(current => {
+      const next = advanceReadingCircle(current.neighborhoodLibrary);
+      return JSON.stringify(next) === JSON.stringify(current.neighborhoodLibrary) ? current : {...current, neighborhoodLibrary: next};
+    });
+    rotate();
+    const timer = setInterval(rotate, 60000);
+    const listener = AppState.addEventListener('change', state => { if (state === 'active') rotate(); });
+    return () => { clearInterval(timer); listener.remove(); };
+  }, [loaded, storageError, clearingData, !!sampleFinance]);
   const [onboardingSession, setOnboardingSession] = useState(0);
   const [revisitingAnnie, setRevisitingAnnie] = useState(false);
   const onboardingFinalizing = useRef(false);
@@ -1430,18 +1464,18 @@ function PayPlaceApp() {
   function addBill(newBill) {
   if (!newBill.name || !newBill.name.trim()) {
     Alert.alert("Missing bill name", "Give the bill a name first.");
-    return;
+    return false;
   }
 
   const amount = cleanNumber(newBill.amount);
 
   if (amount <= 0) {
     Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-    return;
+    return false;
   }
 
   const savedBill = {
-    id: newBill.id || `bill_${Date.now()}`,
+    id: newBill.id || `bill_${Date.now()}_${Math.random().toString(36).slice(2,8)}`,
     name: newBill.name,
     amount: amount.toFixed(2),
 
@@ -1453,6 +1487,7 @@ function PayPlaceApp() {
     paymentAddress: newBill.paymentAddress || "",
     accountNumberLast4: newBill.accountNumberLast4 || "",
     notes: newBill.notes || "",
+    breakdown: reviewedBreakdown(newBill.breakdown || {}),
     source: newBill.source || "Manual entry",
     confidence: newBill.confidence || "Confirmed",
   };
@@ -1461,25 +1496,26 @@ function PayPlaceApp() {
     ...current,
     bills: [...(current.bills || []), savedBill],
   }));
+  return true;
 }
 
 
   function updateBill(updatedBill) {
     if (!updatedBill || !updatedBill.id) {
       Alert.alert("Bill not found", "This bill could not be updated.");
-      return;
+      return false;
     }
 
     const amount = cleanNumber(updatedBill.amount);
 
     if (!updatedBill.name || !updatedBill.name.trim()) {
       Alert.alert("Missing bill name", "Give the bill a name first.");
-      return;
+      return false;
     }
 
     if (amount <= 0) {
       Alert.alert("Missing amount", "Add a bill amount greater than zero.");
-      return;
+      return false;
     }
 
     setFinance((current) => ({
@@ -1504,6 +1540,7 @@ function PayPlaceApp() {
           : bill
       ),
     }));
+    return true;
   }
 
   function toggleBillPaid(id) {
@@ -1730,6 +1767,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   return (
+    <EncouragementProvider communityEnabled={!sampleFinance}>
     <PrivacyContext.Provider value={quiet}>
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
@@ -1743,6 +1781,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
         <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
+        {['Premium','Billiam','Debt'].includes(tab) && <TouchableOpacity artworkAction="browse" accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
 
         {tab === "Home" && (
           <HomeScreen
@@ -1764,15 +1803,22 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Bills" && (
           <BillsScreen
             bills={finance.bills}
+            onBanking={() => openPremium()}
+            onDebt={() => setTab("Debt")}
             addBill={addBill}
             updateBill={updateBill}
             toggleBillPaid={toggleBillPaid}
             reviewBill={reviewBill}
             deleteBill={deleteBill}
+            onBilliam={() => setTab("Billiam")}
             onHistory={() => setEssentialsPanel("history")}
             onSubscriptions={() => setDetectiveVisible(true)}
           />
         )}
+
+        {tab === "Billiam" && <BilliamHome finance={finance} onAdd={addBill} onUpdate={updateBill}
+          onTemplates={next => setFinance(current => ({...current,billiamRecurring:next}))}
+          onHousehold={next => setFinance(current => ({...current,householdPlan:next}))} />}
 
         {tab === "Budget" && (
           <BudgetScreen
@@ -1785,6 +1831,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onPayday={() => setEssentialsPanel("payday")}
             onCalendar={() => setExtraCalendarVisible(true)}
             onSavings={() => setSavingsVisible(true)}
+            onCategories={() => setCategoriesVisible(true)}
           />
         )}
 
@@ -1810,6 +1857,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           betaState={normalizePremiumBeta(finance.premiumBeta)}
           onBetaStateChange={next => setFinance(current => ({ ...current, premiumBeta: normalizePremiumBeta(next) }))}
           onOpenBankConnections={() => setBankConnectionsVisible(true)}
+          onOpenCategories={() => setCategoriesVisible(true)}
+          onBankAction={sampleFinance ? updateDemoBank : undefined}
           onOpenSubscriptions={() => setDetectiveVisible(true)}
           onOpenBills={() => setTab("Bills")}
           onStartDemo={startBankDemo}
@@ -1819,13 +1868,14 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
           <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} />
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
+          <FacebookNeighborhood />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
-            {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
-              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:75}} resizeMode="contain" accessible={false}/><Text style={{fontSize:15,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
+            {NEIGHBOR_DESTINATIONS.map((place,index) => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'100%',minHeight:152,padding:12,borderRadius:28,backgroundColor:['#FFE455','#65EBEF','#DCABFF','#FFB0A4'][index%4],borderWidth:3,borderColor:place.color,flexDirection:'row',flexWrap:'wrap',gap:12,alignItems:'center'}}>
+              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:128,height:128}} resizeMode="contain" accessible={false}/><Text style={{flexGrow:1,flexShrink:1,flexBasis:100,fontSize:22,lineHeight:28,fontWeight:'900',color:palette.ink}}>{place.label}</Text>
             </TouchableOpacity>)}
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
-          <FeatureLinks items={[{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
+          <FeatureLinks items={[{title:'Billiam’s Mailbox',body:'His home outside Annie Oak Tree — scans, bill tools and household planning.',onPress:()=>setTab('Billiam')},{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
           <ExpandableSection title="A little care from Annie">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
@@ -1847,11 +1897,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
-        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible} />}
+        {tab === "Spa" && <PetSpa onHome={() => setTab("Home")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible}
+          library={finance.neighborhoodLibrary} onLibraryChange={action => setFinanceRaw(current => {
+            try {return {...current, neighborhoodLibrary:action(current.neighborhoodLibrary)};}
+            catch {return current;}
+          })} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
           onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
+          onLibraryChange={action => setFinanceRaw(current => {
+            try { return {...current, neighborhoodLibrary: action(current.neighborhoodLibrary)}; }
+            catch { return current; } // A repeated tap cannot check out the same copy twice.
+          })}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
         {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -1865,6 +1923,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onUndo={undoRecordedPayment} onCorrect={correctRecordedPayment} onFirstWin={saveFirstWin} onSample={startSample} onPersonal={endSample}/>
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
+        {categoriesVisible && <MerchantCategories key={`${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible
+          onClose={() => setCategoriesVisible(false)} value={finance.categorization} onChange={saveCategories} sample={!!sampleFinance} />}
         {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)} />}
         <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
@@ -1875,6 +1935,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
       </KeyboardAvoidingView>
     </SafeAreaView>
     </PrivacyContext.Provider>
+    </EncouragementProvider>
   );
 }
 
@@ -2166,7 +2227,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
         <View style={styles.brandWrap}>
-          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel="PayPlace official logo: a white P with a paw and checkmark on teal, yellow, purple, and coral" />
+          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel={payplaceLogoLabel} />
 
           <View style={styles.wordmark}>
             <Text style={[styles.logoDark, compact && { fontSize: 23 }]}>Pay</Text>
@@ -2184,8 +2245,8 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
         Money without shame.
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        {onHelp && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 44, flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
-        {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 6 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
+        {onHelp && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 80, flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
+        {onSecurity && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 8 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
       </View>
     </View>
   );
@@ -2226,7 +2287,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
           )}
           {foyerStage === "door" && (
             <View style={styles.redDoorScene}>
-              <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
+              <TouchableOpacity artworkMode="hotspot" accessibilityRole="button" accessibilityLabel="Enter through Annie's red PayPlace door" style={StyleSheet.absoluteFillObject} activeOpacity={0.95} onPress={() => setFoyerStage("home")}>
                 <CharacterArtwork source={greatAnnieHero} style={styles.foyerArrivalImage} resizeMode="contain" />
               </TouchableOpacity>
               <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Annie's welcome" style={[styles.foyerCloseButton, { minWidth: 48, minHeight: 48 }]} onPress={closeFoyer}>
@@ -2313,7 +2374,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
       </View>
 
 
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
+      <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
         style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
         <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
         <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
@@ -2397,17 +2458,14 @@ function HomeScreen({
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SeasonalWelcome/>
-      <BankWelcomeCard onDemo={onBankDemo} onBanking={onPremium}/>
-      <View style={[styles.safeHeroCard,{padding:20}]}>
+            <View style={[styles.safeHeroCard,{padding:20}]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND · ENTERED PLAN</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>Until payday in {daysUntilPayday} day{daysUntilPayday === 1 ? '' : 's'}. Update your entries in Budget.</Text>
         <Text style={styles.safeHeroFootnoteText}>Balance minus unpaid bills, debt minimums and your buffer. A planning estimate.</Text>
       </View>
       <FeatureLinks items={[
-        {title:'Until next payday',body:'Review groceries, gas and the full calculation.',onPress:()=>onEssentials('payday')},
-        {title:'Your first win with Annie',body:'One payday, one bill, one next step.',onPress:()=>onEssentials('firstWin')},
-        {title:'One small step',body:nextAction,onPress:()=>setGuidanceVisible(true)},
+                {title:'One small step',body:nextAction,onPress:()=>setGuidanceVisible(true)},
       ]}/>
       <Modal
         visible={guidanceVisible}
@@ -2464,6 +2522,10 @@ function HomeScreen({
       </Modal>
 
 
+      <ExpandableSection title="Payday details & getting started"><FeatureLinks items={[
+        {title:'Until next payday',body:'Groceries, gas and your plan.',onPress:()=>onEssentials('payday')},
+        {title:'Your first win with Annie',body:'One payday, one bill, one next step.',onPress:()=>onEssentials('firstWin')},
+      ]}/></ExpandableSection>
       <SectionTitle title="Coming up" subtitle="Review your next unpaid bills in Bills."/>
       {!unpaidBills.length ? <EmptyCard text="No unpaid bills. Add or review entries in Bills."/> : unpaidBills.slice(0,2).map(bill=><BillRow key={bill.id} bill={bill}/>)}
       <FeatureLinks items={[{title:'Review my bills',onPress:()=>switchTab('Bills')},{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress:()=>switchTab('Neighborhood')}]} />
@@ -2472,7 +2534,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2591,7 +2653,12 @@ const importDemoBills = () => {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills" subtitle="Add bills and record payments you make elsewhere." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <FeatureLinks items={[
+        {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
+        {title:'Plaid Banking',body:'Bank connections, transaction insights and subscriptions.',artworkAction:'banking',onPress:onBanking},
+        {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
+      ]}/>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
         <Text style={styles.primaryButtonText}>Add bill</Text>
       </TouchableOpacity>
@@ -2851,10 +2918,11 @@ const importDemoBills = () => {
 </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${bill.name}`}
+                style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteBill(bill.id)}
               >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
+                <Text style={{color:palette.coralDark,fontWeight:'900'}}>Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -2964,6 +3032,7 @@ const importDemoBills = () => {
           <Text style={styles.primaryButtonText}>Add bill</Text>
         </TouchableOpacity>
 
+        <BilliamShortcut onPress={onBilliam} />
 
 <View
   style={[
@@ -3076,7 +3145,7 @@ function BudgetScreen({
   updateNumber,
   updateText,
   resetDemoData,
-  onPayday, onCalendar, onSavings,
+  onPayday, onCalendar, onSavings, onCategories,
 }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
@@ -3132,6 +3201,7 @@ function BudgetScreen({
         </View>
       </View>
 
+      {onCategories && <CategoryEntry onOpen={onCategories} />}
       <ExpandableSection title="Edit money info">
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Edit money info</Text>
@@ -3301,10 +3371,11 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.iconButton, { backgroundColor: palette.blush }]}
+                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${debt.name}`}
+                style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteDebt(debt.id)}
               >
-                <Ionicons name="trash" size={18} color={palette.coralDark} />
+                <Text style={{color:palette.coralDark,fontWeight:'900'}}>Remove</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -3602,7 +3673,7 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
       <Text style={styles.storyCountNote}>You tapped overwhelmed {count} time{count === 1 ? "" : "s"}. No judgment. We’re still here.</Text>
 
     </ScrollView>
-      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to the neighborhood" accessibilityHint="Returns to Home" style={styles.neighborhoodReturnBanner} onPress={goHome}>
+      <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Back to the neighborhood" accessibilityHint="Returns to Home" style={styles.neighborhoodReturnBanner} onPress={goHome}>
         <CharacterArtwork source={neighborhood.source} style={styles.neighborhoodReturnArtwork} resizeMode="contain" accessible={false} />
         <View style={styles.neighborhoodReturnLabel}>
           <Ionicons name="arrow-back" size={19} color="white" />
@@ -3616,7 +3687,7 @@ function CalmScreen({ pearl, count, nextPearl, goHome, category, collections, ca
 
 function QuickCard({ artwork, label, value, sub, theme, onPress }) {
   return (
-    <TouchableOpacity
+    <TouchableOpacity artworkMode="integrated"
       accessibilityRole="button"
       accessibilityLabel={`${label}: ${value}. ${sub}`}
       style={[styles.quickCard, { backgroundColor: theme.background, borderColor: theme.border }]}
@@ -5021,15 +5092,17 @@ const styles = StyleSheet.create({
   },
   actionRow: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
     marginTop: 12,
   },
   smallButton: {
     flex: 1,
+    minWidth: '44%',
     paddingVertical: 12,
     borderRadius: 15,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 10,
   },
   smallButtonText: {
     color: "white",
@@ -5852,4 +5925,3 @@ const styles = StyleSheet.create({
   },
 
 });
-

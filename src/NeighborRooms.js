@@ -1,5 +1,7 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
+import { EncouragementScene } from './Encouragement';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import CharacterArtwork from './CharacterArtwork';
 import FamilyWall, { CharacterStory, FAMILY_STORIES } from './FamilyWall';
 import BelongingQuilt, { QuiltDetail } from './BelongingQuilt';
@@ -7,6 +9,7 @@ import BobbieSmartMirror from './BobbieSmartMirror';
 import { SmallSteps } from './NeighborCare';
 import { buildingArtwork } from './NeighborhoodNav';
 import { neighborhoodLabel } from './neighborhood-destinations.mjs';
+import NeighborhoodLibrary, { LibraryReader } from './NeighborhoodLibrary';
 
 const introductions = {
   Annie: 'The red door is open. Come inside, meet the family, and see the quilt that makes room for everyone.',
@@ -16,7 +19,7 @@ const introductions = {
   Chapo: 'Everyone deserves a place at the table. Let’s plan a little breathing room for your next extra paycheck.',
 };
 
-export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange }) {
+export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange, onLibraryChange }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
   const title = neighborhoodLabel(destination);
@@ -24,13 +27,16 @@ export default function NeighborRoom({ destination, finance, upcomingTotal, onHo
   const action = (label, target) => <TouchableOpacity key={target} accessibilityRole="button" style={s.action} onPress={() => onNavigate(target)}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" style={s.back} onPress={onHome}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
-    <CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} />
+    <EncouragementScene place="room" style={{alignSelf:"center"}}><CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} /></EncouragementScene>
     <Text accessibilityRole="header" style={s.title}>{title}</Text>
     <Text style={s.body}>{introductions[destination]}</Text>
     {destination === 'Annie' && <>
+      {action('Visit Billiam’s mailbox outside', 'Billiam')}
+      <NeighborhoodLibrary value={finance.neighborhoodLibrary} onChange={onLibraryChange} onNavigate={onNavigate} />
       <FamilyWall onSelect={setStory} />
       <BelongingQuilt onOpen={() => setQuilt(true)} />
     </>}
+    {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} />}
     {destination === 'Bobbie' && <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => onNavigate('Budget')} />}
     {destination === 'Westley' && <View style={s.actions}>
       {action('Take a breath in the Calm Garden', 'Calm')}

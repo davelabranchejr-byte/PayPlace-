@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from "react";
-import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
@@ -19,7 +20,7 @@ export function AcornSquare() {
 }
 
 export default function BelongingQuilt({ onOpen }) {
-  return <TouchableOpacity testID="belonging-quilt-preview" accessibilityRole="button"
+  return <TouchableOpacity artworkMode="integrated" testID="belonging-quilt-preview" accessibilityRole="button"
     accessibilityLabel="View the Belonging Quilt. Your acorn square has a place in Annie's home."
     accessibilityHint="Opens the quilt and your first square. Return to the family gallery afterwards."
     style={s.card} activeOpacity={0.9} onPress={onOpen}>

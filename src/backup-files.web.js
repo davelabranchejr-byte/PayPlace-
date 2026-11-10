@@ -1,12 +1,12 @@
 import { MAX_BACKUP_BYTES } from './security-crypto.mjs';
-export async function saveBackupFile(text) {
+export async function saveBackupFile(text, options = {}) {
   const url = URL.createObjectURL(new Blob([text], { type: 'application/octet-stream' }));
-  const a = document.createElement('a'); a.href = url; a.download = 'PayPlace-' + Date.now() + '.payplace'; a.click();
+  const a = document.createElement('a'); a.href = url; a.download = (options.household ? 'PayPlace-Household-' : 'PayPlace-') + Date.now() + (options.household ? '.payplace-household' : '.payplace'); a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-export function pickBackupFile() {
+export function pickBackupFile(options = {}) {
   return new Promise((resolve, reject) => {
-    const input = document.createElement('input'); input.type = 'file'; input.accept = '.payplace';
+    const input = document.createElement('input'); input.type = 'file'; input.accept = options.household ? '.payplace-household' : '.payplace';
     input.oncancel = () => resolve(null);
     input.onchange = async () => {
       try {

@@ -57,6 +57,22 @@
           "supportsBackgroundPlayback": false,
           "supportsPictureInPicture": false
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow PayPlace to photograph a bill for Billiam to read on your device.",
+          "photosPermission": "Allow PayPlace to choose a bill photo for Billiam to read on your device.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "15.5"
+          }
+        }
       ]
     ]
   }

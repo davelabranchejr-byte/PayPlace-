@@ -1,20 +1,21 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import FittedArtwork from './FittedArtwork';
 import CabaretVideo from './CabaretVideo';
 import OwnerInbox from './OwnerInbox';
 import { createEmailApi } from './email-api.mjs';
 import { prepareQuestion, QUESTION_TOPICS } from './bobbie-cabaret.mjs';
 
-const artwork = require('../assets/characters/bobbie-darlending-show.jpeg');
+const artwork = require('../assets/characters/bobbie-darlending-show.png');
 const api = createEmailApi(Platform.OS, fetch, 'cabaret');
 function Button({ label, onPress, disabled, secondary }) {
   return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} disabled={disabled} accessibilityState={{ disabled: !!disabled }} onPress={onPress} style={[s.button, secondary && s.secondary, disabled && { opacity: 0.6 }]}><Text style={[s.buttonText, secondary && { color: '#FFE1A0' }]}>{label}</Text></TouchableOpacity>;
 }
 export function BobbieCabaretEntry({ onOpen }) {
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Enter Bobbie Darlending’s cabaret" onPress={onOpen} style={s.entry}>
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Enter Bobbie Darlending’s cabaret" onPress={onOpen} style={s.entry}>
     <FittedArtwork source={artwork} style={s.thumbnail} accessible={false} />
-    <View style={{ flex: 1 }}><Text style={s.eyebrow}>PAYPLACE CLUBHOUSE CABARET</Text><Text style={s.entryTitle}>The Bobbie Darlending Show</Text><Text style={s.body}>Watch the show · Ask Bobbie</Text></View>
+    <View style={{ width: '100%', alignItems: 'center' }}><Text style={s.eyebrow}>PAYPLACE CLUBHOUSE CABARET</Text><Text style={s.entryTitle}>The Bobbie Darlending Show</Text><Text style={s.body}>Watch the show · Ask Bobbie</Text></View>
   </TouchableOpacity>;
 }
 export default function BobbieCabaret({ visible, onClose, submitQuestion = api }) {
@@ -81,8 +82,8 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#190B22' }, content: { padding: 18, gap: 14, paddingBottom: 40, maxWidth: 650, width: '100%', alignSelf: 'center' },
   header: { padding: 14, gap: 8, borderBottomWidth: 1, borderColor: '#69406D' }, title: { color: '#FFE1A0', fontSize: 25, fontWeight: '800' },
-  eyebrow: { color: '#FFE1A0', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 }, entry: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 20, backgroundColor: '#29102E', borderColor: '#DAB26A', borderWidth: 1, marginBottom: 16 },
-  thumbnail: { width: 86, height: 86, borderRadius: 12 }, entryTitle: { color: '#FFE1A0', fontSize: 18, fontWeight: '800', marginVertical: 5 }, body: { color: '#FFF2F9', fontSize: 15, lineHeight: 22 },
+  eyebrow: { color: '#FFE1A0', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 }, entry: { alignItems: 'center', gap: 14, padding: 16, borderRadius: 24, backgroundColor: '#29102E', borderColor: '#DAB26A', borderWidth: 2, marginBottom: 16 },
+  thumbnail: { width: '100%', height: 190, borderRadius: 16 }, entryTitle: { color: '#FFE1A0', fontSize: 20, lineHeight:26, textAlign:'center', fontWeight: '800', marginVertical: 5 }, body: { color: '#FFF2F9', fontSize: 15, lineHeight: 22 },
   quote: { color: '#FFBDE2', fontSize: 20, fontStyle: 'italic', lineHeight: 28 }, note: { color: '#D6C4DD', fontSize: 13, lineHeight: 19 },
   button: { minHeight: 48, padding: 14, borderRadius: 14, backgroundColor: '#FFE1A0', alignItems: 'center', justifyContent: 'center' }, buttonText: { color: '#29102E', fontWeight: '800', fontSize: 16, textAlign: 'center' }, secondary: { backgroundColor: '#47234D', borderWidth: 1, borderColor: '#DAB26A' },
   form: { padding: 16, borderRadius: 20, backgroundColor: '#301537', gap: 14 }, label: { color: '#FFE1A0', fontSize: 16, fontWeight: '700' }, input: { minHeight: 48, borderRadius: 12, padding: 12, backgroundColor: '#FFF9FD', color: '#24132F', fontSize: 16 }, question: { minHeight: 150 },

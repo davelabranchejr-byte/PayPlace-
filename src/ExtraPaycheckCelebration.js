@@ -1,5 +1,6 @@
+import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { AccessibilityInfo, Animated, Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AccessibilityInfo, Animated, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { PrivacyContext, Text } from "./Privacy";
 import { treatFlight, TREAT_SIZE } from './treat-flight.mjs';
 

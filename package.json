@@ -18,15 +18,20 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.0",
+    "@infinitered/react-native-mlkit-text-recognition": "5.0.1",
     "@noble/ciphers": "1.3.0",
     "@noble/hashes": "1.8.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "drizzle-orm": "^0.45.3",
     "expo": "^54.0.0",
+    "expo-build-properties": "~1.0.10",
     "expo-crypto": "~15.0.9",
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.24",
     "expo-font": "~14.0.12",
+    "expo-image": "~3.0.11",
+    "expo-image-manipulator": "~14.0.8",
+    "expo-image-picker": "~17.0.11",
     "expo-local-authentication": "~17.0.9",
     "expo-notifications": "~0.32.17",
     "expo-secure-store": "~15.0.8",
@@ -46,5 +51,10 @@
   "devDependencies": {
     "drizzle-kit": "^0.31.11",
     "react-test-renderer": "19.1.0"
+  },
+  "overrides": {
+    "@infinitered/react-native-mlkit-text-recognition": {
+      "@infinitered/react-native-mlkit-core": "5.0.0"
+    }
   }
 }
