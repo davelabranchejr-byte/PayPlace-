@@ -8,7 +8,7 @@ const atlas = require('../assets/characters/neighborhood-building-tabs.png');
 const bills = require('../assets/characters/nav-post-office.png');
 const debt = require('../assets/characters/nav-debt-climb.png');
 const spa = require('../assets/characters/em-spa-building.png');
-const atlasSize = Image.resolveAssetSource(atlas);
+const atlasSize = Image.resolveAssetSource?.(atlas) || {width:1983,height:793};
 const cellWidth = atlasSize.width / 5;
 const cellHeight = atlasSize.height / 2;
 export function buildingArtwork(id) {
@@ -24,11 +24,12 @@ export function buildingArtwork(id) {
     crop: [(place.tile % 5) * cellWidth, Math.floor(place.tile / 5) * cellHeight, cellWidth, cellHeight], label: place.label };
 }
 
-const tabArtwork = {
-  Home: require('../assets/characters/feature-first-win.png'),
-  Budget: require('../assets/characters/header-budget-daddy-chapo.png'),
-  Bills: require('../assets/characters/header-bills-billiam-westley.png'),
-  Neighborhood: require('../assets/characters/facebook-moving-day.jpg'),
+// Navigation depicts its destination; no reused money-tool or Facebook scenes.
+export const tabArtwork = {
+  Home: buildingArtwork('Home'),
+  Budget: buildingArtwork('Budget'),
+  Bills: require('../assets/characters/nav-plaid-bank.png'),
+  Neighborhood: require('../assets/characters/neighborhood-panorama-day.png'),
 };
 export default function NeighborhoodNav({ current, switchTab }) {
   return <View style={s.wrap}><View style={s.strip}>

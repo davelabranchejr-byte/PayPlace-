@@ -1,6 +1,32 @@
+// Destination artwork is intentional. Broad keyword matches made unrelated
+// features share the same painting, despite dedicated original scenes existing.
+export const FEATURE_ACTIONS = Object.freeze({
+  'One small step': 'smallStep',
+  'Until next payday': 'payday',
+  'Your first win with Annie': 'firstWin',
+  'Review my bills': 'reviewBills',
+  'Neighborhood': 'neighborhood',
+  'Billiam’s Mailbox': 'mailbox',
+  'Billiam’s bill tools': 'billTools',
+  'I am overwhelmed': 'overwhelmed',
+  'Quiet Mode': 'quiet',
+  'Visit Annie again': 'welcome',
+  'Plaid Banking': 'banking',
+  'My debt plan': 'debt',
+  'Undo & payment history': 'paymentHistory',
+  'Subscription Detective': 'subscriptions',
+  'Extra Paycheck Calendar': 'calendar',
+  'Savings Goals': 'savingsGoal',
+  'A little care from Annie': 'annieCare',
+  'Annie’s porch & today’s poster': 'anniePoster',
+  'Payday details & getting started': 'help',
+  'Payoff strategy & guidance': 'debt',
+});
+
 // Explicit semantic keys take priority. Labels are only a fallback for shared
 // controls; merchant/account rows supply their key at the call site.
 export function actionForLabel(value = '') {
+  if (Object.prototype.hasOwnProperty.call(FEATURE_ACTIONS,value)) return FEATURE_ACTIONS[value];
   const label = String(value).toLowerCase();
   const rules = [
     ['reject', /reject|keep private|remove from town/], ['approve', /approv|review queue/],

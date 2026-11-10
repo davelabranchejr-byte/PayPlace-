@@ -25,15 +25,12 @@ export default function TesterFeedback() {
     catch { setError("Could not open feedback. Try again, or use Send Beta Feedback in TestFlight."); }
   }
   return <>
-    <Pressable accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
+    <Pressable artworkMode="integrated" artworkAction="feedback" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
-      <Ionicons name="chatbubble-ellipses-outline" size={22} color="#6754C5" />
+      <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain" accessible={false}/>
       <Text style={s.entryText}>Help make the neighborhood better</Text>
+      <Text accessible={false} style={s.chevron}>›</Text>
     </Pressable>
-    <View style={s.daddyPreview}>
-      <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain"
-        accessibilityLabel="Daddy gathers neighborhood ideas beside a purple suggestion box and a miniature treehouse village" />
-    </View>
     <Modal visible={visible} animationType="slide" onRequestClose={() => setVisible(false)}>
       <SafeAreaView style={s.safe}>
         <ScrollView contentContainerStyle={s.content}>
@@ -63,10 +60,10 @@ export default function TesterFeedback() {
 }
 
 const s = StyleSheet.create({
-  entry: { flexDirection: "row", alignItems: "center", gap: 10, minHeight: 48, padding: 16, marginTop: 18, borderRadius: 18, backgroundColor: "#F2ECFF" },
-  entryText: { flex: 1, color: "#6754C5", fontSize: 15, fontWeight: "800" },
-  daddyPreview: { width: "100%", maxWidth: 240, height: 160, alignSelf: "center", marginTop: 12, borderRadius: 18, overflow: "hidden", backgroundColor: "#F2ECFF" },
-  daddyArtwork: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
+  entry: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, minHeight: 164, padding: 12, marginTop: 18, borderRadius: 28, backgroundColor: "#DCABFF", borderWidth: 3, borderColor: "#9F3DE5" },
+  entryText: { flexGrow: 1, flexShrink: 1, flexBasis: 88, color: "#071A3A", fontSize: 22, lineHeight: 28, fontWeight: "900" },
+  daddyArtwork: { width: 128, height: 128, borderRadius: 18 },
+  chevron: { color: "#FFFFFF", backgroundColor: "#8734CF", borderColor: "#FFFFFF", borderWidth: 2, borderRadius: 20, width: 32, height: 40, textAlign: "center", fontSize: 28, lineHeight: 37, fontWeight: "900" },
   safe: { flex: 1, backgroundColor: "#FFF8EA" },
   content: { padding: 20, paddingBottom: 40, width: "100%", maxWidth: 720, alignSelf: "center" },
   close: { alignSelf: "flex-end", width: 48, height: 48, alignItems: "center", justifyContent: "center", backgroundColor: "#F2ECFF", borderRadius: 24 },
