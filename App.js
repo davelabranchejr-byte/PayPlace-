@@ -74,6 +74,8 @@ import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
+import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
+import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
@@ -1229,6 +1231,7 @@ function PayPlaceApp() {
   const [savedFinance, setSavedFinance] = useState(starterFinance);
   const [sampleFinance, setSampleFinance] = useState(null);
   const [essentialsPanel, setEssentialsPanel] = useState(null);
+  const [micropaymentsVisible, setMicropaymentsVisible] = useState(false);
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
   const quiet = quietSettings(finance.quietMode);
@@ -1265,6 +1268,11 @@ function PayPlaceApp() {
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
+  function saveMicropayment(entry, validateOnly = false) {
+    const next = recordMicropayment(finance, entry);
+    if (!validateOnly) setFinance(next);
+  }
+  function undoExtraPayment(id) { setFinance(undoMicropayment(finance, id)); }
   function undoRecordedPayment(id) { try {setFinance(undoPayment(finance,id));} catch(e) {Alert.alert("Review this record",e.message);} }
   function correctRecordedPayment(id,amount) { setFinance(current => ({...current,bills:current.bills.map(b=>b.id===id?{...b,amount:amount.toFixed(2)}:b)})); }
 
@@ -1805,6 +1813,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             bills={finance.bills}
             onBanking={() => openPremium()}
             onDebt={() => setTab("Debt")}
+            onMicropayments={() => setMicropaymentsVisible(true)}
             addBill={addBill}
             updateBill={updateBill}
             toggleBillPaid={toggleBillPaid}
@@ -1838,6 +1847,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Debt" && (
           <DebtScreen
             debts={finance.debts}
+            onMicropayments={() => setMicropaymentsVisible(true)}
             payoffMode={finance.payoffMode}
             mixedQuickWinId={finance.mixedQuickWinId}
             setPayoffMode={setPayoffMode}
@@ -1919,6 +1929,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         </View>}
         <NeighborhoodNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
         <ExtraPaycheckCalendar visible={extraCalendarVisible} onClose={()=>setExtraCalendarVisible(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={updateExtraPaycheck} onBudget={()=>{setExtraCalendarVisible(false);setTab('Budget');}} />
+        <Micropayments key={`micro-${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible={micropaymentsVisible}
+          onClose={() => setMicropaymentsVisible(false)} finance={finance} onRecord={saveMicropayment} onUndo={undoExtraPayment} />
         <LaunchEssentials panel={essentialsPanel} onClose={() => setEssentialsPanel(null)} finance={finance} onChange={setFinance}
           onUndo={undoRecordedPayment} onCorrect={correctRecordedPayment} onFirstWin={saveFirstWin} onSample={startSample} onPersonal={endSample}/>
         <SavingsGoals visible={savingsVisible} onClose={() => setSavingsVisible(false)} goals={finance.savingsGoals || []}
@@ -2534,7 +2546,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt, onMicropayments }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2928,6 +2940,7 @@ const importDemoBills = () => {
           </View>
         ))
       )}
+      <MicropaymentsButton onPress={onMicropayments} />
       <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Your entered subscriptions and renewal reminders.',onPress:onSubscriptions}]} />
       <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
@@ -3288,7 +3301,7 @@ function BudgetScreen({
   );
 }
 
-function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
+function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [addingDebt, setAddingDebt] = useState(false);
   const [newDebt, setNewDebt] = useState({
     name: "",
@@ -3401,6 +3414,8 @@ function DebtScreen({ debts, payoffMode, mixedQuickWinId, setPayoffMode, addDebt
           </TouchableOpacity>)}
         </View>
       </View>
+
+      <MicropaymentsButton onPress={onMicropayments} />
 
       <DebtBuddyScene mode={mode} />
 
