@@ -1,11 +1,11 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),React=require('react'),babel=require('@babel/core');
 const {create,act}=require('react-test-renderer');global.IS_REACT_ACT_ENVIRONMENT=true;
-async function fixture(){
+async function fixture({fontScale=1}={}){
   const actions=await import('../src/action-artwork.mjs'),cache=new Map();
   const Image=props=>React.createElement('Image',props);
   const flatten=s=>Array.isArray(s)?Object.assign({},...s.map(flatten)):s||{};
   const NativePressable=({children,...props})=>React.createElement('Pressable',props,typeof children==='function'?children({pressed:false}):children);
-  const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,StyleSheet:{flatten,create:value=>value}};
+  const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,useWindowDimensions:()=>({width:375,height:812,fontScale}),StyleSheet:{flatten,create:value=>value}};
   function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
   return {...load('MascotTouchable.js'),FeatureLinks:load('FeatureLinks.js').default,Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
 }
@@ -133,5 +133,36 @@ test('brightened neutral buttons retain readable ink and selected state colors',
     await act(()=>renderer.update(React.createElement(f.MascotTouchable,{accessibilityState:{selected:true},style:{backgroundColor:'#6754E8'}},React.createElement('Text',{style:{color:'#FFFFFF'}},'Selected'))));
     assert.equal(f.flatten(renderer.root.findByType('TouchableOpacity').props.style).backgroundColor,'#6754E8');
     assert.equal(f.flatten(renderer.root.findByType('Text').props.style).color,'#FFFFFF');
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('feature banners reserve label space and stack for narrow phone frames',async()=>{
+  const f=await fixture();let renderer,taps=0;
+  await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:[{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress:()=>taps++}]})));
+  try{
+    for(const [width,direction,size] of [[280,'column',128],[335,'row',96],[390,'row',128]]){
+      const button=renderer.root.findByType('TouchableOpacity');
+      await act(()=>button.props.onLayout({nativeEvent:{layout:{width,height:180}}}));
+      assert.equal(f.flatten(button.props.style).flexDirection,direction);
+      assert.equal(button.findByType('Image').props.style.width,size);
+      const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
+      assert.equal(label.props.numberOfLines,direction==='row'?1:undefined);
+      assert.equal(label.props.adjustsFontSizeToFit,direction==='row');
+      assert.equal(button.findByType('Image').props.resizeMode,'contain');
+    }
+    await act(()=>renderer.root.findByType('TouchableOpacity').props.onPress());assert.equal(taps,1);
+  }finally{await act(()=>renderer.unmount());}
+});
+
+test('larger system text gets a full-width caption without line limits',async()=>{
+  const f=await fixture({fontScale:1.6});let renderer;
+  await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:[{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress(){}}]})));
+  try{
+    const button=renderer.root.findByType('TouchableOpacity');
+    await act(()=>button.props.onLayout({nativeEvent:{layout:{width:390,height:210}}}));
+    assert.equal(f.flatten(button.props.style).flexDirection,'column');
+    const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
+    assert.equal(label.props.numberOfLines,undefined);assert.equal(label.props.adjustsFontSizeToFit,false);
+    assert.equal(button.findByType('Image').props.style.width,128);
   }finally{await act(()=>renderer.unmount());}
 });
