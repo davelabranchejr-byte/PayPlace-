@@ -1,6 +1,6 @@
 # Build 60 — bright buttons with distinct original artwork
 
-Status: implemented and preparing release; not yet built or uploaded to Apple.
+Status: native build 1.0.0 (60) compiled and signed successfully. Expo accepted the signed submission and placed it in the free-tier queue. Apple upload has not yet been confirmed.
 
 Dave’s reference calls for bright turquoise, purple, yellow and coral; large rounded illustrated buttons; clear labels; and original artwork that fits each destination. The design intent is playful engagement with predictable navigation and readable information. Color is not a clinical treatment claim. Existing reduced-motion and privacy settings remain available.
 
@@ -31,4 +31,12 @@ This change fixes assignment and repetition. It does not finish the 28 older mas
 
 ## Release
 
-Use the existing release branch and signed iOS workflow for 1.0.0 (60). Record the source commit, workflow run and Apple submission receipt here after completion. Do not equate successful upload with completed Apple processing or external tester availability.
+The existing signed release workflow is running for 1.0.0 (60).
+
+- Source: `d268e89a05bf3f4ef0fe398a236e204400c85693` (merged PR 30).
+- Release: https://github.com/davelabranchejr-byte/PayPlace-/actions/runs/42834277194
+- Expo submission: https://expo.dev/accounts/pilotpay/projects/payplace/submissions/4d753210-ee87-4f74-8bdc-a1bc4b12dd20
+- Native archive and signing succeeded; Expo submit remains in progress. The service showed Queued / Free Tier Queue on November 10, 2026.
+- Build 61 follows with the responsive label refinement; see BUILD_61.md.
+
+Record the actual Apple upload receipt after the queue clears. Do not equate a queued submission with a confirmed upload, or a confirmed upload with completed Apple processing or external tester availability.
