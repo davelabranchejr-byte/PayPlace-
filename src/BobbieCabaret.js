@@ -7,7 +7,7 @@ import OwnerInbox from './OwnerInbox';
 import { createEmailApi } from './email-api.mjs';
 import { prepareQuestion, QUESTION_TOPICS } from './bobbie-cabaret.mjs';
 
-const artwork = require('../assets/characters/bobbie-darlending-show.jpeg');
+const artwork = require('../assets/characters/bobbie-darlending-show.png');
 const api = createEmailApi(Platform.OS, fetch, 'cabaret');
 function Button({ label, onPress, disabled, secondary }) {
   return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} disabled={disabled} accessibilityState={{ disabled: !!disabled }} onPress={onPress} style={[s.button, secondary && s.secondary, disabled && { opacity: 0.6 }]}><Text style={[s.buttonText, secondary && { color: '#FFE1A0' }]}>{label}</Text></TouchableOpacity>;

@@ -1,0 +1,1857 @@
+{
+  "status": "in_progress_not_released",
+  "generation_limit_reset": "2026-11-10T16:21:16-05:00",
+  "reviewed_count": 33,
+  "notes": [
+    "Brand-only entries are audit candidates; inspect them before editing, and retain artwork already using the approved emblem.",
+    "Two generated scenes need paw-color repairs and are saved only under docs/artwork-review, outside app assets.",
+    "Existing unreferenced JPEG originals remain archived; active image requires use the reviewed PNG."
+  ],
+  "assets": [
+    {
+      "index": 2,
+      "path": "assets/actions/browse.jpg",
+      "aliases": [
+        "assets/actions/browse.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 192,
+      "height": 192,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/actions/browse.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 192x192 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 10,
+      "path": "assets/actions/remember.jpg",
+      "aliases": [
+        "assets/actions/remember.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 192,
+      "height": 192,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/actions/remember.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 192x192 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 20,
+      "path": "assets/categories/dining.jpg",
+      "aliases": [
+        "assets/categories/dining.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 384,
+      "height": 384,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/categories/dining.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 384x384 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 21,
+      "path": "assets/categories/entertainment.jpg",
+      "aliases": [
+        "assets/categories/entertainment.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 384,
+      "height": 384,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/categories/entertainment.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 384x384 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 22,
+      "path": "assets/categories/health.jpg",
+      "aliases": [
+        "assets/categories/health.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 384,
+      "height": 384,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/categories/health.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 384x384 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 23,
+      "path": "assets/categories/household.jpg",
+      "aliases": [
+        "assets/categories/household.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 384,
+      "height": 384,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/categories/household.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 384x384 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 26,
+      "path": "assets/categories/transportation.jpg",
+      "aliases": [
+        "assets/categories/transportation.jpg"
+      ],
+      "kind": "fur-only",
+      "width": 384,
+      "height": 384,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 27,
+      "path": "assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png",
+      "aliases": [
+        "assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png"
+      ],
+      "kind": "brand-only",
+      "width": 589,
+      "height": 582,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 28,
+      "path": "assets/characters/IMG_3610.png",
+      "aliases": [
+        "assets/characters/IMG_3610.png"
+      ],
+      "kind": "brand-only",
+      "width": 556,
+      "height": 485,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 30,
+      "path": "assets/characters/add-debt-family-budget.png",
+      "aliases": [
+        "assets/characters/add-debt-family-budget.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/add-debt-family-budget.png",
+      "prompt": "Use case: precise-object-edit. Image1 is existing art; image2 is official PayPlace logo reference ONLY. Correct ONLY female glamour CAT Bobbie's natural fur to SILVER GREY with BLACK tabby stripes on her face, ears, exposed body, her own visible paws, and any clearly Bobbie-owned visible tail. Keep her exact existing wig COLOR/hairstyle, clothes, face, eyes, expression, pose and jewelry. \nLeave all other characters completely unchanged: WHITE TERRIER WESTLEY is ALL WHITE including BOTH paws/wrists, feet and tail. TAN CHIHUAHUA TATE is TAN/CREAM including BOTH front paws, feet and tail, with NO grey or tabby stripes. ORANGE CAT CHAPO stays ORANGE/CREAM on EVERY paw, hind foot and tail, NO grey or black. Daddy same human. Do not apply Bobbie's coloring to another character.\nCorrect ONLY ALREADY EXISTING EXPLICIT PayPlace P-brand emblems using image2 (white dimensional P, paw/checkmark circle, rounded square turquoise upper-left/yellow upper-right/purple lower-left/coral lower-right). Preserve original emblem locations, SMALL footprints and perspective. No added logos. Ordinary hearts, stars, paw decorations, feature/category symbols, jewelry shapes, text and other art are unchanged. Do not brand blank clothes, blank objects or non-P symbols.\nKeep entire original composition, all faces, framing, canvas 1448x1086 aspect ratio and every other detail unchanged. Preserve original background."
+    },
+    {
+      "index": 34,
+      "path": "assets/characters/annie-family-wall.png",
+      "aliases": [
+        "assets/characters/annie-family-wall.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1024,
+      "height": 1536,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/annie-family-wall.png",
+      "prompt": "Use case: precise-object-edit. Image1 is existing art; image2 is official PayPlace logo reference ONLY. Correct ONLY female glamour CAT Bobbie's natural fur to SILVER GREY with BLACK tabby stripes on her face, ears, exposed body, her own visible paws, and any clearly Bobbie-owned visible tail. Keep her exact existing wig COLOR/hairstyle, clothes, face, eyes, expression, pose and jewelry. Correct Bobbie in her FRAMED PHOTO at left and any smaller depictions of her; preserve all photos' frames, layout, labels and the exact other characters' faces and fur.\nLeave all other characters completely unchanged: WHITE TERRIER WESTLEY is ALL WHITE including BOTH paws/wrists, feet and tail. TAN CHIHUAHUA TATE is TAN/CREAM including BOTH front paws, feet and tail, with NO grey or tabby stripes. ORANGE CAT CHAPO stays ORANGE/CREAM on EVERY paw, hind foot and tail, NO grey or black. Daddy same human. Do not apply Bobbie's coloring to another character.\nCorrect ONLY ALREADY EXISTING EXPLICIT PayPlace P-brand emblems using image2 (white dimensional P, paw/checkmark circle, rounded square turquoise upper-left/yellow upper-right/purple lower-left/coral lower-right). Preserve original emblem locations, SMALL footprints and perspective. No added logos. Ordinary hearts, stars, paw decorations, feature/category symbols, jewelry shapes, text and other art are unchanged. Do not brand blank clothes, blank objects or non-P symbols.\nKeep entire original composition, all faces, framing, canvas 1024x1536 aspect ratio and every other detail unchanged. Preserve original background."
+    },
+    {
+      "index": 52,
+      "path": "assets/characters/annie-red-door-village-night.png",
+      "aliases": [
+        "assets/characters/annie-red-door-village-night.png"
+      ],
+      "kind": "brand-only",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 53,
+      "path": "assets/characters/annie-red-door-village.png",
+      "aliases": [
+        "assets/characters/annie-red-door-village.png"
+      ],
+      "kind": "brand-only",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 54,
+      "path": "assets/characters/annie-welcome-home-autumn.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-autumn.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "needs-repair",
+      "review": "Chapo front paw received grey coloring; repair to orange/cream",
+      "review_image": "docs/artwork-review/needs-paw-correction/annie-welcome-home-autumn.png",
+      "prompt": "Use case: precise-object-edit. Image1 is existing art; image2 is official PayPlace logo reference ONLY. Correct ONLY female glamour CAT Bobbie's natural fur to SILVER GREY with BLACK tabby stripes on her face, ears, exposed body, her own visible paws, and any clearly Bobbie-owned visible tail. Keep her exact existing wig COLOR/hairstyle, clothes, face, eyes, expression, pose and jewelry. \nLeave all other characters completely unchanged: WHITE TERRIER WESTLEY is ALL WHITE including BOTH paws/wrists, feet and tail. TAN CHIHUAHUA TATE is TAN/CREAM including BOTH front paws, feet and tail, with NO grey or tabby stripes. ORANGE CAT CHAPO stays ORANGE/CREAM on EVERY paw, hind foot and tail, NO grey or black. Daddy same human. Do not apply Bobbie's coloring to another character.\nCorrect ONLY ALREADY EXISTING EXPLICIT PayPlace P-brand emblems using image2 (white dimensional P, paw/checkmark circle, rounded square turquoise upper-left/yellow upper-right/purple lower-left/coral lower-right). Preserve original emblem locations, SMALL footprints and perspective. No added logos. Ordinary hearts, stars, paw decorations, feature/category symbols, jewelry shapes, text and other art are unchanged. Do not brand blank clothes, blank objects or non-P symbols.\nKeep entire original composition, all faces, framing, canvas 1672x941 aspect ratio and every other detail unchanged. Preserve original background."
+    },
+    {
+      "index": 55,
+      "path": "assets/characters/annie-welcome-home-halloween.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-halloween.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 56,
+      "path": "assets/characters/annie-welcome-home-spring.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-spring.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/annie-welcome-home-spring.png",
+      "prompt": "Use case: precise-object-edit. Image1 is edit target. Image2 is official PayPlace logo reference ONLY. Precisely repair existing art; preserve original framing, dimensions, all original characters, faces, expressions, poses, wig COLORS/styles, clothes, objects, symbols, text and backgrounds.\nBobbie is the FEMALE glamour CAT with wig. Change only HER NATURAL FUR (face, ears, exposed limbs, both HER paws, tail) to silver grey with black tabby stripes. Her wig is not fur; keep wig and outfit exactly as-is. Westley stays entirely WHITE, Tate TAN/CREAM, Chapo ORANGE/CREAM, including ALL their paws; no grey spillover onto other animals. Daddy remains identical human. Bobbie is behind Chapo, at upper right, with long brown wig and floral pink outfit. Westley is far RIGHT, wearing green jacket and blue gingham scarf: BOTH his front paws must remain WHITE, no stripes. Chapo front-center BOTH paws ORANGE/CREAM; Tate left-front BOTH paws TAN/CREAM. Keep Welcome home! unchanged.\nUpdate ONLY already-existing explicit PayPlace P-brand emblems using image2: white dimensional P with paw/checkmark center on four-color rounded square. Preserve each existing emblem's exact small position, footprint and perspective; NO new logos. Do not replace ordinary hearts, stars, paw decorations, task symbols or other artwork with P logos. Do not add logos to blank clothing or objects. Keep original background."
+    },
+    {
+      "index": 57,
+      "path": "assets/characters/annie-welcome-home-summer.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-summer.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 58,
+      "path": "assets/characters/annie-welcome-home-winter-holidays.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-winter-holidays.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 59,
+      "path": "assets/characters/annie-welcome-home-winter.png",
+      "aliases": [
+        "assets/characters/annie-welcome-home-winter.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 61,
+      "path": "assets/characters/billiam-batch.png",
+      "aliases": [
+        "assets/characters/billiam-batch.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 62,
+      "path": "assets/characters/billiam-bill-scanner.png",
+      "aliases": [
+        "assets/characters/billiam-bill-scanner.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 63,
+      "path": "assets/characters/billiam-breakdown.png",
+      "aliases": [
+        "assets/characters/billiam-breakdown.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 65,
+      "path": "assets/characters/billiam-compare.png",
+      "aliases": [
+        "assets/characters/billiam-compare.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 66,
+      "path": "assets/characters/billiam-household.png",
+      "aliases": [
+        "assets/characters/billiam-household.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 67,
+      "path": "assets/characters/billiam-import.png",
+      "aliases": [
+        "assets/characters/billiam-import.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 68,
+      "path": "assets/characters/billiam-mailbox.png",
+      "aliases": [
+        "assets/characters/billiam-mailbox.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 69,
+      "path": "assets/characters/billiam-recurring.png",
+      "aliases": [
+        "assets/characters/billiam-recurring.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 70,
+      "path": "assets/characters/bills-tate-convertible.jpg",
+      "aliases": [
+        "assets/characters/bills-tate-convertible.jpg"
+      ],
+      "kind": "brand-only",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 71,
+      "path": "assets/characters/bobbie-darlending-show.jpeg",
+      "aliases": [
+        "assets/characters/bobbie-darlending-show.jpeg"
+      ],
+      "kind": "fur-only",
+      "width": 1312,
+      "height": 1199,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-darlending-show.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 1312x1199 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 72,
+      "path": "assets/characters/bobbie-pearl-01.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-01.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-01.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 73,
+      "path": "assets/characters/bobbie-pearl-02.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-02.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-02.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 74,
+      "path": "assets/characters/bobbie-pearl-03.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-03.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-03.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 75,
+      "path": "assets/characters/bobbie-pearl-04.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-04.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-04.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 76,
+      "path": "assets/characters/bobbie-pearl-05.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-05.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-05.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 77,
+      "path": "assets/characters/bobbie-pearl-06.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-06.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-06.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 78,
+      "path": "assets/characters/bobbie-pearl-07.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-07.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-07.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 79,
+      "path": "assets/characters/bobbie-pearl-08.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-08.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-08.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Bobbie's wig and clothes are unchanged. Update only ALREADY EXISTING PayPlace P emblems to the exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square. Keep each emblem at its original SMALL footprint, position, material and perspective. Do not add any new logos. Ordinary hearts, stars, pawprint decorations, flowers, jewelry, clothing patterns and other props stay exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas, aspect ratio and full composition."
+    },
+    {
+      "index": 80,
+      "path": "assets/characters/bobbie-pearl-09.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-09.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-09.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 81,
+      "path": "assets/characters/bobbie-pearl-10.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-10.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-10.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 82,
+      "path": "assets/characters/bobbie-pearl-11.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-11.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-11.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 83,
+      "path": "assets/characters/bobbie-pearl-12.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-12.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-12.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 84,
+      "path": "assets/characters/bobbie-pearl-13.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-13.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-13.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 85,
+      "path": "assets/characters/bobbie-pearl-14.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-14.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-14.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 86,
+      "path": "assets/characters/bobbie-pearl-15.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-15.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-15.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 87,
+      "path": "assets/characters/bobbie-pearl-16.png",
+      "aliases": [
+        "assets/characters/bobbie-pearl-16.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-pearl-16.png",
+      "prompt": "Precise localized edit of image1 existing Bobbie portrait; image2 is official logo reference ONLY. Change ONLY Bobbie's NATURAL cat fur to SILVER GREY with BLACK tabby stripes, including face, ears, both paws, exposed limbs, feet and tail. Keep EXACT original wig COLOR/style, green eyes, face, expression, outfit, jewelry, body, pose, framing, garden and lighting. Wig and clothes unchanged. Update ONLY ALREADY EXISTING explicit PayPlace P emblems to exact image2 white dimensional P with paw/checkmark center on turquoise/yellow/purple/coral rounded square; each at its original SMALL size, location, material and perspective. NO new logos. Keep ordinary hearts, stars, pawprint decorations, flowers, jewelry and clothing patterns exactly as originally drawn. No redesign. Preserve original 1254x1254 canvas and full composition."
+    },
+    {
+      "index": 88,
+      "path": "assets/characters/bobbie-premium-clubhouse.png",
+      "aliases": [
+        "assets/characters/bobbie-premium-clubhouse.png"
+      ],
+      "kind": "fur-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/bobbie-premium-clubhouse.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 1536x1024 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 90,
+      "path": "assets/characters/bobbie-smart-mirror.png",
+      "aliases": [
+        "assets/characters/bobbie-smart-mirror.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1199,
+      "height": 1312,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 91,
+      "path": "assets/characters/chapo-pearl-01.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-01.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 92,
+      "path": "assets/characters/chapo-pearl-02.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-02.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 93,
+      "path": "assets/characters/chapo-pearl-03.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-03.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 94,
+      "path": "assets/characters/chapo-pearl-04.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-04.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 95,
+      "path": "assets/characters/chapo-pearl-05.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-05.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 96,
+      "path": "assets/characters/chapo-pearl-06.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-06.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 97,
+      "path": "assets/characters/chapo-pearl-07.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-07.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 98,
+      "path": "assets/characters/chapo-pearl-08.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-08.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 99,
+      "path": "assets/characters/chapo-pearl-09.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-09.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 100,
+      "path": "assets/characters/chapo-pearl-10.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-10.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 101,
+      "path": "assets/characters/chapo-pearl-11.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-11.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 102,
+      "path": "assets/characters/chapo-pearl-12.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-12.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 103,
+      "path": "assets/characters/chapo-pearl-13.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-13.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 104,
+      "path": "assets/characters/chapo-pearl-14.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-14.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 105,
+      "path": "assets/characters/chapo-pearl-15.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-15.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 106,
+      "path": "assets/characters/chapo-pearl-16.png",
+      "aliases": [
+        "assets/characters/chapo-pearl-16.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 107,
+      "path": "assets/characters/daddy-neighborhood-feedback.png",
+      "aliases": [
+        "assets/characters/daddy-neighborhood-feedback.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 108,
+      "path": "assets/characters/debt-mixed-snowplow.png",
+      "aliases": [
+        "assets/characters/debt-mixed-snowplow.png"
+      ],
+      "kind": "brand-only",
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 111,
+      "path": "assets/characters/extra-paycheck-chapo-bellybox.jpg",
+      "aliases": [
+        "assets/characters/extra-paycheck-chapo-bellybox.jpg"
+      ],
+      "kind": "brand-only",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 112,
+      "path": "assets/characters/extra-paycheck-chapo-treat-rain.png",
+      "aliases": [
+        "assets/characters/extra-paycheck-chapo-treat-rain.png"
+      ],
+      "kind": "brand-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 114,
+      "path": "assets/characters/feature-first-win.png",
+      "aliases": [
+        "assets/characters/feature-first-win.png"
+      ],
+      "kind": "fur-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "needs-repair",
+      "review": "Westley front paws received grey stripes; repair both to white",
+      "review_image": "docs/artwork-review/needs-paw-correction/feature-first-win.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 1536x1024 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 115,
+      "path": "assets/characters/feature-payment-history.png",
+      "aliases": [
+        "assets/characters/feature-payment-history.png"
+      ],
+      "kind": "fur-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/feature-payment-history.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 1536x1024 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 116,
+      "path": "assets/characters/feature-quiet-mode.png",
+      "aliases": [
+        "assets/characters/feature-quiet-mode.png"
+      ],
+      "kind": "fur-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 117,
+      "path": "assets/characters/feature-until-payday.png",
+      "aliases": [
+        "assets/characters/feature-until-payday.png"
+      ],
+      "kind": "fur-only",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/feature-until-payday.png",
+      "prompt": "Use case: precise-object-edit. Exact localized FUR-RECOLOR ONLY to this existing illustration. Bobbie is the FEMALE GLAMOROUS CAT with long wig, jewelry and fancy clothes. Recolor ONLY BOBBIE'S visible NATURAL CAT FUR from brown to SILVER GREY with BLACK tabby stripes. Preserve her original face, green eyes, expression, wig's COLOR and hairstyle, outfit, jewelry, proportions and pose. Her own visible paws must match grey/black. Recolor a tail ONLY if it clearly belongs to Bobbie. No new tails, paws or limbs.\nDO NOT recolor ANY part of another animal. Westley the white TERRIER DOG stays ALL WHITE, including every paw, wrist, foot and tail. Tate the tan CHIHUAHUA DOG stays TAN/CREAM, including BOTH front paws, feet and tail, with NO black stripes or GREY anywhere. Chapo the ORANGE CAT without a wig stays ORANGE/CREAM including BOTH front paws, hind feet and tail, with NO GREY. Daddy the human stays unchanged.\nEVERYTHING except Bobbie's natural fur remains EXACTLY unchanged. Keep ALL original symbols, logos, text, hearts, stars, plain paws, category illustrations, envelopes, necklaces, tickets, menu covers, clothing details and scenery as-is. DO NOT ADD OR CHANGE ANY LOGO. No P emblems added anywhere. Preserve full original 1536x1024 aspect ratio, margins and composition. Preserve original background."
+    },
+    {
+      "index": 118,
+      "path": "assets/characters/header-bills-billiam-westley.png",
+      "aliases": [
+        "assets/characters/header-bills-billiam-westley.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "pending-review"
+    },
+    {
+      "index": 119,
+      "path": "assets/characters/header-budget-daddy-chapo.png",
+      "aliases": [
+        "assets/characters/header-budget-daddy-chapo.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "pending-review"
+    },
+    {
+      "index": 121,
+      "path": "assets/characters/header-debt-bobbie-tate.png",
+      "aliases": [
+        "assets/characters/header-debt-bobbie-tate.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/header-debt-bobbie-tate.png",
+      "prompt": "Use case: precise-object-edit. Image1 is edit target. Image2 is official PayPlace logo reference ONLY. Precisely repair existing art; preserve original framing, dimensions, all original characters, faces, expressions, poses, wig COLORS/styles, clothes, objects, symbols, text and backgrounds.\nBobbie is the FEMALE glamour CAT with wig. Change only HER NATURAL FUR (face, ears, exposed limbs, both HER paws, tail) to silver grey with black tabby stripes. Her wig is not fur; keep wig and outfit exactly as-is. Westley stays entirely WHITE, Tate TAN/CREAM, Chapo ORANGE/CREAM, including ALL their paws; no grey spillover onto other animals. Daddy remains identical human. Bobbie is taller glamour cat on RIGHT, preserve her purple jacket, wig, map, pointing pose. Tate the shorter Chihuahua at LEFT must keep every paw TAN/CREAM, without any grey/black stripes. Preserve map symbols and paw-stamped blocks.\nUpdate ONLY already-existing explicit PayPlace P-brand emblems using image2: white dimensional P with paw/checkmark center on four-color rounded square. Preserve each existing emblem's exact small position, footprint and perspective; NO new logos. Do not replace ordinary hearts, stars, paw decorations, task symbols or other artwork with P logos. Do not add logos to blank clothing or objects. Keep real transparent background, original clear margins, and all alpha edges."
+    },
+    {
+      "index": 122,
+      "path": "assets/characters/header-savings-westley-bobbie.png",
+      "aliases": [
+        "assets/characters/header-savings-westley-bobbie.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/header-savings-westley-bobbie.png",
+      "prompt": "Use case: precise-object-edit. Image1 is edit target. Image2 is official PayPlace logo reference ONLY. Precisely repair existing art; preserve original framing, dimensions, all original characters, faces, expressions, poses, wig COLORS/styles, clothes, objects, symbols, text and backgrounds.\nBobbie is the FEMALE glamour CAT with wig. Change only HER NATURAL FUR (face, ears, exposed limbs, both HER paws, tail) to silver grey with black tabby stripes. Her wig is not fur; keep wig and outfit exactly as-is. Westley stays entirely WHITE, Tate TAN/CREAM, Chapo ORANGE/CREAM, including ALL their paws; no grey spillover onto other animals. Daddy remains identical human. Bobbie is glamour cat on RIGHT holding little house; only HER natural fur changes. Westley the terrier at LEFT must keep ENTIRE fur including BOTH front paws and hind paws WHITE. Preserve the house, its multicolor paw, the gold coins and their stamped paws; those paws are decorations, not PayPlace logos.\nUpdate ONLY already-existing explicit PayPlace P-brand emblems using image2: white dimensional P with paw/checkmark center on four-color rounded square. Preserve each existing emblem's exact small position, footprint and perspective; NO new logos. Do not replace ordinary hearts, stars, paw decorations, task symbols or other artwork with P logos. Do not add logos to blank clothing or objects. Keep real transparent background, original clear margins, and all alpha edges."
+    },
+    {
+      "index": 124,
+      "path": "assets/characters/manual-mode-tate-convertible.png",
+      "aliases": [
+        "assets/characters/manual-mode-tate-convertible.png"
+      ],
+      "kind": "brand-only",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 126,
+      "path": "assets/characters/money-mood-family-budget.jpg",
+      "aliases": [
+        "assets/characters/money-mood-family-budget.jpg"
+      ],
+      "kind": "fur-brand",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 129,
+      "path": "assets/characters/nav-debt-climb.png",
+      "aliases": [
+        "assets/characters/nav-debt-climb.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 130,
+      "path": "assets/characters/nav-plaid-bank.png",
+      "aliases": [
+        "assets/characters/nav-plaid-bank.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "pending-review"
+    },
+    {
+      "index": 131,
+      "path": "assets/characters/nav-post-office.png",
+      "aliases": [
+        "assets/characters/nav-post-office.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 133,
+      "path": "assets/characters/neighborhood-building-tabs.png",
+      "aliases": [
+        "assets/characters/neighborhood-building-tabs.png"
+      ],
+      "kind": "brand-only",
+      "width": 1983,
+      "height": 793,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 138,
+      "path": "assets/characters/overwhelmed-westley-cozy.jpg",
+      "aliases": [
+        "assets/characters/overwhelmed-westley-cozy.jpg"
+      ],
+      "kind": "brand-only",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 139,
+      "path": "assets/characters/payplace-art-studio.png",
+      "aliases": [
+        "assets/characters/payplace-art-studio.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1536,
+      "height": 1024,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 140,
+      "path": "assets/characters/plaid-bank-daddy-tate.png",
+      "aliases": [
+        "assets/characters/plaid-bank-daddy-tate.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "status": "pending-review"
+    },
+    {
+      "index": 141,
+      "path": "assets/characters/plaid-bank-neighborhood.png",
+      "aliases": [
+        "assets/characters/plaid-bank-neighborhood.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1672,
+      "height": 940,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 142,
+      "path": "assets/characters/premium-bobbie-gala.png",
+      "aliases": [
+        "assets/characters/premium-bobbie-gala.png"
+      ],
+      "kind": "fur-only",
+      "width": 1199,
+      "height": 1312,
+      "transparent": true,
+      "status": "pending-generation"
+    },
+    {
+      "index": 143,
+      "path": "assets/characters/premium-catchup.png",
+      "aliases": [
+        "assets/characters/premium-catchup.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 144,
+      "path": "assets/characters/premium-credit.png",
+      "aliases": [
+        "assets/characters/premium-credit.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 145,
+      "path": "assets/characters/premium-fund.png",
+      "aliases": [
+        "assets/characters/premium-fund.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 146,
+      "path": "assets/characters/premium-roundup.png",
+      "aliases": [
+        "assets/characters/premium-roundup.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 147,
+      "path": "assets/characters/premium-shock.png",
+      "aliases": [
+        "assets/characters/premium-shock.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 148,
+      "path": "assets/characters/premium-watch.png",
+      "aliases": [
+        "assets/characters/premium-watch.png"
+      ],
+      "kind": "fur-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 150,
+      "path": "assets/characters/references/character-guide-legacy.jpg",
+      "aliases": [
+        "assets/characters/references/character-guide-legacy.jpg"
+      ],
+      "kind": "brand-only",
+      "width": 1024,
+      "height": 1536,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 152,
+      "path": "assets/characters/references/family-reference.png",
+      "aliases": [
+        "assets/characters/references/family-reference.png"
+      ],
+      "kind": "fur-brand",
+      "width": 1402,
+      "height": 1122,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/references/family-reference.png",
+      "prompt": "Use case: precise-object-edit. Image1 is edit target. Image2 is official PayPlace logo reference ONLY. Precisely repair existing art; preserve original framing, dimensions, all original characters, faces, expressions, poses, wig COLORS/styles, clothes, objects, symbols, text and backgrounds.\nBobbie is the FEMALE glamour CAT with wig. Change only HER NATURAL FUR (face, ears, exposed limbs, both HER paws, tail) to silver grey with black tabby stripes. Her wig is not fur; keep wig and outfit exactly as-is. Westley stays entirely WHITE, Tate TAN/CREAM, Chapo ORANGE/CREAM, including ALL their paws; no grey spillover onto other animals. Daddy remains identical human. Correct BOTH the main Bobbie and the small framed portrait of Bobbie on the right wall. Replace ONLY the old bottom tagline \"Your money. One place.\" with \"Money without shame.\" Keep other signs and speech labels unchanged.\nUpdate ONLY already-existing explicit PayPlace P-brand emblems using image2: white dimensional P with paw/checkmark center on four-color rounded square. Preserve each existing emblem's exact small position, footprint and perspective; NO new logos. Do not replace ordinary hearts, stars, paw decorations, task symbols or other artwork with P logos. Do not add logos to blank clothing or objects. Keep original background."
+    },
+    {
+      "index": 154,
+      "path": "assets/characters/sample-bills-westley-mailman.png",
+      "aliases": [
+        "assets/characters/sample-bills-westley-mailman.png"
+      ],
+      "kind": "brand-only",
+      "width": 1448,
+      "height": 1086,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 156,
+      "path": "assets/characters/security-screen-approved.png",
+      "aliases": [
+        "assets/characters/security-screen-approved.png"
+      ],
+      "kind": "brand-only",
+      "width": 941,
+      "height": 1672,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 157,
+      "path": "assets/characters/showing-up-counts-westley-tate.jpg",
+      "aliases": [
+        "assets/characters/showing-up-counts-westley-tate.jpg"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 164,
+      "path": "assets/characters/spa-bobbie-jacuzzi.png",
+      "aliases": [
+        "assets/characters/spa-bobbie-jacuzzi.png"
+      ],
+      "kind": "spa",
+      "width": 1312,
+      "height": 1199,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 165,
+      "path": "assets/characters/spa-chapo-cookie-cleanup.png",
+      "aliases": [
+        "assets/characters/spa-chapo-cookie-cleanup.png"
+      ],
+      "kind": "spa",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 166,
+      "path": "assets/characters/spa-glamour-and-tate.png",
+      "aliases": [
+        "assets/characters/spa-glamour-and-tate.png"
+      ],
+      "kind": "spa",
+      "width": 1312,
+      "height": 1199,
+      "transparent": false,
+      "status": "reviewed",
+      "review": "Grey/black Bobbie, preserved original wigs/outfits, white Westley, tan/cream Tate, orange/cream Chapo, original symbols and framing checked",
+      "applied_path": "assets/characters/spa-glamour-and-tate.png",
+      "prompt": "Use case: precise-object-edit. Image1 edit target is original Em's Pet Spa artwork; image2 is official PayPlace logo reference ONLY. Preserve all original artwork, faces, outfits, wig colors/styles, poses, objects, speech bubbles, readable text and every scene detail.\nCorrect ONLY glamorous female CAT Bobbie's natural fur to SILVER GREY with BLACK tabby stripes wherever she appears, including her own paws/tail and every small poster/photo depiction. Her exact original wig COLOR and clothes are unchanged. Do NOT recolor dogs or the orange cat: Westley WHITE terrier must remain entirely WHITE including ALL paws/wrists, feet and tail. Tate TAN Chihuahua remains TAN/CREAM on EVERY paw and tail, with NO grey/black stripes. Chapo ORANGE CAT remains ORANGE/CREAM on ALL front paws, feet and tail, NO GREY.\nRemove ONLY the floating PayPlace logo/wordmark overlay across the TOP edge/corner, filling that small space naturally to match existing background, because the app displays branding BELOW this artwork. Do not remove printed branding on objects or signs.\nCorrect only existing P-brand emblems PRINTED ON OBJECTS to the exact image2 logo, at same small positions/perspective/material. CRITICAL: only replace shapes that ALREADY CONTAIN THE LETTER P. Never add P to a place without one. Ordinary pawprints, hearts, flowers, stars, other icons and all book covers stay exactly as originally drawn. Keep Em's Pet Spa sign/text unchanged. No new logos or face overlays.\nKeep original 1312x1199 aspect ratio, full framing/canvas and lighting. Preserve original background."
+    },
+    {
+      "index": 167,
+      "path": "assets/characters/spa-slumber-fort.jpg",
+      "aliases": [
+        "assets/characters/spa-slumber-fort.jpg"
+      ],
+      "kind": "spa",
+      "width": 1200,
+      "height": 900,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 168,
+      "path": "assets/characters/spa-slumber-grooming.jpg",
+      "aliases": [
+        "assets/characters/spa-slumber-grooming.jpg"
+      ],
+      "kind": "spa",
+      "width": 1200,
+      "height": 900,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 169,
+      "path": "assets/characters/spa-slumber-ocean.jpg",
+      "aliases": [
+        "assets/characters/spa-slumber-ocean.jpg"
+      ],
+      "kind": "spa",
+      "width": 1200,
+      "height": 900,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 170,
+      "path": "assets/characters/spa-slumber-party.jpg",
+      "aliases": [
+        "assets/characters/spa-slumber-party.jpg"
+      ],
+      "kind": "spa",
+      "width": 1200,
+      "height": 900,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 171,
+      "path": "assets/characters/spa-welcome.png",
+      "aliases": [
+        "assets/characters/spa-welcome.png"
+      ],
+      "kind": "spa",
+      "width": 1312,
+      "height": 1199,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 172,
+      "path": "assets/characters/spa-westley-secret.png",
+      "aliases": [
+        "assets/characters/spa-westley-secret.png"
+      ],
+      "kind": "spa",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 173,
+      "path": "assets/characters/tate-pearl-01.png",
+      "aliases": [
+        "assets/characters/tate-pearl-01.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 174,
+      "path": "assets/characters/tate-pearl-02.png",
+      "aliases": [
+        "assets/characters/tate-pearl-02.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 175,
+      "path": "assets/characters/tate-pearl-03.png",
+      "aliases": [
+        "assets/characters/tate-pearl-03.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 176,
+      "path": "assets/characters/tate-pearl-04.png",
+      "aliases": [
+        "assets/characters/tate-pearl-04.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 177,
+      "path": "assets/characters/tate-pearl-05.png",
+      "aliases": [
+        "assets/characters/tate-pearl-05.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 178,
+      "path": "assets/characters/tate-pearl-06.png",
+      "aliases": [
+        "assets/characters/tate-pearl-06.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 179,
+      "path": "assets/characters/tate-pearl-07.png",
+      "aliases": [
+        "assets/characters/tate-pearl-07.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 180,
+      "path": "assets/characters/tate-pearl-08.png",
+      "aliases": [
+        "assets/characters/tate-pearl-08.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 181,
+      "path": "assets/characters/tate-pearl-09.png",
+      "aliases": [
+        "assets/characters/tate-pearl-09.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 182,
+      "path": "assets/characters/tate-pearl-10.png",
+      "aliases": [
+        "assets/characters/tate-pearl-10.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 183,
+      "path": "assets/characters/tate-pearl-11.png",
+      "aliases": [
+        "assets/characters/tate-pearl-11.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 184,
+      "path": "assets/characters/tate-pearl-12.png",
+      "aliases": [
+        "assets/characters/tate-pearl-12.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 185,
+      "path": "assets/characters/tate-pearl-13.png",
+      "aliases": [
+        "assets/characters/tate-pearl-13.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 186,
+      "path": "assets/characters/tate-pearl-14.png",
+      "aliases": [
+        "assets/characters/tate-pearl-14.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 187,
+      "path": "assets/characters/tate-pearl-15.png",
+      "aliases": [
+        "assets/characters/tate-pearl-15.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 188,
+      "path": "assets/characters/tate-pearl-16.png",
+      "aliases": [
+        "assets/characters/tate-pearl-16.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 189,
+      "path": "assets/characters/tate-small-bites.png",
+      "aliases": [
+        "assets/characters/tate-small-bites.png"
+      ],
+      "kind": "brand-only",
+      "width": 1672,
+      "height": 941,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 191,
+      "path": "assets/characters/westley-pearl-01.png",
+      "aliases": [
+        "assets/characters/westley-pearl-01.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 192,
+      "path": "assets/characters/westley-pearl-02.png",
+      "aliases": [
+        "assets/characters/westley-pearl-02.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 193,
+      "path": "assets/characters/westley-pearl-03.png",
+      "aliases": [
+        "assets/characters/westley-pearl-03.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 194,
+      "path": "assets/characters/westley-pearl-04.png",
+      "aliases": [
+        "assets/characters/westley-pearl-04.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 195,
+      "path": "assets/characters/westley-pearl-05.png",
+      "aliases": [
+        "assets/characters/westley-pearl-05.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 196,
+      "path": "assets/characters/westley-pearl-06.png",
+      "aliases": [
+        "assets/characters/westley-pearl-06.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 197,
+      "path": "assets/characters/westley-pearl-07.png",
+      "aliases": [
+        "assets/characters/westley-pearl-07.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 198,
+      "path": "assets/characters/westley-pearl-08.png",
+      "aliases": [
+        "assets/characters/westley-pearl-08.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 199,
+      "path": "assets/characters/westley-pearl-09.png",
+      "aliases": [
+        "assets/characters/westley-pearl-09.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 200,
+      "path": "assets/characters/westley-pearl-10.png",
+      "aliases": [
+        "assets/characters/westley-pearl-10.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 201,
+      "path": "assets/characters/westley-pearl-11.png",
+      "aliases": [
+        "assets/characters/westley-pearl-11.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 202,
+      "path": "assets/characters/westley-pearl-12.png",
+      "aliases": [
+        "assets/characters/westley-pearl-12.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 203,
+      "path": "assets/characters/westley-pearl-13.png",
+      "aliases": [
+        "assets/characters/westley-pearl-13.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 204,
+      "path": "assets/characters/westley-pearl-14.png",
+      "aliases": [
+        "assets/characters/westley-pearl-14.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 205,
+      "path": "assets/characters/westley-pearl-15.png",
+      "aliases": [
+        "assets/characters/westley-pearl-15.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 206,
+      "path": "assets/characters/westley-pearl-16.png",
+      "aliases": [
+        "assets/characters/westley-pearl-16.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 212,
+      "path": "assets/library/annie-reading-em.png",
+      "aliases": [
+        "assets/library/annie-reading-em.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 213,
+      "path": "assets/library/bobbie-reading-em.png",
+      "aliases": [
+        "assets/library/bobbie-reading-em.png"
+      ],
+      "kind": "spa",
+      "width": 1312,
+      "height": 1199,
+      "transparent": false,
+      "status": "pending-generation"
+    },
+    {
+      "index": 214,
+      "path": "assets/library/chapo-reading-em.png",
+      "aliases": [
+        "assets/library/chapo-reading-em.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 215,
+      "path": "assets/library/daddy-reading-em.png",
+      "aliases": [
+        "assets/library/daddy-reading-em.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 216,
+      "path": "assets/library/tate-reading-em.png",
+      "aliases": [
+        "assets/library/tate-reading-em.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    },
+    {
+      "index": 217,
+      "path": "assets/library/westley-reading-em.png",
+      "aliases": [
+        "assets/library/westley-reading-em.png"
+      ],
+      "kind": "brand-only",
+      "width": 1254,
+      "height": 1254,
+      "transparent": false,
+      "status": "pending-review"
+    }
+  ]
+}
