@@ -843,12 +843,12 @@ const palette = {
   mintDark: "#10BFAE",
   teal: "#11B8A7",
   aqua: "#DFFCF7",
-  purple: "#6754E8",
-  lavender: "#EEE9FF",
+  purple: "#8435CB",
+  lavender: "#EAC5FF",
   coral: "#FF6464",
   coralDark: "#EF4444",
   blush: "#FFF0F0",
-  gold: "#FACC15",
+  gold: "#FFE344",
   goldDark: "#E8A900",
   blue: "#21B7E8",
   border: "#DDEAF4",
@@ -1870,8 +1870,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
           <FacebookNeighborhood />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
-            {NEIGHBOR_DESTINATIONS.map(place => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'47%',padding:12,borderRadius:20,backgroundColor:'#FFF',borderWidth:1,borderColor:place.color+'55',alignItems:'center'}}>
-              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:'100%',height:144}} resizeMode="contain" accessible={false}/><Text style={{fontSize:18,lineHeight:24,fontWeight:'800',color:place.color,textAlign:'center'}}>{place.label}</Text>
+            {NEIGHBOR_DESTINATIONS.map((place,index) => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'100%',minHeight:152,padding:12,borderRadius:28,backgroundColor:['#FFE455','#65EBEF','#DCABFF','#FFB0A4'][index%4],borderWidth:3,borderColor:place.color,flexDirection:'row',flexWrap:'wrap',gap:12,alignItems:'center'}}>
+              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:128,height:128}} resizeMode="contain" accessible={false}/><Text style={{flexGrow:1,flexShrink:1,flexBasis:100,fontSize:22,lineHeight:28,fontWeight:'900',color:palette.ink}}>{place.label}</Text>
             </TouchableOpacity>)}
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
@@ -2655,7 +2655,7 @@ const importDemoBills = () => {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
       <FeatureLinks items={[
-        {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'scan',onPress:onBilliam},
+        {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
         {title:'Plaid Banking',body:'Bank connections, transaction insights and subscriptions.',artworkAction:'banking',onPress:onBanking},
         {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
       ]}/>
