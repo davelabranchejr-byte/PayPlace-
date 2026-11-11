@@ -7,7 +7,8 @@ import { payplaceLogo, payplaceLogoLabel } from "./brand";
 
 export default function PayPlaceBrand({ compact = false, light = false, style }) {
   const primary = light ? "#FFFFFF" : "#173557";
-  const accent = light ? "#B7FFF0" : "#0CB7A7";
+  const accent = light ? "#B7FFF0" : "#08796E";
+  const tagline = light ? "#FFFFFF" : "#6735A9";
 
   return (
     <View style={[s.wrap, compact && s.compactWrap, style]}>
@@ -21,7 +22,7 @@ export default function PayPlaceBrand({ compact = false, light = false, style })
         <Text style={[s.name, compact && s.compactName, { color: primary }]}>
           Pay<Text style={{ color: accent }}>Place</Text>
         </Text>
-        <Text style={[s.tagline, compact && s.compactTagline, { color: primary }]}>
+        <Text style={[s.tagline, compact && s.compactTagline, { color: tagline }]}>
           Money without shame.
         </Text>
       </View>
@@ -39,6 +40,7 @@ const s = StyleSheet.create({
     gap: 6,
   },
   logo: {
+    flexShrink: 0,
     width: 46,
     height: 46,
   },
@@ -48,15 +50,17 @@ const s = StyleSheet.create({
   },
   copy: {
     justifyContent: "center",
+    minWidth: 0,
+    flexShrink: 1,
   },
   name: {
-    fontSize: 24,
+    fontSize: 27,
     fontWeight: "900",
-    lineHeight: 27,
+    lineHeight: 30,
   },
   compactName: {
-    fontSize: 15,
-    lineHeight: 17,
+    fontSize: 20,
+    lineHeight: 23,
   },
   tagline: {
     fontSize: 12,
@@ -64,6 +68,6 @@ const s = StyleSheet.create({
     marginTop: 1,
   },
   compactTagline: {
-    fontSize: 8,
+    fontSize: 11,
   },
 });

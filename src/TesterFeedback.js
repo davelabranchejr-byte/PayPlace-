@@ -25,7 +25,7 @@ export default function TesterFeedback() {
     catch { setError("Could not open feedback. Try again, or use Send Beta Feedback in TestFlight."); }
   }
   return <>
-    <Pressable artworkMode="integrated" artworkAction="feedback" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
+    <Pressable artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
       <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain" accessible={false}/>
       <Text style={s.entryText}>Help make the neighborhood better</Text>

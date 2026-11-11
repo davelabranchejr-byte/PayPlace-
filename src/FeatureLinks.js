@@ -1,7 +1,7 @@
 import { MascotTouchable as TouchableOpacity, actionColors } from './MascotTouchable';
 import React, {useState} from 'react';
 import ActionArtwork from './ActionArtwork';
-import { actionForLabel } from './action-artwork.mjs';
+import { featureArtworkForTitle } from './action-artwork.mjs';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Text } from './Privacy';
 
@@ -12,9 +12,9 @@ function FeatureLink({title,body,onPress,artworkAction}) {
   const [width,setWidth]=useState(0);
   const {fontScale}=useWindowDimensions();
   const stacked=(width>0&&width<320)||fontScale>1.2;
-  const action=artworkAction||actionForLabel(title),colors=actionColors(action);
+  const action=artworkAction||featureArtworkForTitle(title),colors=actionColors(action);
   const size=stacked||width===0||width>=360?128:96;
-  return <TouchableOpacity artworkMode="integrated" artworkAction={action} accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={onPress}
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Open ${title}`} onPress={onPress}
     onLayout={event=>setWidth(event.nativeEvent.layout.width)} style={[s.item,{flexDirection:stacked?'column':'row',backgroundColor:colors.fill,borderColor:colors.border}]}>
     <ActionArtwork action={action} size={size}/>
     <View style={[s.details,stacked?{width:'100%'}:{flex:1}]}>

@@ -2,6 +2,7 @@ import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import CharacterArtwork from './CharacterArtwork';
+import { BankBuildingMark } from './PlaidBankScene';
 import { NEIGHBORHOOD_DESTINATIONS, PRIMARY_DESTINATIONS, primaryDestination } from './neighborhood-destinations.mjs';
 
 const atlas = require('../assets/characters/neighborhood-building-tabs.png');
@@ -11,10 +12,14 @@ const spa = require('../assets/characters/em-spa-building.png');
 const atlasSize = Image.resolveAssetSource?.(atlas) || {width:1983,height:793};
 const cellWidth = atlasSize.width / 5;
 const cellHeight = atlasSize.height / 2;
+export const spaPorchArtwork = {
+  source: atlas, width: atlasSize.width, height: atlasSize.height,
+  crop: [cellWidth, 0, cellWidth, cellHeight], label: 'Em’s spa treehouse with a paw sign and a bubble bath',
+};
+
 export function buildingArtwork(id) {
   if (id === 'Neighborhood') id = 'Home';
   const place = NEIGHBORHOOD_DESTINATIONS.find(item => item.id === id);
-  if (id === 'Premium') return require('../assets/characters/nav-plaid-bank.png');
   if (id === 'Billiam') return require('../assets/characters/billiam-mailbox.png');
   if (id === 'Bills') return bills;
   if (id === 'Debt') return debt;
@@ -28,8 +33,7 @@ export function buildingArtwork(id) {
 export const tabArtwork = {
   Home: buildingArtwork('Home'),
   Budget: buildingArtwork('Budget'),
-  Bills: require('../assets/characters/nav-plaid-bank.png'),
-  Neighborhood: require('../assets/characters/neighborhood-panorama-day.png'),
+  Neighborhood: require('../assets/characters/nav-neighborhood-homes.png'),
 };
 export default function NeighborhoodNav({ current, switchTab }) {
   return <View style={s.wrap}><View style={s.strip}>
@@ -37,7 +41,8 @@ export default function NeighborhoodNav({ current, switchTab }) {
       const selected = place.id === primaryDestination(current);
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
         onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Neighborhood'?1.5:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}]}>
-        <CharacterArtwork source={tabArtwork[place.id]} style={s.artwork} resizeMode="contain" accessible={false}/>
+        {place.id === 'Bills' ? <BankBuildingMark style={s.artwork} /> :
+          <CharacterArtwork source={tabArtwork[place.id]} style={s.artwork} resizeMode="contain" accessible={false} />}
         <Text numberOfLines={place.id==='Bills'?2:1} adjustsFontSizeToFit minimumFontScale={0.75} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills'?'Bills &\nBanking':place.label}</Text>
         {selected && <View style={[s.selectedMark,{backgroundColor:place.color}]} />}
       </TouchableOpacity>;

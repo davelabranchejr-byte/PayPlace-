@@ -1,7 +1,6 @@
 import React, { forwardRef, useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import ActionArtwork from './ActionArtwork';
-import { actionForLabel } from './action-artwork.mjs';
+import ActionArtwork, { ACTION_ARTWORK } from './ActionArtwork';
 
 function hasIllustration(children) {
   return React.Children.toArray(children).some(child => {
@@ -9,9 +8,6 @@ function hasIllustration(children) {
     const name = child.type?.displayName || child.type?.name || (typeof child.type === 'string' ? child.type : '');
     return child.type === Image || /Artwork|Illustration|Scene|Portrait|Brand|Logo|BuildingMark|Glass|Quilt|FeatureArt/.test(name) || hasIllustration(child.props.children);
   });
-}
-function labelText(children) {
-  return React.Children.toArray(children).map(child => typeof child === 'string' || typeof child === 'number' ? String(child) : React.isValidElement(child) ? labelText(child.props.children) : '').join(' ');
 }
 function readable(children, compact = false, ink) {
   return React.Children.map(children, child => {
@@ -54,15 +50,21 @@ function decorate(style,view) {
   // Refresh neutral shared controls without replacing selected, disabled,
   // pressed or deliberately colored states supplied by their screens.
   const surface=quietSurfaces.has(view.flat.backgroundColor)?{backgroundColor:colors.fill,borderColor:colors.border}:null;
-  if(view.integrated)return [frame,style,surface,{borderRadius:view.radius},selected];
+  if(view.integrated) {
+    const touchTarget = view.plain && !view.flat.height && !view.flat.aspectRatio
+      ? { minHeight: Math.max(view.flat.minHeight || 0, 44) }
+      : null;
+    return [frame,style,surface,{borderRadius:view.radius},touchTarget,selected];
+  }
   return [frame,style,surface,{borderRadius:view.radius,minHeight:Math.max(view.flat.minHeight||0,view.fixedSmall?44:view.compact?80:view.stacked?164:148),padding:Math.max(view.flat.padding||0,view.fixedSmall?4:view.compact?8:14),flexDirection:view.stacked?'column':'row',alignItems:'center',justifyContent:'center',gap:view.fixedSmall?4:view.compact?8:12},selected];
 }
-function settings({children,style,artworkMode,artworkAction,accessibilityLabel,accessibilityState,artworkSize=112,width=0}) {
+function settings({children,style,artworkMode,artworkAction,accessibilityState,artworkSize=112,width=0}) {
   const flat=StyleSheet.flatten?.(typeof style==='function'?undefined:style)||{};
   const hotspot=artworkMode==='hotspot'||flat.position==='absolute';
-  const integrated=artworkMode==='integrated'||hotspot||hasIllustration(children);
-  const label=accessibilityLabel||labelText(children);
-  const action=artworkAction||actionForLabel(label);
+  const action=artworkAction;
+  const hasArt = artworkMode === 'integrated' || hotspot || hasIllustration(children);
+  const plain = !hasArt && !Object.hasOwn(ACTION_ARTWORK, action);
+  const integrated = hasArt || plain;
   const fixedSmall=(typeof flat.width==='number'&&flat.width<=80)||(typeof flat.height==='number'&&flat.height<=56)||!!flat.aspectRatio;
   const compact=artworkMode==='compact'||fixedSmall;
   // Wide controls follow the approved landscape banners. Narrow tiles stack
@@ -70,7 +72,7 @@ function settings({children,style,artworkMode,artworkAction,accessibilityLabel,a
   const stacked=!compact && width<300;
   const fixedSize=typeof flat.width==='number'?Math.max(20,flat.width-16):36;
   const size=compact?Math.min(artworkSize,fixedSmall?fixedSize:64):Math.min(artworkSize,width>0?Math.max(48,width-32):artworkSize);
-  return {flat,hotspot,integrated,action,ink:!flat.backgroundColor||quietSurfaces.has(flat.backgroundColor)?'#071A3A':undefined,compact,fixedSmall,stacked,size,row:!stacked&&(!compact||flat.flexDirection==='row'),radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
+  return {flat,hotspot,integrated,plain,action,ink:!flat.backgroundColor||quietSurfaces.has(flat.backgroundColor)?'#071A3A':undefined,compact,fixedSmall,stacked,size,row:!stacked&&(!compact||flat.flexDirection==='row'),radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
 }
 export const MascotTouchable=forwardRef(function MascotTouchable({artworkMode,artworkAction,artworkSize,children,style,onLayout,...props},ref){
   const [width,setWidth]=useState(0);

@@ -1,16 +1,20 @@
 import React from 'react';
-import { Image } from 'react-native';
+import { Image, View } from 'react-native';
+import PayPlaceBadge from './PayPlaceBadge';
 export const ACTION_ARTWORK = Object.freeze({
-  save:require('../assets/actions/save.jpg'),edit:require('../assets/actions/edit.jpg'),remove:require('../assets/actions/remove.jpg'),browse:require('../assets/actions/browse.png'),
-  close:require('../assets/actions/close.jpg'),play:require('../assets/actions/play.jpg'),pause:require('../assets/actions/pause.jpg'),refresh:require('../assets/actions/refresh.jpg'),
-  help:require('../assets/actions/help.jpg'),approve:require('../assets/actions/approve.jpg'),reject:require('../assets/actions/reject.jpg'),scrapbook:require('../assets/actions/scrapbook.jpg'),
-  split:require('../assets/actions/split.jpg'),remember:require('../assets/actions/remember.png'),add:require('../assets/actions/add.jpg'),
-  scan:require('../assets/characters/billiam-bill-scanner.png'),banking:require('../assets/characters/plaid-bank-daddy-tate.png'),
-  debt:require('../assets/characters/header-debt-bobbie-tate.png'),savings:require('../assets/characters/header-savings-westley-bobbie.png'),
-  budget:require('../assets/characters/header-budget-daddy-chapo.png'),subscriptions:require('../assets/characters/bobbie-premium-clubhouse.png'),
-  security:require('../assets/characters/security-screen-approved.png'),community:require('../assets/characters/facebook-moving-day.jpg'),
-  feedback:require('../assets/characters/daddy-neighborhood-feedback.png'),calm:require('../assets/characters/header-calm-bobbie-yoga.png'),mail:require('../assets/characters/header-bills-billiam-westley.png'),
-  smallStep:require('../assets/characters/showing-up-counts-westley-tate.jpg'),
+  billMicropayment:require('../assets/characters/feature-micropayments-billiam.png'),
+  onboardingPayday:require('../assets/characters/onboarding-payday-westley.png'),
+  debtHelp:require('../assets/characters/feature-how-debt-works.png'),
+  homeGuide:require('../assets/characters/feature-how-home-works-daddy.png'),
+  close:require('../assets/actions/close.jpg'),
+  scrapbook:require('../assets/actions/scrapbook.jpg'),
+  banking:require('../assets/characters/feature-plaid-banking-entry.png'),
+  debt:require('../assets/characters/snapshot-debt-plan.png'),
+  subscriptions:require('../assets/characters/bobbie-premium-clubhouse.png'),
+  monthlyCalendar:require('../assets/characters/feature-monthly-calendar-billiam.png'),
+  budgetPayday:require('../assets/characters/snapshot-next-paycheck.png'),
+  payoffGuide:require('../assets/characters/nav-debt-climb.png'),
+  smallStep:require('../assets/characters/feature-one-small-step-westley.png'),
   firstWin:require('../assets/characters/feature-first-win.png'),
   payday:require('../assets/characters/feature-until-payday.png'),
   calendar:require('../assets/characters/snapshot-extra-check.png'),
@@ -18,14 +22,34 @@ export const ACTION_ARTWORK = Object.freeze({
   paymentHistory:require('../assets/characters/feature-payment-history.png'),
   quiet:require('../assets/characters/feature-quiet-mode.png'),
   overwhelmed:require('../assets/characters/overwhelmed-westley-cozy.jpg'),
-  reviewBills:require('../assets/characters/sample-bills-westley-mailman.png'),
-  neighborhood:require('../assets/characters/neighborhood-panorama-day.png'),
+  reviewBills:require('../assets/characters/feature-review-bills-westley.png'),
+  neighborhood:require('../assets/characters/neighborhood-tabby.png'),
   mailbox:require('../assets/characters/billiam-mailbox.png'),
   billTools:require('../assets/characters/billiam-canonical.png'),
   welcome:require('../assets/characters/annie-front-door-mailbox.png'),
-  annieCare:require('../assets/characters/annie-pearl-01.png'),
-  anniePoster:require('../assets/characters/annie-pearl-02.png'),
+  annieCare:require('../assets/characters/feature-annie-care.png'),
+  anniePoster:require('../assets/characters/feature-annie-porch-poster.png'),
 });
-export default function ActionArtwork({action='browse',size=112}) {
-  return <Image source={ACTION_ARTWORK[action]||ACTION_ARTWORK.browse} resizeMode="contain" accessible={false} importantForAccessibility="no" pointerEvents="none" style={{width:size,height:size,borderRadius:12,flexShrink:0}}/>;
+// These illustrations have plain fabric at the badge positions. Render the
+// approved master there so clothing never relies on a painted approximation.
+const badgePlacement = {
+  monthlyCalendar: { left: '29%', top: '13%' },
+  smallStep: { left: '24%', top: '44.5%' },
+  homeGuide: { left: '31%', top: '51.5%' },
+  reviewBills: { left: '60%', top: '67%' },
+  billMicropayment: { left: '37%', top: '6.5%' },
+  onboardingPayday: { left: '68%', top: '63%' },
+};
+
+export default function ActionArtwork({ action, size = 112 }) {
+  if (!Object.hasOwn(ACTION_ARTWORK, action)) return null;
+  const artwork = <Image source={ACTION_ARTWORK[action]} resizeMode="contain"
+    accessible={false} importantForAccessibility="no" pointerEvents="none"
+    style={{ width: size, height: size, borderRadius: 12, flexShrink: 0 }} />;
+  const placement = badgePlacement[action];
+  if (!placement) return artwork;
+  return <View pointerEvents="none" style={{ width: size, height: size, flexShrink: 0 }}>
+    {artwork}
+    <PayPlaceBadge size={size * 0.1} {...placement} />
+  </View>;
 }

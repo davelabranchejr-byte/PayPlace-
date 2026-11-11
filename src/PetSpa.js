@@ -78,12 +78,12 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
     <EncouragementSpot place="spa"/>
   </ContainedIllustration><View style={s.brandBanner}><PayPlaceBrand compact/><Text style={s.spaBrand}>Em’s Pet Spa</Text></View></View>;
   if(scrapbook) return <ScrollView style={s.screen} contentContainerStyle={s.content}>
-    <TouchableOpacity artworkAction="browse" accessibilityRole="button" style={s.back} onPress={()=>setScrapbook(false)}><Text style={s.backText}>‹ Back to Em’s Pet Spa</Text></TouchableOpacity>
+    <TouchableOpacity accessibilityRole="button" style={s.back} onPress={()=>setScrapbook(false)}><Text style={s.backText}>‹ Back to Em’s Pet Spa</Text></TouchableOpacity>
     <Text accessibilityRole="header" style={s.title}>Em’s scrapbook</Text><Text style={s.body}>Favorite visits stay here, ready to open again.</Text>
     {SPA_VISITS.map(item=><TouchableOpacity key={item.id} artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={()=>openVisit(item.id)} style={[s.card,{flexDirection:'row',alignItems:'center'}]}>
       <Image source={item.current?currentVisitArtwork[0]:pastArtwork[0]} style={{width:96,height:96}} resizeMode="contain" accessible={false}/><View style={{flex:1}}><Text style={s.sceneTitle}>{item.title}</Text><Text style={s.hint}>{item.current?'CURRENT STAY':'PAST VISIT'}</Text><Text style={s.body}>{item.description}</Text></View>
     </TouchableOpacity>)}
-    <TouchableOpacity artworkAction="browse" accessibilityRole="button" style={s.action} onPress={()=>openVisit('slumber-party')}><Text style={s.actionText}>Back to the current stay</Text></TouchableOpacity>
+    <TouchableOpacity accessibilityRole="button" style={s.action} onPress={()=>openVisit('slumber-party')}><Text style={s.actionText}>Back to the current stay</Text></TouchableOpacity>
   </ScrollView>;
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity accessibilityRole="button" onPress={onHome} style={s.back}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
@@ -111,8 +111,8 @@ export default function PetSpa({ onHome, obscured = false, reduceAnimation = fal
       </TouchableOpacity>)}
     </ScrollView>
     <TouchableOpacity artworkAction="scrapbook" accessibilityRole="button" accessibilityLabel="Open Em’s scrapbook" style={s.action} onPress={()=>{setPaused(true);setScrapbook(true);}}><Text style={s.actionText}>Open Em’s scrapbook</Text></TouchableOpacity>
-    {!visit.current&&<TouchableOpacity artworkAction="browse" accessibilityRole="button" style={s.back} onPress={()=>openVisit('slumber-party')}><Text style={s.backText}>Back to the current stay</Text></TouchableOpacity>}
-    {bobbieHasBook&&<TouchableOpacity artworkAction="browse" accessibilityRole="button" accessibilityLabel="Open the library book Bobbie borrowed" style={s.back} onPress={()=>setBookDetails(true)}><Text style={s.backText}>Open the library book Bobbie borrowed</Text></TouchableOpacity>}
+    {!visit.current&&<TouchableOpacity accessibilityRole="button" style={s.back} onPress={()=>openVisit('slumber-party')}><Text style={s.backText}>Back to the current stay</Text></TouchableOpacity>}
+    {bobbieHasBook&&<TouchableOpacity accessibilityRole="button" accessibilityLabel="Open the library book Bobbie borrowed" style={s.back} onPress={()=>setBookDetails(true)}><Text style={s.backText}>Open the library book Bobbie borrowed</Text></TouchableOpacity>}
     <Text style={s.footer}>You don’t have to accomplish anything here. Sometimes a little neighborhood joy is enough.</Text>
     {bookDetails && <LibraryBookDetails bookId={LIBRARY_BOOKS[0].id} value={library} onChange={onLibraryChange} onClose={() => setBookDetails(false)} backLabel="Back to Em’s Pet Spa" />}
   </ScrollView>;

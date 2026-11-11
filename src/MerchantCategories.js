@@ -22,8 +22,8 @@ const ink = '#132547';
 const dollars = cents => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 const newId = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 const today = () => { const date = new Date(); return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; };
-function Button({ title, onPress, selected, disabled, artworkAction, color = '#7842D2', label, ...props }) {
-  return <TouchableOpacity {...props} artworkAction={artworkAction} accessibilityRole="button" accessibilityLabel={label || title}
+function Button({ title, onPress, selected, disabled, color = '#7842D2', label, ...props }) {
+  return <TouchableOpacity {...props} accessibilityRole="button" accessibilityLabel={label || title}
     accessibilityState={{ selected: !!selected, disabled: !!disabled }} disabled={disabled} onPress={onPress}
     style={[s.button, { backgroundColor: color }, selected && s.selected, disabled && { opacity: 0.5 }]}>
     <Text style={[s.buttonText, { color: color === '#7842D2' ? 'white' : ink }]}>{selected ? '✓ ' : ''}{title}</Text>
@@ -36,19 +36,22 @@ function CategoryTiles({ selected, onSelect, customCategories = [] }) {
     {choices.filter((category, i) => i < 4 || expanded || category === selected).map(category => { const index = choices.indexOf(category); return <TouchableOpacity artworkMode="integrated"
       key={category} accessibilityRole="button" accessibilityLabel={`Choose ${category}`} accessibilityState={{ selected: category === selected }}
       onPress={() => onSelect(category)} style={[s.tile, { backgroundColor: colors[index % colors.length] }, selected === category && s.selected]}>
-      <FittedArtwork source={art[category] || art.Other} aspectRatio={1} accessible={false} />
+      {Object.hasOwn(art, category) && <FittedArtwork source={art[category]} aspectRatio={1} accessible={false} />}
       <Text style={[s.tileText, { color: index % 4 === 0 ? 'white' : ink }]}>{category === selected ? '✓ ' : ''}{category}</Text>
     </TouchableOpacity>; })}
   </View><Button title={expanded ? 'Fewer categories' : 'Choose another category'} color="#FFE34F" onPress={() => setExpanded(!expanded)}/></>;
 }
-export function CategoryEntry({ onOpen }) {
-  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories" onPress={onOpen} style={s.entry}>
-    <View style={s.preview}>{['Shopping', 'Clothing', 'Groceries'].map((name, i) => <View key={name} style={[s.previewTile, { backgroundColor: colors[i] }]}>
-      <FittedArtwork source={art[name]} aspectRatio={1} accessible={false}/><Text style={[s.previewLabel, { color: i === 0 ? 'white' : ink }]}>{name}</Text>
-    </View>)}</View>
-    <Text style={s.title}>Your purchases. Your categories.</Text>
-    <Text style={s.body}>Fix it once. Let PayPlace remember.</Text>
-    <Text style={s.entryLink}>Choose my categories →</Text>
+const budgetCategoryArtwork = require('../assets/characters/feature-purchase-categories-daddy.png');
+const bankingCategoryArtwork = require('../assets/characters/feature-purchase-categories-bobbie.png');
+export function CategoryEntry({ onOpen, inBanking = false }) {
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories"
+    onPress={onOpen} style={s.entry}>
+    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} style={s.entryArtwork} />
+    <View style={s.entryCopy}>
+      <Text style={s.title}>Your purchases. Your categories.</Text>
+      <Text style={s.body}>Fix it once. Let PayPlace remember.</Text>
+      <Text style={s.entryLink}>Choose my categories →</Text>
+    </View>
   </TouchableOpacity>;
 }
 export default function MerchantCategories({ visible, onClose, value, onChange, sample = false }) {
@@ -111,7 +114,7 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
           <Text style={s.label}>{draft.isNew ? 'Merchant' : draft.merchant}</Text>
           {draft.isNew && <TextInput accessibilityLabel="Purchase merchant" placeholder="Costco, Target, your favorite shop…" maxLength={80} value={draft.merchant} onChangeText={merchant => change({ merchant })} style={s.input}/>}
           {draft.isNew ? <><Text style={s.label}>Purchase amount</Text><TextInput accessibilityLabel="Purchase amount" keyboardType="decimal-pad" value={draft.amount} onChangeText={amount => change({ amount })} style={s.input}/>
-            <Text style={s.label}>Account</Text><View style={s.chips}>{state.accounts.map(a => <Button key={a.id} title={a.name} artworkAction="banking" color="#14C8BD" selected={a.id === draft.accountId} onPress={() => change({ accountId: a.id })}/>)}</View>
+            <Text style={s.label}>Account</Text><View style={s.chips}>{state.accounts.map(a => <Button key={a.id} title={a.name} color="#14C8BD" selected={a.id === draft.accountId} onPress={() => change({ accountId: a.id })}/>)}</View>
             <TextInput accessibilityLabel="New category account name" placeholder="Name another account" maxLength={80} value={newAccount} onChangeText={setNewAccount} style={s.input}/>
             <Button title="Add this account" color="#FFE34F" disabled={!newAccount.trim()} onPress={async () => { const id = newId('account'); if (await act({ type: 'add-account', id, name: newAccount }, 'Account added.')) { setNewAccount(''); change({ accountId: id }); } }}/>
           </> : <Text style={s.body}>{accountName(draft.accountId)} · {draft.date} · {dollars(draft.amountCents)}</Text>}
@@ -145,7 +148,7 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
         <View style={s.chips}><Button title="Purchases" selected={page === 'purchases'} color="#14C8BD" onPress={() => setPage('purchases')}/><Button title="Remembered categories" selected={page === 'rules'} onPress={() => setPage('rules')}/></View>
         {page === 'purchases' ? <>
           <Button title="+ Add a purchase" color="#FFE34F" onPress={() => openPurchase(null)}/>
-          <View style={s.chips}><Button title="All accounts" color="#FF8479" selected={accountFilter === null} onPress={() => setAccountFilter(null)}/>{state.accounts.map(a => <Button key={a.id} title={a.name} artworkAction="banking" color="#14C8BD" selected={accountFilter === a.id} onPress={() => setAccountFilter(a.id)}/>)}</View>
+          <View style={s.chips}><Button title="All accounts" color="#FF8479" selected={accountFilter === null} onPress={() => setAccountFilter(null)}/>{state.accounts.map(a => <Button key={a.id} title={a.name} color="#14C8BD" selected={accountFilter === a.id} onPress={() => setAccountFilter(a.id)}/>)}</View>
           {!purchases.length && <View style={s.card}><Text style={s.heading}>Every purchase gets a place</Text><Text style={s.body}>Add your first purchase, choose its category, and tell us whether to remember it.</Text></View>}
           {purchases.map(t => { const chosen = purchaseCategory(state, t); return <View key={t.id} style={s.card}>
             <Text style={s.heading}>{t.merchant} · {dollars(t.amountCents)}</Text><Text style={s.note}>{accountName(t.accountId)} · {t.date}</Text>
@@ -175,5 +178,6 @@ const s = StyleSheet.create({
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, tile: { flexBasis: '48%', flexGrow: 0, minWidth: 120, padding: 4, borderRadius: 24, borderWidth: 3, borderColor: 'rgba(255,255,255,.9)', overflow: 'hidden', justifyContent: 'center', minHeight: 60 }, tileText: { fontSize: 18, lineHeight: 24, fontWeight: '900', textAlign: 'center', padding: 8, minHeight: 48 },
   footer: { padding: 16, paddingBottom: 34, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#DCE9F0' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, check: { minHeight: 48, paddingVertical: 10, justifyContent: 'center' }, error: { color: '#92273B', fontSize: 16, lineHeight: 24 }, notice: { padding: 16, borderRadius: 18, backgroundColor: '#DFFCF7', gap: 12 }, split: { gap: 8, borderBottomWidth: 1, borderBottomColor: '#DCE9F0', paddingBottom: 12 },
-  entry: { padding: 16, backgroundColor: '#EEE7FF', borderRadius: 24, gap: 10, borderWidth: 2, borderColor: '#B799EC' }, preview: { flexDirection: 'row', gap: 8 }, previewTile: { flex: 1, borderRadius: 14, overflow: 'hidden' }, previewLabel: { fontSize: 13, fontWeight: '800', textAlign: 'center', padding: 6 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
+  entry: { padding: 16, backgroundColor: '#EEE7FF', borderRadius: 24, gap: 10, borderWidth: 2, borderColor: '#B799EC', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  entryArtwork: { width: 128 }, entryCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 120, minWidth: 0 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
 });

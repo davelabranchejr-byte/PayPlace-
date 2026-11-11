@@ -10,6 +10,7 @@ import HouseholdPlan from './HouseholdPlan';
 import {importBillDocuments,importBillBatch,supportsBillImport} from './bill-import';
 import {BREAKDOWN_FIELDS,compareBills,previousReading,recurringDraft,saveRecurring,vendorKey} from './billiam-tools.mjs';
 const taskColors=['#65EBEF','#FFE455','#DCABFF','#FFB0A4'];
+const billShortcutArtwork = require('../assets/characters/snapshot-upcoming-bills-billiam.png');
 const mailbox=require('../assets/characters/billiam-mailbox.png');
 export const BILLIAM_TASKS=[
   {id:'scan',title:'Scan a bill',body:'Daddy’s photo shoot, with a practical twist.',image:require('../assets/characters/billiam-bill-scanner.png')},
@@ -21,7 +22,7 @@ export const BILLIAM_TASKS=[
   {id:'household',title:'Our household plan',body:'Choose who covers what and what to share.',image:require('../assets/characters/billiam-household.png')},
 ];
 export function BilliamShortcut({onPress}){
-  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={mailbox} style={{height:112}} testID="billiam-shortcut-artwork" accessible={false}/><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></TouchableOpacity>;
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={billShortcutArtwork} style={{height:112}} testID="billiam-shortcut-artwork" accessible={false}/><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></TouchableOpacity>;
 }
 export function BilliamTaskButton({task,onPress}){
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Billiam: ${task.title}`} onPress={onPress} style={[s.task,{backgroundColor:taskColors[BILLIAM_TASKS.findIndex(item=>item.id===task.id)%taskColors.length]}]} testID={`billiam-task-${task.id}`}>

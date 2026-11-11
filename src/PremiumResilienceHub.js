@@ -10,9 +10,9 @@ import BobbieBankDemoLogin from './BobbieBankDemoLogin';
 import BankWelcomeCard from './BankWelcomeCard';
 import { CategoryEntry } from './MerchantCategories';
 import { bankSpending, recurringCandidates } from './bank-activity.mjs';
+import PayPlaceBrand from './PayPlaceBrand';
 
 const bobbie = require('../assets/characters/premium-bobbie-gala.png');
-import { payplaceLogo, payplaceLogoLabel } from './brand';
 const featureColors=['#65EBEF','#FFE455','#FFB0A4','#DCABFF'];
 const FEATURES = [
   { id: 'roundup', title: 'Round Up & Save', body: 'Small change. Bigger breathing room.', image: require('../assets/characters/premium-roundup.png'), badge: 'Sample automation' },
@@ -84,7 +84,7 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
     {panel && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Plaid Banking" onPress={() => open(null)} style={s.back}><Ionicons name="arrow-back" size={20} color="#6754E8" /><Text style={s.backText}>Back to Plaid Banking</Text></TouchableOpacity>}
     <ScrollView key={panel || 'hub'} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
     {panel && <View style={s.header}>
-      <View style={s.headerCopy}><Image source={payplaceLogo} style={{ width: 30, height: 30 }} resizeMode="contain" accessibilityLabel={payplaceLogoLabel} /><Text style={s.kicker}>PLAID BANKING</Text><Text style={s.title}>{feature ? feature.title : panel === 'accounts' ? 'Account connections' : panel === 'demo' ? 'Bobbie’s banking demo' : 'Your neighborhood bank.'}</Text><Text style={s.subtitle}>{feature ? feature.body : 'Accounts, savings, monitoring and credit in one place.'}</Text></View>
+      <View style={s.headerCopy}>{!embedded && <PayPlaceBrand compact />}<Text style={s.kicker}>PLAID BANKING</Text><Text style={s.title}>{feature ? feature.title : panel === 'accounts' ? 'Account connections' : panel === 'demo' ? 'Bobbie’s banking demo' : 'Your neighborhood bank.'}</Text><Text style={s.subtitle}>{feature ? feature.body : 'Accounts, savings, monitoring and credit in one place.'}</Text></View>
       <Image source={bobbie} style={s.bobbie} resizeMode="contain" accessibilityLabel="Bobbie in her diamond tiara, colorful PayPlace princess gala gown and jewels" />
     </View>}
       {panel && !feature && <View style={s.promise}><Text style={s.promiseTitle}>Paid Premium · free sample demo</Text><Text style={s.body}>Plaid linking and subscription tracking are paid Premium features. Explore them with fictional demo data, or enter your own information in Bills and Budget.</Text></View>}
@@ -95,7 +95,7 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
         <BankWelcomeCard demoConnected={sharedBank} demoLabel={sharedBank?'View connected demo accounts':'Try Bobbie’s banking demo'} onDemo={() => open(sharedBank?'accounts':'demo')} />
         {onOpenBills && <Button secondary label="Enter my bills manually" onPress={onOpenBills} />}
         {sharedBank && <Box title="Your demo accounts"><Text accessibilityLiveRegion="polite" style={s.body}>Demo data loaded. Your sample transactions are already in the app; no repeat import is needed.</Text><Text style={s.body}>Checking {dollars(finance.balance)} · Savings {dollars(beta.sampleFund)}</Text><Text style={s.body}>{finance.categorization.transactions.length} transactions feed categories, spending totals, round-ups and Subscription Detective. All money is fictional.</Text></Box>}
-        {onOpenCategories && <CategoryEntry onOpen={onOpenCategories} />}
+        {onOpenCategories && <CategoryEntry onOpen={onOpenCategories} inBanking />}
         <Box title="Accounts"><Text style={s.body}>Sample accounts, provider availability and connection controls live here. Everything below uses these same banking settings.</Text><Text style={s.badge}>{sampleReady ? 'SAMPLE ACCOUNTS CONNECTED' : 'SAMPLE ACCOUNTS NOT CONNECTED YET'}</Text><Button secondary label="Account connections & beta setup" onPress={() => open('accounts')} /></Box>
         {FEATURES.map((item, index) => <React.Fragment key={item.id}>{index === 0 && <Text style={s.panelTitle}>Savings & automation</Text>}{index === 2 && <Text style={s.panelTitle}>Recovery plans</Text>}{index === 4 && <Text style={s.panelTitle}>Monitoring & credit</Text>} <TouchableOpacity artworkMode="integrated" key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={[s.card,{backgroundColor:featureColors[index%featureColors.length]}]}>
           <Image source={item.image} style={s.cardArt} resizeMode="contain" accessible={false} /><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View><Ionicons name="chevron-forward" size={18} color="#6754E8" />

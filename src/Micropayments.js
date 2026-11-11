@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Modal, ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import ContainedIllustration from './ContainedIllustration';
+import ActionArtwork from './ActionArtwork';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { micropaymentTargets, micropaymentTotal, canUndoMicropayment } from './micropayments.mjs';
 
@@ -15,14 +16,15 @@ function Button({ title, onPress, selected, disabled, testID }) {
   </TouchableOpacity>;
 }
 
-export function MicropaymentsButton({ onPress }) {
+export function MicropaymentsButton({ onPress, forBills = false }) {
   const [width, setWidth] = useState(0);
   const { fontScale } = useWindowDimensions();
   const stacked = width < 320 || fontScale > 1.2;
   return <TouchableOpacity artworkMode="integrated" testID="open-micropayments" accessibilityRole="button"
     accessibilityLabel="Micropayments: small extra payments" onPress={onPress} onLayout={event => setWidth(event.nativeEvent.layout.width)}
     style={[s.entry, !stacked && s.entryRow]}>
-    <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />
+    {forBills ? <ActionArtwork action="billMicropayment" size={108} /> :
+      <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />}
     <View style={stacked ? s.stackedCaption : s.caption}>
       <Text style={s.title}>Micropayments</Text>
       <Text style={s.body}>Track small extra payments.</Text>
