@@ -1229,7 +1229,7 @@ function PayPlaceApp() {
   const [tab, setTab] = useState("Home");
   function openBankingDemo() { setBankingDemoVisit(current => current + 1); setTab("BankingDemo"); }
   const [selectedPlan, setSelectedPlan] = useState("basic");
-  const [showPayoffStrategy, setShowPayoffStrategy] = useState(false);
+  const [debtEntry, setDebtEntry] = useState({ showMethods: false, back: "Bills" });
   const [savedFinance, setSavedFinance] = useState(starterFinance);
   const [sampleFinance, setSampleFinance] = useState(null);
   const [essentialsPanel, setEssentialsPanel] = useState(null);
@@ -1282,13 +1282,17 @@ function PayPlaceApp() {
     setEssentialsPanel(null);
     openBankingDemo();
   }
+  function openDebt(showMethods, back = "Bills") {
+    setDebtEntry({ showMethods, back });
+    setTab("Debt");
+  }
   function openPlanTool(tool) {
     switch (tool) {
       case "budget": setTab("Budget"); break;
       case "bills": setTab("Bills"); break;
       case "neighborhood": setTab("Neighborhood"); break;
       case "calm": setTab("Calm"); break;
-      case "debt": setShowPayoffStrategy(true); setTab("Debt"); break;
+      case "debt": openDebt(true, "Plans"); break;
       case "monthlyCalendar": setMonthlyCalendarMode("view"); break;
       case "printCalendar": setMonthlyCalendarMode("print"); break;
       case "savings": setSavingsVisible(true); break;
@@ -1830,7 +1834,9 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onSecurity={() => setSecurityVisible(true)} />
         {tab === "Plans" && <PayPlacePlans selectedId={selectedPlan} onSelectPlan={setSelectedPlan} onOpenTool={openPlanTool} onOpenDemo={startBankDemo} />}
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
-        {['BankingDemo','Billiam','Debt'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
+        {["BankingDemo", "Billiam", "Debt"].includes(tab) && (
+          <MoneyToolBack destination={tab === "Debt" ? debtEntry.back : "Bills"} onBack={setTab} />
+        )}
 
         {tab === "Home" && (
           <HomeScreen
@@ -1842,6 +1848,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             safeToSpendDaily={safeToSpendDaily}
             switchTab={setTab}
             onDetective={openSubscriptionDetective}
+            onPayoffMethods={() => openDebt(true, "Home")}
+            onCabaret={() => setCabaretVisible(true)}
             onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
             onSavings={() => setSavingsVisible(true)}
           />
@@ -1852,7 +1860,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             bills={finance.bills}
             onBankingDemo={openBankingDemo}
             onBankLinking={sampleFinance ? undefined : showPlaidPlan}
-            onDebt={() => { setShowPayoffStrategy(false); setTab("Debt"); }}
+            onDebt={() => openDebt(false)}
             onMonthlyCalendar={() => setMonthlyCalendarMode("print")}
             onMicropayments={() => setMicropaymentsVisible(true)}
             addBill={addBill}
@@ -1888,7 +1896,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Debt" && (
           <DebtScreen
             debts={finance.debts}
-            showPayoffStrategy={showPayoffStrategy}
+            showPayoffStrategy={debtEntry.showMethods}
             onMicropayments={() => setMicropaymentsVisible(true)}
             payoffMode={finance.payoffMode}
             mixedQuickWinId={finance.mixedQuickWinId}
@@ -1981,7 +1989,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onUpdate={goals => setFinance(current => ({ ...current, savingsGoals: goals }))} />
         {categoriesVisible && <MerchantCategories key={`${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible
           onClose={() => setCategoriesVisible(false)} value={finance.categorization} onChange={saveCategories} sample={!!sampleFinance} />}
-        {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)} />}
+        {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)}
+          returnLabel={tab === "Home" ? "Back to Home" : undefined} />}
         <SubscriptionDetective visible={subscriptionPreview && detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")} />
         {securityPanel}
@@ -2480,6 +2489,15 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, reduceA
 }
 
 
+function MoneyToolBack({ destination, onBack }) {
+  const label = destination === "Bills" ? "Bills & Banking" : destination;
+  return <TouchableOpacity accessibilityRole="button"
+    accessibilityLabel={destination === "Bills" ? "Back to Bills and Banking" : `Back to ${label}`}
+    onPress={() => onBack(destination)} style={{ minHeight: 48, paddingHorizontal: 18, paddingVertical: 8 }}>
+    <Text style={{ color: palette.purple, fontWeight: "800" }}>‹ {label}</Text>
+  </TouchableOpacity>;
+}
+
 function HomeScreen({
   finance,
   onEssentials,
@@ -2489,6 +2507,8 @@ function HomeScreen({
   safeToSpendDaily,
   switchTab,
   onDetective,
+  onPayoffMethods,
+  onCabaret,
   onSavings,
   onStepsChange,
 }) {
@@ -2510,21 +2530,22 @@ function HomeScreen({
 
   function handleGuidanceAction() {
     setGuidanceVisible(false);
-    switchTab(guidancePlan.targetTab);
+    if (guidancePlan.targetTab === "Debt") onPayoffMethods();
+    else switchTab(guidancePlan.targetTab);
   }
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SeasonalWelcome/>
-            <View style={[styles.safeHeroCard,{padding:20}]}>
-        <Text style={styles.safeHeroLabel}>SAFE TO SPEND · ENTERED PLAN</Text>
+      <View style={[styles.safeHeroCard, { padding: 16 }]}>
+        <Text style={styles.safeHeroLabel}>SAFE TO SPEND</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
-        <Text style={styles.safeHeroSub}>Until payday in {daysUntilPayday} day{daysUntilPayday === 1 ? '' : 's'}. Update your entries in Budget.</Text>
-        <Text style={styles.safeHeroFootnoteText}>Balance minus unpaid bills, debt minimums and your buffer. A planning estimate.</Text>
+        <Text style={styles.safeHeroSub}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
       </View>
-      <FeatureLinks items={[
-                {title:'One small step',body:nextAction,onPress:()=>setGuidanceVisible(true)},
-      ]}/>
+      <FeatureLinks compact items={[
+        { title: "Review my bills", body: unpaidBills.length === 1 ? "1 unpaid bill" : `${unpaidBills.length} unpaid bills`, onPress: () => switchTab("Bills") },
+        { title: "Payoff methods", body: "Choose a method or log an extra payment.", onPress: onPayoffMethods },
+        { title: "Bobbie’s Cabaret Show", body: "Watch the show or ask Bobbie.", onPress: onCabaret },
+      ]} />
       <Modal
         visible={guidanceVisible}
         transparent={true}
@@ -2533,7 +2554,7 @@ function HomeScreen({
       >
         <View style={styles.overlayShell}>
           <ScrollView style={{maxHeight:"85%"}} contentContainerStyle={styles.guidanceModalCard}>
-            <SmallSteps finance={finance} onChange={onStepsChange} onOpen={target => {setGuidanceVisible(false); if(target === "Savings") onSavings(); else if(target === "Subscriptions") onDetective(); else switchTab(target);}} />
+            <SmallSteps finance={finance} onChange={onStepsChange} onOpen={target => {setGuidanceVisible(false); if(target === "Savings") onSavings(); else if(target === "Subscriptions") onDetective(); else if(target === "Debt") onPayoffMethods(); else switchTab(target);}} />
             <View
               style={[
                 styles.guidanceIconWrap,
@@ -2581,13 +2602,14 @@ function HomeScreen({
 
 
       <ExpandableSection title="Payday details & getting started"><FeatureLinks items={[
+        { title: "One small step", body: nextAction, onPress: () => setGuidanceVisible(true) },
         {title:'Until next payday',body:'Groceries, gas and your plan.',onPress:()=>onEssentials('payday')},
         {title:'Your first win with Annie',body:'One payday, one bill, one next step.',onPress:()=>onEssentials('firstWin')},
       ]}/></ExpandableSection>
-      <SectionTitle title="Coming up" subtitle="Review your next unpaid bills in Bills."/>
-      {!unpaidBills.length ? <EmptyCard text="No unpaid bills. Add or review entries in Bills."/> : unpaidBills.slice(0,2).map(bill=><BillRow key={bill.id} bill={bill}/>)}
-      <FeatureLinks items={[{title:'Review my bills',onPress:()=>switchTab('Bills')},{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress:()=>switchTab('Neighborhood')}]} />
-      <TesterFeedback/>
+      <ExpandableSection title="Welcome & beta feedback">
+        <SeasonalWelcome />
+        <TesterFeedback />
+      </ExpandableSection>
     </ScrollView>
   );
 }
@@ -3098,34 +3120,15 @@ const importDemoBills = () => {
 
         <BilliamShortcut onPress={onBilliam} />
 
-<View
-  style={[
-    styles.billActionImageFrame,
-    styles.importBillImageFrame,
-
-  ]}
->
-  <CharacterArtwork
-    source={imageSource(importBillsWestleyGraphic)}
-    style={styles.billActionImage}
-    resizeMode="contain"
-    accessibilityLabel="Westley the mailman with pointed Westie ears and a large PayPlace sack of sample bills"
-  />
-  <View style={styles.billActionImageBadge}>
-    <Ionicons name="shield-checkmark" size={15} color={palette.ink} />
-    <Text style={styles.billActionImageBadgeText}>Sample bills</Text>
-  </View>
-</View>
-
-<TouchableOpacity
-  style={[
-    styles.primaryButton,
-    { backgroundColor: "#18C4AD", marginTop: 12 },
-  ]}
-  onPress={importDemoBills}
->
-  <Text style={styles.primaryButtonText}>Try sample bill review</Text>
-</TouchableOpacity>
+        <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Try sample bill review"
+          style={styles.sampleBillsShortcut} onPress={importDemoBills}>
+          <CharacterArtwork source={imageSource(importBillsWestleyGraphic)} style={styles.sampleBillsArtwork}
+            resizeMode="contain" accessible={false} />
+          <View style={styles.flexOne}>
+            <Text style={styles.sampleBillsTitle}>Try sample bill review</Text>
+            <Text style={styles.cardSub}>Practice with fictional bills.</Text>
+          </View>
+        </TouchableOpacity>
 
 </View>
 
@@ -3375,10 +3378,73 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
     setNewDebt({ name: "", balance: "", apr: "", minimum: "" });
   }
 
+  const payoffTools = (
+    <>
+      <MicropaymentsButton onPress={onMicropayments} />
+      <View style={styles.payoffToggleCard}>
+        <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
+
+        <View style={styles.payoffModeList}>
+          {[
+            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", artwork: snowballBuddyGraphic, color: palette.snowballDark, tint: palette.snowballSoft },
+            { id: "mixed", title: "Mixed", subtitle: "Best of both", artwork: mixedBuddyGraphic, color: palette.purple, tint: palette.lavender },
+            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", artwork: avalancheBuddyGraphic, color: palette.avalancheDark, tint: palette.avalancheSoft },
+          ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
+            artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
+            accessibilityState={{ selected: mode === option.id }}
+            style={[styles.payoffModeButton, !stackStrategyArtwork && styles.payoffModeButtonRow, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
+            onPress={() => setPayoffMode(option.id)}>
+            <Image source={option.artwork} resizeMode="contain" accessible={false}
+              style={[styles.payoffModeArtwork, stackStrategyArtwork && styles.payoffModeArtworkStacked]} />
+            <View style={stackStrategyArtwork ? styles.payoffModeCaptionStacked : styles.payoffModeCaption}>
+              <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
+              <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
+            </View>
+          </TouchableOpacity>)}
+        </View>
+      </View>
+
+      <DebtBuddyScene mode={mode} />
+
+      <View style={[styles.methodTipCard, { borderColor: modeColor + "55" }]}>
+        <Ionicons
+          name={mode === "mixed" ? "shuffle" : mode === "snowball" ? "happy" : "flash"}
+          size={20}
+          color={modeColor}
+        />
+        <Text style={styles.methodTipText}>
+          {mode === "mixed" ? "Mixed starts with one small win, then follows Avalanche. Your quick-win target is saved with your plan."
+            : mode === "snowball" ? "Snowball is for momentum: smallest debt first, quick progress, less avoidance."
+            : "Avalanche is for interest: highest APR first, strongest long-term math."}
+        </Text>
+      </View>
+
+      {targetDebt ? (
+        <View
+          style={[
+            styles.recommendationCard,
+            { backgroundColor: modeSoft, borderColor: modeColor + "55" },
+          ]}
+        >
+          <Text style={[styles.recommendationEyebrow, { color: modeColor }]}>
+            Recommended next move
+          </Text>
+          <Text style={styles.recommendationTitle}>{targetDebt.name}</Text>
+          <Text style={styles.recommendationText}>
+            {mixedQuickWin ? `${targetDebt.name} is your saved quick-win target. Keep paying minimums everywhere; after this balance reaches zero, Mixed follows the highest APR.`
+              : mode === "mixed" ? `Your quick-win stage is complete. ${targetDebt.name} is now the highest-APR target. Keep paying minimums everywhere and aim extra money here.`
+              : mode === "snowball" ? `${targetDebt.name} is the smallest target. Pay minimums everywhere, then throw extra money here so you can get a fast payoff win.`
+              : `${targetDebt.name} has the highest APR. Pay minimums everywhere, then throw extra money here so interest has fewer places to snack on your cash.`}
+          </Text>
+        </View>
+      ) : null}
+    </>
+  );
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SectionTitle
-        title="Debt Plan"
+        title={showPayoffStrategy ? "Payoff methods" : "Debt Plan"}
         artwork={require("./assets/characters/header-debt-bobbie-tate.png")}
         artworkLabel="Bobbie and Tate plan their next step up the debt climb"
         subtitle={
@@ -3387,6 +3453,8 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
             : "Avalanche mode: highest APR first to attack interest."
         }
       />
+
+      {showPayoffStrategy && payoffTools}
 
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a debt" style={styles.primaryButtonTight} onPress={() => setAddingDebt(true)}>
         <Text style={styles.primaryButtonText}>Add debt</Text>
@@ -3447,68 +3515,11 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
           </View>
         ))
       )}
-      <ExpandableSection title="Payoff strategy & guidance" artworkAction="payoffGuide" defaultExpanded={showPayoffStrategy}>
-      <View style={styles.payoffToggleCard}>
-        <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
-
-        <View style={styles.payoffModeList}>
-          {[
-            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", artwork: snowballBuddyGraphic, color: palette.snowballDark, tint: palette.snowballSoft },
-            { id: "mixed", title: "Mixed", subtitle: "Best of both", artwork: mixedBuddyGraphic, color: palette.purple, tint: palette.lavender },
-            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", artwork: avalancheBuddyGraphic, color: palette.avalancheDark, tint: palette.avalancheSoft },
-          ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
-            artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
-            accessibilityState={{ selected: mode === option.id }}
-            style={[styles.payoffModeButton, !stackStrategyArtwork && styles.payoffModeButtonRow, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
-            onPress={() => setPayoffMode(option.id)}>
-            <Image source={option.artwork} resizeMode="contain" accessible={false}
-              style={[styles.payoffModeArtwork, stackStrategyArtwork && styles.payoffModeArtworkStacked]} />
-            <View style={stackStrategyArtwork ? styles.payoffModeCaptionStacked : styles.payoffModeCaption}>
-              <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
-              <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
-            </View>
-          </TouchableOpacity>)}
-        </View>
-      </View>
-
-      <MicropaymentsButton onPress={onMicropayments} />
-
-      <DebtBuddyScene mode={mode} />
-
-      <View style={[styles.methodTipCard, { borderColor: modeColor + "55" }]}>
-        <Ionicons
-          name={mode === "mixed" ? "shuffle" : mode === "snowball" ? "happy" : "flash"}
-          size={20}
-          color={modeColor}
-        />
-        <Text style={styles.methodTipText}>
-          {mode === "mixed" ? "Mixed starts with one small win, then follows Avalanche. Your quick-win target is saved with your plan."
-            : mode === "snowball" ? "Snowball is for momentum: smallest debt first, quick progress, less avoidance."
-            : "Avalanche is for interest: highest APR first, strongest long-term math."}
-        </Text>
-      </View>
-
-      {targetDebt ? (
-        <View
-          style={[
-            styles.recommendationCard,
-            { backgroundColor: modeSoft, borderColor: modeColor + "55" },
-          ]}
-        >
-          <Text style={[styles.recommendationEyebrow, { color: modeColor }]}>
-            Recommended next move
-          </Text>
-          <Text style={styles.recommendationTitle}>{targetDebt.name}</Text>
-          <Text style={styles.recommendationText}>
-            {mixedQuickWin ? `${targetDebt.name} is your saved quick-win target. Keep paying minimums everywhere; after this balance reaches zero, Mixed follows the highest APR.`
-              : mode === "mixed" ? `Your quick-win stage is complete. ${targetDebt.name} is now the highest-APR target. Keep paying minimums everywhere and aim extra money here.`
-              : mode === "snowball" ? `${targetDebt.name} is the smallest target. Pay minimums everywhere, then throw extra money here so you can get a fast payoff win.`
-              : `${targetDebt.name} has the highest APR. Pay minimums everywhere, then throw extra money here so interest has fewer places to snack on your cash.`}
-          </Text>
-        </View>
-      ) : null}
-
-      </ExpandableSection>
+      {!showPayoffStrategy && (
+        <ExpandableSection title="Payoff strategy & guidance" artworkAction="payoffGuide">
+          {payoffTools}
+        </ExpandableSection>
+      )}
       <EntrySheet visible={addingDebt} title="Add a debt" onClose={() => setAddingDebt(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a debt</Text>
@@ -4468,14 +4479,6 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 4,
   },
-  safeHeroFootnoteText: {
-    flex: 1,
-    color: "rgba(255,255,255,0.92)",
-    fontSize: 12,
-    lineHeight: 17,
-    fontWeight: "800",
-    marginLeft: 8,
-  },
   moneyMoodCard: {
     backgroundColor: palette.card,
     borderRadius: 28,
@@ -4767,11 +4770,18 @@ const styles = StyleSheet.create({
     aspectRatio: 4 / 3,
     borderColor: "#D8CCFF",
   },
-  importBillImageFrame: {
-    height: undefined,
-    aspectRatio: 4 / 3,
-    borderColor: "#BDEFE8",
+  sampleBillsShortcut: {
+    minHeight: 100,
+    marginTop: 12,
+    padding: 10,
+    gap: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#65EBEF",
+    borderColor: "#00AABF",
   },
+  sampleBillsArtwork: { width: 76, height: 76, flexShrink: 0, borderRadius: 10 },
+  sampleBillsTitle: { color: "#071A3A", fontWeight: "900", fontSize: 18 },
   billActionImage: {
     width: "100%",
     height: "100%",
