@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from './Privacy';
 
-export default function ExpandableSection({ title, artworkAction, defaultExpanded = false, children }) {
-  const [expanded, setExpanded] = useState(defaultExpanded);
+export default function ExpandableSection({ title, artworkAction, children }) {
+  const [expanded, setExpanded] = useState(false);
   return <View style={s.section}>
     <TouchableOpacity artworkAction={artworkAction} accessibilityRole="button" accessibilityState={{ expanded }}
       accessibilityLabel={title} onPress={() => setExpanded(value => !value)} style={s.toggle}>

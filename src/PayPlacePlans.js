@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 
 const plans = [
@@ -9,7 +9,9 @@ const plans = [
     price: '$0.99',
     color: '#08796E',
     fill: '#65EBEF',
-    heading: 'A gentle place to start',
+    heading: 'Start with Daddy',
+    artwork: require('../assets/characters/plan-basic-daddy.png'),
+    includes: 'Start wherever you are. No shame.',
     features: [
       ['Manual budget and Safe to Spend', 'Enter your balance and payday, then see what you can spend.', 'budget'],
       ['Bills, debts and reminders', 'Track bills, debts and subscriptions you enter yourself.', 'bills'],
@@ -26,7 +28,8 @@ const plans = [
     price: '$4.99',
     color: '#8C5900',
     fill: '#FFE455',
-    heading: 'Build momentum with your plan',
+    heading: 'Build momentum with Tate',
+    artwork: require('../assets/characters/plan-plus-tate.png'),
     includes: 'Everything in Basic, plus these tools. Enter your own information.',
     features: [
       ['Snowball, Mixed and Avalanche', 'Choose which debt to focus on and compare payoff approaches.', 'debt'],
@@ -42,7 +45,8 @@ const plans = [
     price: '$19.99',
     color: '#6925A0',
     fill: '#DCABFF',
-    heading: 'Bring your accounts together',
+    heading: 'Queen Bobbie’s connected plan',
+    artwork: require('../assets/characters/plan-premium-queen-bobbie.png'),
     includes: 'Everything in Plus, with connected tools planned for Premium.',
     features: [
       ['Plaid bank sync', 'Connect supported accounts and import transactions.'],
@@ -72,6 +76,12 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
   const { width, fontScale } = useWindowDimensions();
   const wrapTabs = width < 350 || fontScale > 1.3;
   const selected = plans.find(plan => plan.id === selectedId);
+  const demoButton = (
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Try free Banking Demo from Plans"
+      onPress={onOpenDemo} style={[styles.action, styles.demo]}>
+      <Text style={styles.actionLabel}>Try the free Banking Demo</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.page}>
@@ -81,6 +91,8 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
           <TouchableOpacity key={plan.id} testID={`plan-${plan.id}`} accessibilityRole="tab" accessibilityLabel={plan.name}
             accessibilityState={{ selected: plan.id === selectedId }} onPress={() => onSelectPlan(plan.id)}
             style={[styles.tab, wrapTabs && styles.wideTab, { backgroundColor: plan.fill, borderColor: plan.color }]}>
+            <Image source={plan.artwork} resizeMode="contain" accessible={false}
+              style={[styles.tabArtwork, wrapTabs && styles.smallTabArtwork]} />
             <Text style={styles.tabLabel}>{plan.name}</Text>
           </TouchableOpacity>
         ))}
@@ -95,6 +107,7 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
         {selected.id === 'premium' && (
           <Text style={styles.note}>Live bank sync and automatic subscription finding are planned. The Banking Demo uses fictional data.</Text>
         )}
+        {selected.id === 'basic' && demoButton}
         {selected.features.map(([title, detail, tool]) => (
           <View key={title} style={styles.feature}>
             <Text accessibilityRole="header" style={styles.featureTitle}>{title}</Text>
@@ -105,10 +118,7 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
             </TouchableOpacity>}
           </View>
         ))}
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Try free Banking Demo from Plans"
-          onPress={onOpenDemo} style={[styles.action, styles.demo]}>
-          <Text style={styles.actionLabel}>Try the free Banking Demo</Text>
-        </TouchableOpacity>
+        {selected.id !== 'basic' && demoButton}
       </ScrollView>
     </View>
   );
@@ -120,7 +130,9 @@ const styles = StyleSheet.create({
   tabs: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   wrapTabs: { flexWrap: 'wrap' },
   tab: { flex: 1, minHeight: 48, minWidth: 0, alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 16, borderWidth: 2 },
-  wideTab: { flexBasis: '44%' },
+  wideTab: { flexBasis: '44%', flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+  tabArtwork: { width: 76, height: 76, flexShrink: 0 },
+  smallTabArtwork: { width: 42, height: 42 },
   tabLabel: { color: '#071A3A', fontSize: 15, fontWeight: '900', textAlign: 'center' },
   details: { flex: 1 },
   content: { gap: 10, paddingBottom: 18 },

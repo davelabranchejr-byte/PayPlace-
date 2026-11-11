@@ -5,6 +5,8 @@ export const FEATURE_ACTIONS = Object.freeze({
   'Until next payday': 'payday',
   'Your first win with Annie': 'firstWin',
   'Review my bills': 'reviewBills',
+  'Payoff methods': 'homePayoff',
+  'Bobbie’s Cabaret Show': 'homeCabaret',
   'Neighborhood': 'neighborhood',
   'Billiam’s Mailbox': 'mailbox',
   'Billiam’s bill tools': 'billTools',

@@ -22,7 +22,9 @@ export const ACTION_ARTWORK = Object.freeze({
   paymentHistory:require('../assets/characters/feature-payment-history.png'),
   quiet:require('../assets/characters/feature-quiet-mode.png'),
   overwhelmed:require('../assets/characters/overwhelmed-westley-cozy.jpg'),
-  reviewBills:require('../assets/characters/feature-review-bills-westley.png'),
+  reviewBills:require('../assets/characters/home-bills-westley.png'),
+  homePayoff:require('../assets/characters/home-payoff-methods-westley.png'),
+  homeCabaret:require('../assets/characters/home-cabaret-bobbie.png'),
   neighborhood:require('../assets/characters/neighborhood-tabby.png'),
   mailbox:require('../assets/characters/billiam-mailbox.png'),
   billTools:require('../assets/characters/billiam-canonical.png'),
@@ -36,7 +38,6 @@ const badgePlacement = {
   monthlyCalendar: { left: '29%', top: '13%' },
   smallStep: { left: '24%', top: '44.5%' },
   homeGuide: { left: '31%', top: '51.5%' },
-  reviewBills: { left: '60%', top: '67%' },
   billMicropayment: { left: '37%', top: '6.5%' },
   onboardingPayday: { left: '68%', top: '63%' },
 };

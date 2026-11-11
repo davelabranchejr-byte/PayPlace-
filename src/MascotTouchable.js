@@ -37,8 +37,8 @@ function ButtonRim({radius}) {
 // A bright frame around the original artwork, shared by every action control.
 export function actionColors(action) {
   if (['save','approve','banking','budget','refresh','reviewBills','billTools','paymentHistory'].includes(action)) return {fill:'#65EBEF',border:'#00AABF'};
-  if (['remove','reject','close','firstWin','annieCare'].includes(action)) return {fill:'#FFB0A4',border:'#E65D60'};
-  if (['mail','add','savings','remember','savingsGoal','payday','mailbox','neighborhood'].includes(action)) return {fill:'#FFE455',border:'#E1AC00'};
+  if (['remove','reject','close','firstWin','annieCare','homeCabaret'].includes(action)) return {fill:'#FFB0A4',border:'#E65D60'};
+  if (['mail','add','savings','remember','savingsGoal','payday','mailbox','neighborhood','homePayoff'].includes(action)) return {fill:'#FFE455',border:'#E1AC00'};
   return {fill:'#DCABFF',border:'#9F3DE5'};
 }
 const quietSurfaces = new Set(['white','#FFF','#FFFFFF','#F7F3FF','#F4F0FD','#EEE9FF','#EEE8FF','#EEE7FF','#F3EEFF','#EBDDFF','#C9FFF4','#FFF2A8','#FFE1DD']);

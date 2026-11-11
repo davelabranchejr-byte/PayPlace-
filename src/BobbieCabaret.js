@@ -18,7 +18,7 @@ export function BobbieCabaretEntry({ onOpen }) {
     <View style={{ width: '100%', alignItems: 'center' }}><Text style={s.eyebrow}>PAYPLACE CLUBHOUSE CABARET</Text><Text style={s.entryTitle}>The Bobbie Darlending Show</Text><Text style={s.body}>Watch the show · Ask Bobbie</Text></View>
   </TouchableOpacity>;
 }
-export default function BobbieCabaret({ visible, onClose, submitQuestion = api }) {
+export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to Neighborhood', submitQuestion = api }) {
   const [watching, setWatching] = useState(false);
   const [ownerInbox, setOwnerInbox] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -47,7 +47,7 @@ export default function BobbieCabaret({ visible, onClose, submitQuestion = api }
   function back() { if (ownerInbox) setOwnerInbox(false); else if (watching) setWatching(false); else onClose(); }
   return <Modal visible={visible} animationType="slide" onRequestClose={back}>
     <SafeAreaView style={s.safe}><KeyboardAvoidingView style={s.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.header}><Text accessibilityRole="header" style={s.title}>{ownerInbox ? 'Owner inbox' : 'Bobbie’s Cabaret'}</Text><Button secondary label={watching || ownerInbox ? 'Back to Cabaret' : 'Back to Neighborhood'} onPress={back} /></View>
+      <View style={s.header}><Text accessibilityRole="header" style={s.title}>{ownerInbox ? 'Owner inbox' : 'Bobbie’s Cabaret'}</Text><Button secondary label={watching || ownerInbox ? 'Back to Cabaret' : returnLabel} onPress={back} /></View>
       {visible && ownerInbox ? <OwnerInbox /> : visible && watching ? <CabaretVideo /> : <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <FittedArtwork source={artwork} aspectRatio={1312 / 1199} accessibilityLabel="Bobbie Darlending, a green-eyed tabby in a red wig and blue sequined gown, on a gold-lit cabaret stage." />
         <Text style={s.eyebrow}>LIVE FROM THE PAYPLACE CLUBHOUSE</Text>

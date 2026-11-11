@@ -18,10 +18,10 @@ const TAB_HELP = {
   Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
   Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Choose a character’s house, Em’s Pet Spa or Calm Garden.', 'Quiet Mode controls reminders, animation and hidden amounts.', 'Back to Neighborhood returns to these visits; the bottom tabs return to money tools.']},
   Home: { summary:'Your short money overview and one next step.', steps:[
-    'Bills & Banking contains Billiam’s tools, Banking Demo, subscriptions and debt. The demo uses fictional accounts.',
+    'Review my bills opens Bills & Banking. Payoff methods brings you to Snowball, Avalanche, Mixed and Micropayments.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
     'Bills holds payment history and manual entries. Plaid bank linking and Subscription Detective require paid Premium.',
-    'Neighborhood holds character visits, the spa and Calm Garden. One small step offers a suggested next action.',
+    'Bobbie’s Cabaret Show opens the show and question form. Find One small step under Payday details & getting started.',
   ] },
   Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
   Bills: { summary: 'Your bills and banking tools in one place.', steps: [
