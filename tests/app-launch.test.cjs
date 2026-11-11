@@ -352,7 +352,10 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(button('Open Extra Paycheck Calendar'),undefined,'payday tools have one home in Budget');
     assert.equal(button('Open Subscription Detective'),undefined,'manual subscriptions live in Bills');
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
-    assert.equal(home.findByType('ScrollView').children[0].type.name,'SeasonalWelcome','Annie welcomes visitors before the banking section');
+    assert.equal(home.findAll(node => node.type?.name === 'SeasonalWelcome').length, 0, 'Home starts with the money summary');
+    await act(() => button('Welcome & beta feedback').props.onPress());
+    assert.equal(home.findAll(node => node.type?.name === 'SeasonalWelcome').length, 1, 'Annie’s welcome remains easy to open');
+    await act(() => button('Welcome & beta feedback').props.onPress());
     assert.equal(home.findAll(node=>node.type?.name==='BankWelcomeCard').length,0,'Home keeps the snapshot clear of duplicate banking cards');
     assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama is absent from Home and its shared header');
     await act(()=>button('Open Neighborhood').props.onPress());
@@ -370,6 +373,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(JSON.stringify(harness.finance()),priorDemo,'starting the Home demo preserves the personal vault');
     await act(()=>button('Return to my personal plan').props.onPress());
     assert.equal(JSON.stringify(harness.finance()),priorDemo);
+    await act(() => button('Payday details & getting started').props.onPress());
     const steps = renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel === 'Open One small step');
     await act(() => steps.props.onPress());
     assert.ok(button('Open task: Review Power'));
@@ -622,6 +626,14 @@ test('plan tabs keep primary navigation visible and open working tools without p
         'large text may wrap instead of truncating the destination');
     }
     assert.equal(button('Basic').props.accessibilityState.selected, true);
+    for (const [tier, artwork] of [
+      ['Basic', 'plan-basic-daddy.png'], ['Plus', 'plan-plus-tate.png'],
+      ['Premium', 'plan-premium-queen-bobbie.png'],
+    ]) {
+      assert.equal(button(tier).findByType('Image').props.source, harness.artworkId(`assets/characters/${artwork}`));
+    }
+    assert.match(texts(), /Start wherever you are. No shame./);
+    assert.ok(button('Try free Banking Demo from Plans'));
     assert.match(texts(), /\$0\.99/);
     await press('Open Monthly calendar from Plans');
     assert.equal(calendar().props.canPrint, false);
@@ -752,17 +764,32 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await act(async () => { renderer = create(React.createElement(harness.App)); });
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({success:true}); await pending; });
-    assert.ok(renderer.root.find(node => node.type?.name === 'SeasonalWelcome'), 'gentle welcome remains on Home');
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'SeasonalWelcome').length, 0);
     const approvedLogo = harness.artworkId('assets/branding/payplace-icon.png');
+    assert.deepEqual(button('How Home works').findAllByType('Image').map(image => image.props.source), [
+      harness.artworkId('assets/characters/feature-how-home-works-daddy.png'), approvedLogo,
+    ]);
     for (const [label, file] of [
-      ['How Home works', 'feature-how-home-works-daddy.png'],
-      ['Open Review my bills', 'feature-review-bills-westley.png'],
+      ['Open Review my bills', 'home-bills-westley.png'],
+      ['Open Payoff methods', 'home-payoff-methods-westley.png'],
+      ['Open Bobbie’s Cabaret Show', 'home-cabaret-bobbie.png'],
     ]) {
-      const images = button(label).findAllByType('Image');
-      assert.deepEqual(images.map(image => image.props.source), [
-        harness.artworkId(`assets/characters/${file}`), approvedLogo,
-      ]);
+      const expected = harness.artworkId(`assets/characters/${file}`);
+      assert.equal(button(label).findByType('Image').props.source, expected);
+      assert.equal(renderer.root.findAllByType('Image').filter(image => image.props.source === expected).length, 1);
     }
+    await press('Open Bobbie’s Cabaret Show');
+    assert.ok(button('Watch the Show — Meowgarita & Money'));
+    await press('Back to Home');
+    await press('Open Payoff methods');
+    assert.ok(button('Snowball: Quick wins first'));
+    assert.ok(button('Mixed: Best of both'));
+    assert.ok(button('Avalanche: Save more on interest'));
+    await press('Micropayments: small extra payments');
+    const tracker = renderer.root.find(node => node.type?.name === 'Micropayments' && node.props.visible);
+    assert.equal(tracker.findAllByType('Image').length, 0, 'the logging screen has no full-width decorative hero');
+    await press('Back to my plan');
+    await press('Back to Home');
     assert.equal(button('Open security and backup settings').findAllByType('Image').length, 0);
     await press('Open Bills & Banking');
     assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
@@ -776,6 +803,8 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     const manualIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'submitBill');
     const westleyIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'importDemoBills');
     assert.ok(manualIndex < scanIndex && scanIndex < westleyIndex, 'Tate, Billiam, then Westley');
+    const sampleArt = button('Try sample bill review').findByType('Image');
+    assert.equal(sampleArt.props.style.height, 76, 'sample Westley fits inside the labeled shortcut');
     await act(() => input('Bill name').props.onChangeText('Internet draft'));
     await press('Close add a bill');
     assert.equal(input('Bill name'), undefined);

@@ -98,7 +98,9 @@ test('different feature destinations use distinct relevant original scenes inste
     ['One small step','feature-one-small-step-westley.png'],
     ['Until next payday','feature-until-payday.png'],
     ['Your first win with Annie','feature-first-win.png'],
-    ['Review my bills','feature-review-bills-westley.png'],
+    ['Review my bills','home-bills-westley.png'],
+    ['Payoff methods','home-payoff-methods-westley.png'],
+    ['Bobbie’s Cabaret Show','home-cabaret-bobbie.png'],
     ['Neighborhood','neighborhood-tabby.png'],
     ['Billiam’s Mailbox','billiam-mailbox.png'],
     ['Billiam’s bill tools','billiam-canonical.png'],
@@ -117,7 +119,7 @@ test('different feature destinations use distinct relevant original scenes inste
     const sources=[];
     for(const [index,button] of renderer.root.findAllByType('TouchableOpacity').entries()){
       const images=button.findAllByType('Image');
-      assert.equal(images.length,['Review my bills','One small step'].includes(cases[index][0])?2:1);
+      assert.equal(images.length,cases[index][0]==='One small step'?2:1);
       if (images.length === 2) assert.equal(images[1].props.source,'approved-payplace-icon');
       const source=images[0].props.source;sources.push(source);
       assert.equal(source,`../assets/characters/${cases[index][1]}`);
