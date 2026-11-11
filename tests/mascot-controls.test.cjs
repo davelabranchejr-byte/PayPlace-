@@ -39,7 +39,7 @@ test('painted hotspots and already illustrated controls retain their exact artwo
 test('navigation has four visible destinations and every nested billing route returns to Bills & Banking',async()=>{
   const {PRIMARY_DESTINATIONS,primaryDestination}=await import('../src/neighborhood-destinations.mjs');
   assert.deepEqual(PRIMARY_DESTINATIONS.map(p=>p.id),['Home','Budget','Bills','Neighborhood']);
-  for(const id of ['Bills','Billiam','Premium','Debt'])assert.equal(primaryDestination(id),'Bills');
+  for(const id of ['Bills','Billiam','BankingDemo','Debt'])assert.equal(primaryDestination(id),'Bills');
   for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Neighborhood');
 });
 test('action banners adapt between wide rows and narrow tiles without changing artwork or behavior',async()=>{
@@ -105,7 +105,7 @@ test('different feature destinations use distinct relevant original scenes inste
     ['I am overwhelmed','overwhelmed-westley-cozy.jpg'],
     ['Quiet Mode','feature-quiet-mode.png'],
     ['Visit Annie again','annie-front-door-mailbox.png'],
-    ['Plaid Banking','feature-plaid-banking-entry.png'],
+    ['Banking Demo','feature-plaid-banking-entry.png'],
     ['My debt plan','snapshot-debt-plan.png'],
     ['Undo & payment history','feature-payment-history.png'],
     ['Subscription Detective','bobbie-premium-clubhouse.png'],

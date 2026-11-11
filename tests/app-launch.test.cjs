@@ -132,12 +132,12 @@ test('banking demo shares categories, spending, recurring detection and savings 
     const personal = JSON.stringify(harness.finance());
     await press('Open Neighborhood'); await press('Move into the neighborhood on Facebook');
     assert.equal(harness.openedURLs.at(-1), 'https://www.facebook.com/share/1FRdYmPwum/?mibextid=wwXIfr');
-    await press('Open Bills & Banking'); await press('Open Plaid Banking'); await press('Try Bobbie’s banking demo'); await input('Demo username', 'Bobbie'); await input('Demo password', 'litterbox'); await press('Open Bobbie’s banking demo');
+    await press('Open Bills & Banking'); await press('Open Banking Demo'); await press('Try Bobbie’s banking demo'); await input('Demo username', 'Bobbie'); await input('Demo password', 'litterbox'); await press('Open Bobbie’s banking demo');
     assert.equal(hub().props.finance.bankActivity.source, 'demo');
     const importedIds=hub().props.finance.categorization.transactions.map(t=>t.id);
     assert.ok(button('View connected demo accounts'));
-    await press('View connected demo accounts'); await press('Back to Plaid Banking');
-    await press('View connected demo accounts'); await press('Back to Plaid Banking');
+    await press('View connected demo accounts'); await press('Back to Banking Demo');
+    await press('View connected demo accounts'); await press('Back to Banking Demo');
     assert.deepEqual(hub().props.finance.categorization.transactions.map(t=>t.id),importedIds,'viewing already loaded demo data never imports it twice');
     const bankingCategories = button('Open purchases and remembered categories')
       .find(node => node.type?.name === 'FittedArtwork');
@@ -151,7 +151,10 @@ test('banking demo shares categories, spending, recurring detection and savings 
     assert.equal(hub().props.finance.subscriptions.length, 1);
     assert.ok(hub().props.finance.subscriptions[0].detectionKey);
     assert.equal(button('Review detected CatFlix'), undefined, 'accepted clues do not appear twice');
-    await press('Close Detective Clubhouse'); await press('Back to Plaid Banking'); await press('Open Round Up & Save');
+    await press('Close Detective Clubhouse');
+    await press('Back to Bills and Banking');
+    assert.equal(button('Plaid bank-linking availability'), undefined, 'a fictional plan cannot open bank linking');
+    await press('Open Banking Demo'); await press('Open Round Up & Save');
     await press('Turn on sample round-ups'); await press('Simulate next purchase batch');
     const sample = hub().props.finance;
     assert.ok(sample.balance < 320);
@@ -359,7 +362,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama unmounts when leaving Neighborhood');
     const priorDemo=JSON.stringify(harness.finance());
     await act(()=>button('Open Bills & Banking').props.onPress());
-    await act(()=>button('Open Plaid Banking').props.onPress());
+    await act(()=>button('Open Banking Demo').props.onPress());
     await act(()=>button('Try Bobbie’s banking demo').props.onPress());
     assert.ok(button('Open Bobbie’s banking demo'),'Bills & Banking opens the demo without changing account setup');
     for(const [label,value] of [['Demo username','Bobbie'],['Demo password','litterbox']]) await act(()=>renderer.root.findAllByType('TextInput').find(node=>node.props.accessibilityLabel===label).props.onChangeText(value));
@@ -378,10 +381,10 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(() => homeNav.props.switchTab('Home'));
     const destinations = models.get(path.join(root, 'src/neighborhood-destinations.mjs')).NEIGHBORHOOD_DESTINATIONS;
     const neighbors=models.get(path.join(root, 'src/neighborhood-destinations.mjs')).NEIGHBOR_DESTINATIONS;
-    const openDestination=async(id,label)=>{if(neighbors.some(place=>place.id===id))await act(()=>button('Open Neighborhood').props.onPress());if(['Billiam','Premium','Debt'].includes(id))await act(()=>button('Open Bills & Banking').props.onPress());const target={Bills:'Bills & Banking',Billiam:'Billiam’s bill tools',Premium:'Plaid Banking',Debt:'My debt plan'}[id]||label;await act(()=>button(`Open ${target}`).props.onPress());};
+    const openDestination=async(id,label)=>{if(neighbors.some(place=>place.id===id))await act(()=>button('Open Neighborhood').props.onPress());if(['Billiam','BankingDemo','Debt'].includes(id))await act(()=>button('Open Bills & Banking').props.onPress());const target={Bills:'Bills & Banking',Billiam:'Billiam’s bill tools',BankingDemo:'Banking Demo',Debt:'My debt plan'}[id]||label;await act(()=>button(`Open ${target}`).props.onPress());};
     for (const { id, label } of destinations) {
       await openDestination(id,label);
-      const selected = button(neighbors.some(place=>place.id===id)?'Open Neighborhood':['Bills','Billiam','Premium','Debt'].includes(id)?'Open Bills & Banking':`Open ${label}`);
+      const selected = button(neighbors.some(place=>place.id===id)?'Open Neighborhood':['Bills','Billiam','BankingDemo','Debt'].includes(id)?'Open Bills & Banking':`Open ${label}`);
       assert.equal(selected.props.accessibilityState.selected, true);
       if (id === 'Home') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 0, 'Home no longer duplicates the mirror');
       if (id === 'Bobbie') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 1, 'the working mirror lives inside Bobbie’s building');
@@ -419,7 +422,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.ok(button('Back to Annie’s House'));
     await act(() => button('Back to Annie’s House').props.onPress());
     await act(() => button('Open Bills & Banking').props.onPress());
-    await act(() => button('Open Plaid Banking').props.onPress());
+    await act(() => button('Open Banking Demo').props.onPress());
     const hub = () => renderer.root.find(node => node.type?.name === 'PremiumResilienceHub');
     const press = async label => { assert.ok(button(label), label); await act(() => button(label).props.onPress()); };
     const toggle = async (label, value) => {
@@ -430,7 +433,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       const target = renderer.root.findAllByType('TextInput').find(node => node.props.accessibilityLabel === label);
       assert.ok(target, label); await act(() => target.props.onChangeText(value));
     };
-    const nav = async title => {if(['Premium','Billiam','Debt'].includes(title)){await press('Open Bills & Banking');await press('Open '+{Premium:'Plaid Banking',Billiam:'Billiam’s bill tools',Debt:'My debt plan'}[title]);}else await press('Open '+(title==='Bills'?'Bills & Banking':destinations.find(item=>item.id===title).label));};
+    const nav = async title => {if(['BankingDemo','Billiam','Debt'].includes(title)){await press('Open Bills & Banking');await press('Open '+{BankingDemo:'Banking Demo',Billiam:'Billiam’s bill tools',Debt:'My debt plan'}[title]);}else await press('Open '+(title==='Bills'?'Bills & Banking':destinations.find(item=>item.id===title).label));};
     assert.equal(hub().props.embedded, true);
     for (const title of ['Round Up & Save', 'Life Happens Fund', 'Bill Shock Mode', 'Help, I’m Falling Behind', 'Automatic Money Watch', 'Credit Center']) {
       await press(`Open ${title}`);
@@ -438,11 +441,11 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       await press('Hide instructions');
       assert.ok(button('Show instructions'), 'users can make room for controls after reading the steps');
       await press('Show instructions');
-      await press('Back to Plaid Banking');
+      await press('Back to Banking Demo');
     }
     await press('Account connections & beta setup');
     await press('Connect sample accounts');
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Round Up & Save');
     assert.equal(button('Simulate next purchase batch').props.disabled, true);
     await toggle('Enable sample round-ups', true);
@@ -457,7 +460,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(button('Simulate next purchase batch').props.disabled, true, 'a reached cap has an explicit stop');
     await toggle('Enable sample round-ups', false);
     assert.equal(button('Simulate next purchase batch').props.disabled, true);
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Life Happens Fund');
     await input('Life Happens target ($)', '120.00');
     await input('Contribution per payday ($)', '50.00');
@@ -467,17 +470,17 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(harness.finance().premiumBeta.sampleFund, 120, 'sample savings stop at the goal');
     assert.equal(button('Simulate next payday').props.disabled, true, 'a reached savings goal disables another contribution');
     assert.equal(harness.finance().premiumResilience.lifeHappensBalance, 0, 'sample savings do not change the saved real cushion');
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Bill Shock Mode');
     await toggle('Use sample budget for this plan', true);
     await input('Unexpected expense ($)', '300.25');
     await press('Save Gentlest recovery plan');
     assert.deepEqual(harness.finance().premiumBeta.savedRecovery, { choice: 'gentlest', expense: 300.25 });
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Credit Center');
     await press('Refresh sample credit score');
     assert.equal(harness.finance().premiumBeta.creditRefreshes, 1);
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Automatic Money Watch');
     await press('Refresh sample watch feed');
     await press('Open Subscription Detective');
@@ -486,26 +489,27 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.match(harness.alerts.at(-1)[1], /add your subscriptions as bills/);
     await act(() => harness.alerts.at(-1)[2].find(action => action.text === 'Open my bills').onPress());
     assert.ok(button('Add a bill'), 'regular users can manually enter subscription bills');
-    await press('Open Plaid Banking');
-    await press('Open Automatic Money Watch');
-    await press('Back to Plaid Banking');
+    await press('Open Banking Demo');
     await press('Account connections & beta setup');
-    await press('View live bank-linking availability');
+    assert.equal(button('Plaid bank-linking availability'), undefined, 'sample banking does not offer a live connection');
+    assert.equal(button('View live bank-linking availability'), undefined, 'the demo account page is sample-only');
+    await press('Back to Bills and Banking');
+    await press('Plaid bank-linking availability');
     assert.equal(renderer.root.find(node => node.type?.name === 'BankConnections').props.visible, true);
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0, 'bank linking does not open the demo');
     await act(() => renderer.root.find(node => node.type?.name === 'BankConnections').props.onClose());
-    await press('Back to Plaid Banking');
     await nav('Home');
     assert.equal(renderer.root.findAllByType('TouchableOpacity').some(node=>node.props.accessibilityLabel?.startsWith('Credit Score:')),false,'Home no longer duplicates the credit dashboard');
-    await nav('Premium');await press('Open Credit Center');
+    await nav('BankingDemo');await press('Open Credit Center');
     assert.ok(button('Refresh sample credit score'));
     await input('Current credit score','730');assert.equal(harness.finance().creditScore,730,'credit editing stays with its dashboard');
-    await nav('Premium');
-    assert.ok(button('Open Round Up & Save'), 'Premium tab always opens the feature hub');
+    await nav('BankingDemo');
+    assert.ok(button('Open Round Up & Save'), 'the Banking Demo always opens the feature hub');
     await act(() => renderer.unmount());
     await act(async () => { renderer = create(React.createElement(harness.App)); });
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
-    await nav('Premium');
+    await nav('BankingDemo');
     assert.equal(hub().props.betaState.sampleFund, 120);
     assert.equal(hub().props.betaState.roundUpEnabled, false);
     assert.equal(hub().props.premiumState.roundUpCap, 1.5);
@@ -516,7 +520,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Reset sample activity');
     assert.equal(harness.finance().premiumBeta.sampleFund, 100);
     assert.equal(harness.finance().premiumResilience.roundUpCap, 1.5, 'reset keeps saved preferences');
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Round Up & Save');
     assert.equal(button('Simulate next purchase batch').props.disabled, true);
     assert.ok(renderer.root.findAllByType('Text').some(node => typeof node.props.children === 'string' && node.props.children.includes('First connect sample accounts below')), 'disabled simulation explains its missing setup nearby');
@@ -529,7 +533,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(button('Simulate next purchase batch').props.disabled, true);
     await press('Start a new sample week');
     assert.equal(button('Simulate next purchase batch').props.disabled, false, 'resetting the week resolves the cap blocker');
-    await press('Back to Plaid Banking');
+    await press('Back to Banking Demo');
     await press('Open Help, I’m Falling Behind');
     await press('Review my bills');
     assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0);
@@ -626,14 +630,14 @@ test('Bobbie banking demo works without verification or network and leaves perso
   await press('Open Round Up & Save');
   await press('Turn on sample round-ups');await press('Simulate next purchase batch');
   assert.ok(hub().props.betaState.roundUpSaved>0);
-  await press('Back to Plaid Banking');await press('Open Life Happens Fund');
+  await press('Back to Banking Demo');await press('Open Life Happens Fund');
   await press('Turn on sample payday savings');await press('Simulate next payday');
   assert.ok(hub().props.betaState.sampleFund>100);
-  await press('Back to Plaid Banking');await press('Open Credit Center');await press('Refresh sample credit score');
+  await press('Back to Banking Demo');await press('Open Credit Center');await press('Refresh sample credit score');
   assert.equal(hub().props.betaState.creditRefreshes,1);
-  await press('Back to Plaid Banking');await press('Open Automatic Money Watch');await press('Refresh sample watch feed');
+  await press('Back to Banking Demo');await press('Open Automatic Money Watch');await press('Refresh sample watch feed');
   assert.equal(hub().props.betaState.watchRefreshes,1);
-  await press('Back to Plaid Banking');await press('Account connections & beta setup');await press('Disconnect sample accounts');
+  await press('Back to Banking Demo');await press('Account connections & beta setup');await press('Disconnect sample accounts');
   assert.equal(hub().props.betaState.sampleConnected,false);
   assert.equal(hub().props.betaState.roundUpEnabled,false);
   await input('Demo username','bobbie');await input('Demo password','litterbox');await press('Open Bobbie’s banking demo');
