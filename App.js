@@ -1220,14 +1220,13 @@ function PayPlaceApp() {
   const [loadAttempt, setLoadAttempt] = useState(0);
   const [bankConnectionsVisible, setBankConnectionsVisible] = useState(isBankOAuthReturn);
   const [categoriesVisible, setCategoriesVisible] = useState(false);
-  const [premiumPanel, setPremiumPanel] = useState(null);
-  const [premiumVisit, setPremiumVisit] = useState(0);
+  const [bankingDemoVisit, setBankingDemoVisit] = useState(0);
   const [tabHelpVisible, setTabHelpVisible] = useState(false);
   const [detectiveVisible, setDetectiveVisible] = useState(false);
   const [cabaretVisible, setCabaretVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
-  function openPremium(panel = null) { setPremiumPanel(panel); setPremiumVisit(current => current + 1); setTab("Premium"); }
+  function openBankingDemo() { setBankingDemoVisit(current => current + 1); setTab("BankingDemo"); }
   const [savedFinance, setSavedFinance] = useState(starterFinance);
   const [sampleFinance, setSampleFinance] = useState(null);
   const [essentialsPanel, setEssentialsPanel] = useState(null);
@@ -1273,10 +1272,12 @@ function PayPlaceApp() {
   }
   function startSample() { setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode}); setEssentialsPanel(null);setTab("Home"); }
   function startBankDemo() {
-    if (sampleFinance?.bankActivity?.source === 'demo') { setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab('Premium');return; }
+    if (sampleFinance?.bankActivity?.source === 'demo') { openBankingDemo(); return; }
     setSampleFinance({...samplePlan(starterFinance),quietMode:savedFinance.quietMode,
       premiumBeta:{sampleConnected:true,useSamplePlan:true}});
-    setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab("Premium");
+    setExtraCalendarVisible(false);
+    setEssentialsPanel(null);
+    openBankingDemo();
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setDetectiveVisible(false);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
@@ -1803,9 +1804,9 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowThree} />
 
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
+        <Header compact={tab === "BankingDemo" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
-        {['Premium','Billiam','Debt'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
+        {['BankingDemo','Billiam','Debt'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
 
         {tab === "Home" && (
           <HomeScreen
@@ -1816,9 +1817,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             safeToSpend={safeToSpend}
             safeToSpendDaily={safeToSpendDaily}
             switchTab={setTab}
-            onBankDemo={() => openPremium("demo")}
             onDetective={openSubscriptionDetective}
-            onPremium={() => openPremium()}
             onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
             onSavings={() => setSavingsVisible(true)}
           />
@@ -1827,7 +1826,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Bills" && (
           <BillsScreen
             bills={finance.bills}
-            onBanking={() => openPremium()}
+            onBankingDemo={openBankingDemo}
+            onBankLinking={sampleFinance ? undefined : showPlaidPlan}
             onDebt={() => setTab("Debt")}
             onMonthlyCalendar={() => setMonthlyCalendarVisible(true)}
             onMicropayments={() => setMicropaymentsVisible(true)}
@@ -1874,16 +1874,14 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           />
         )}
 
-        {tab === "Premium" && <PremiumResilienceHub
-          key={premiumVisit}
+        {tab === "BankingDemo" && <PremiumResilienceHub
+          key={bankingDemoVisit}
           embedded
-          initialPanel={premiumPanel}
           finance={finance}
           premiumState={normalizePremiumState(finance.premiumResilience)}
           onPremiumStateChange={next => setFinance(current => ({ ...current, premiumResilience: normalizePremiumState(next) }))}
           betaState={normalizePremiumBeta(finance.premiumBeta)}
           onBetaStateChange={next => setFinance(current => ({ ...current, premiumBeta: normalizePremiumBeta(next) }))}
-          onOpenBankConnections={() => setBankConnectionsVisible(true)}
           onOpenCategories={() => setCategoriesVisible(true)}
           onBankAction={sampleFinance ? updateDemoBank : undefined}
           onOpenSubscriptions={openSubscriptionDetective}
@@ -1909,7 +1907,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
           <ExpandableSection title="Annie’s porch & today’s poster" artworkAction="anniePoster">
-          <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective} onPremium={()=>openPremium()}/>
+          <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective}/>
           </ExpandableSection>
         </ScrollView>}
         {['Spa','Calm'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" onPress={()=>setTab('Neighborhood')} style={{minHeight:44,padding:12}}><Text style={{color:palette.purple,fontWeight:'800'}}>← Neighborhood</Text></TouchableOpacity>}
@@ -1933,7 +1931,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           })} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
-          onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "Premium") openPremium(); else setTab(next); }}
+          onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "BankingDemo") openBankingDemo(); else setTab(next); }}
           onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
           onLibraryChange={action => setFinanceRaw(current => {
             try { return {...current, neighborhoodLibrary: action(current.neighborhoodLibrary)}; }
@@ -1946,7 +1944,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
-        <NeighborhoodNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
+        <NeighborhoodNav current={tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
         {monthlyCalendarVisible && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance} onClose={() => setMonthlyCalendarVisible(false)} />}
         <ExtraPaycheckCalendar visible={extraCalendarVisible} onClose={()=>setExtraCalendarVisible(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={updateExtraPaycheck} onBudget={()=>{setExtraCalendarVisible(false);setTab('Budget');}} />
         <Micropayments key={`micro-${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible={micropaymentsVisible}
@@ -2285,7 +2283,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
 }
 
 
-function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremium, reduceAnimation }) {
+function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, reduceAnimation }) {
   const neighborhoodArtwork = useNeighborhoodArtwork();
   const [foyerOpen, setFoyerOpen] = useState(false);
   const [foyerStage, setFoyerStage] = useState("door");
@@ -2455,14 +2453,12 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
 function HomeScreen({
   finance,
   onEssentials,
-  onBankDemo,
   upcomingTotal,
   debtDueTotal,
   safeToSpend,
   safeToSpendDaily,
   switchTab,
   onDetective,
-  onPremium,
   onSavings,
   onStepsChange,
 }) {
@@ -2566,7 +2562,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt, onMicropayments, onMonthlyCalendar }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBankingDemo, onBankLinking, onDebt, onMicropayments, onMonthlyCalendar }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2685,11 +2681,11 @@ const importDemoBills = () => {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
+      <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, the banking demo and debt planning." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
       <FeatureLinks items={[
         {title:'Monthly payment calendar',body:'See bills, recorded payments, paydays and subscriptions. Print in portrait or landscape.',artworkAction:'monthlyCalendar',onPress:onMonthlyCalendar},
         {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
-        {title:'Plaid Banking',body:'Paid Premium bank linking. Explore the fictional demo or enter balances manually.',artworkAction:'banking',onPress:onBanking},
+        {title:'Banking Demo',body:'Explore Bobbie’s fictional accounts and transactions.',onPress:onBankingDemo},
         {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
       ]}/>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
@@ -2962,6 +2958,10 @@ const importDemoBills = () => {
         ))
       )}
       <MicropaymentsButton forBills onPress={onMicropayments} />
+      {onBankLinking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Plaid bank-linking availability"
+        style={styles.primaryButtonTight} onPress={onBankLinking}>
+        <Text style={styles.primaryButtonText}>Plaid bank linking · Premium availability</Text>
+      </TouchableOpacity>}
       <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Paid Premium subscription tracking. In regular PayPlace, add subscriptions manually as bills.',onPress:onSubscriptions}]} />
       <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
