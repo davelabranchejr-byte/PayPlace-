@@ -18,6 +18,7 @@ export default function BankWelcomeCard({ onDemo, onBanking, demoLabel = 'Try Bo
         accessibilityLabel="Daddy deposits colorful fictional money at Plaid Banking while Tate hands him a lollipop." />
     </View>
     <PlaidBankScene/>
+    <Text style={s.body}>Plaid bank linking and Subscription Detective require paid PayPlace Premium. With regular PayPlace, enter balances and bills yourself, including subscriptions.</Text>
     <Text style={s.body}>{demoConnected ? 'Your demo accounts and transactions are already loaded—you don’t need to import them again.' : 'Bobbie’s demo is open. Try round-ups, savings, Money Watch and credit with fictional money.'}</Text>
     <TouchableOpacity accessibilityRole="button" accessibilityLabel={demoLabel} onPress={onDemo} style={s.button}><Text style={s.buttonText}>{demoConnected ? 'View demo accounts →' : 'Try Bobbie’s banking demo →'}</Text></TouchableOpacity>
     {onBanking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Explore Plaid Banking" onPress={onBanking} style={s.secondary}><Text style={s.link}>Accounts & banking tools →</Text></TouchableOpacity>}

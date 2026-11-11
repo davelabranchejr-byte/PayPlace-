@@ -20,7 +20,7 @@ const TAB_HELP = {
   Home: { summary:'Your short money overview and one next step.', steps:[
     'Bills & Banking contains Billiam’s tools, Plaid Banking, subscriptions and debt. The fictional banking demo is inside Plaid Banking.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
-    'Bills holds payment history and Subscription Detective. Plaid Banking holds accounts, savings automation, monitoring and credit.',
+    'Bills holds payment history and manual entries. Plaid bank linking and Subscription Detective require paid Premium.',
     'Neighborhood holds character visits, the spa and Calm Garden. One small step offers a suggested next action.',
   ] },
   Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
@@ -77,7 +77,7 @@ export const PREMIUM_HELP = {
   watch: { summary: 'Preview reminders about subscription renewals and bill changes.', steps: [
     'Connect sample accounts to show the fictional renewal and utility alerts.',
     'Refresh sample watch feed records another sample refresh. It shows the same example alerts; it does not scan a bank account or discover new charges.',
-    'Open Subscription Detective to manage subscriptions you enter yourself. Record cancellation status after contacting the provider; PayPlace does not cancel for you.',
+    'Try Subscription Detective with sample subscriptions in Bobbie’s banking demo. For manual entry in regular PayPlace, add each subscription as a bill.',
   ] },
   credit: { summary: 'Preview a credit dashboard without checking your actual credit.', steps: [
     'Connect sample accounts to display a fictional score.',
@@ -108,7 +108,7 @@ export default function ScreenHelp({ tab, visible, onClose }) {
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Close tab instructions" onPress={onClose} style={s.button}><Text style={s.buttonText}>Back to {neighborhoodLabel(tab)}</Text></TouchableOpacity>
       <Text accessibilityRole="header" style={s.heading}>{neighborhoodLabel(tab)}: a place to start</Text>
       <HowItWorks guide={TAB_HELP[tab]} />
-      <Text style={s.body}>Manual Mode means you enter and maintain your own financial information. Banking connections and live payments are not enabled in this beta.</Text>
+      <Text style={s.body}>Manual Mode lets you enter your own balances, bills and subscription expenses. Plaid bank linking and Subscription Detective require paid PayPlace Premium.</Text>
     </ScrollView></SafeAreaView>
   </Modal>;
 }

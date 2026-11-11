@@ -27,8 +27,8 @@ function Choices({ label, options, value, onChange }) {
 }
 
 export function SubscriptionDetectiveEntry({ onOpen }) {
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Subscription Detective, Premium feature included during beta" activeOpacity={0.92} onPress={onOpen} style={s.entry}>
-    <Art /><View style={s.entryCopy}><Text style={s.eyebrow}>PREMIUM PAID FEATURE</Text><Text style={s.title}>Subscription Detective</Text><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text><Text style={s.body}>Investigate subscriptions, keep an eye on trials, and give every renewal a little attention.</Text><View style={s.entryAction}><Ionicons name="search" color="#FFFFFF" size={20} /><Text style={s.buttonText}>Enter the Detective Clubhouse</Text></View><Text style={s.note}>Included during beta · no purchase or charge</Text></View>
+  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Subscription Detective, paid Premium feature" activeOpacity={0.92} onPress={onOpen} style={s.entry}>
+    <Art /><View style={s.entryCopy}><Text style={s.eyebrow}>PREMIUM PAID FEATURE</Text><Text style={s.title}>Subscription Detective</Text><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text><Text style={s.body}>Investigate subscriptions, keep an eye on trials, and give every renewal a little attention.</Text><View style={s.entryAction}><Ionicons name="search" color="#FFFFFF" size={20} /><Text style={s.buttonText}>Enter the Detective Clubhouse</Text></View><Text style={s.note}>Paid Premium · sample preview available</Text></View>
   </TouchableOpacity>;
 }
 
@@ -70,7 +70,7 @@ export default function SubscriptionDetective({ visible, onClose, finance, onAct
       <ScrollView ref={scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Art /><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text>
         <Text style={s.body}>Little charges deserve a little investigation. Add your subscriptions and trials, then decide what earns a place in your life.</Text>
-        <Text style={s.note}>Premium paid feature. Available without charge during beta. The finder checks available transaction history; the banking demo uses fictional charges. Live transaction syncing still needs the Plaid connection.</Text>
+        <Text style={s.note}>Paid Premium feature. This preview uses a separate sample plan and fictional transactions. To enter a real subscription with regular PayPlace, add it as a bill.</Text>
         <View style={[s.card, { backgroundColor: '#BBF5E8' }]}>
           <Text accessibilityRole="header" style={s.subtitle}>Bobbie found a few clues</Text>
           <Text style={s.body}>We look for at least three settled charges on a regular schedule. These are possible subscriptions or recurring bills, not confirmed contracts. Next-charge dates are estimates.</Text>
@@ -122,11 +122,11 @@ export default function SubscriptionDetective({ visible, onClose, finance, onAct
           </View>)}
         </View>
         <View style={[s.card, { backgroundColor: '#FFD85A' }]}><Text accessibilityRole="header" style={s.subtitle}>The savings casebook</Text><Text style={s.value}>{money(summary.avoidedAnnual)}/year</Text><Text style={s.body}>Estimated future cost avoided for cases you marked cancelled, at their entered rates. This is a projection, not money deposited or verified savings.</Text></View>
-        <View style={[s.card, { backgroundColor: '#BBF5E8' }]}><Text accessibilityRole="header" style={s.subtitle}>Quiet renewal reminders</Text><Text style={s.body}>An optional note three days before and on your saved trial-end or renewal date, at 9 AM in your phone’s time zone. Names and amounts stay off the notification.</Text>
+        {onRemindersChange && reminderStatus && <View style={[s.card, { backgroundColor: '#BBF5E8' }]}><Text accessibilityRole="header" style={s.subtitle}>Quiet renewal reminders</Text><Text style={s.body}>An optional note three days before and on your saved trial-end or renewal date, at 9 AM in your phone’s time zone. Names and amounts stay off the notification.</Text>
           {!reminderStatus.supported ? <Text style={s.note}>Notifications are available in the iPhone and Android apps.</Text> : <><Button disabled={permissionBusy} label={permissionBusy ? 'Checking notifications…' : finance.subscriptionReminders?.enabled ? 'Turn off Clubhouse reminders' : 'Enable Clubhouse reminders'} onPress={reminders} />
             <Text style={s.note}>{reminderStatus.error ? 'Could not update reminders. Reopen PayPlace to try again.' : reminderStatus.permissionBlocked ? 'Notifications are blocked in your phone’s settings.' : `${reminderStatus.count} upcoming reminder days scheduled.`} The next 12 reminder days are scheduled; reopen PayPlace to refresh. Enter the next renewal after each cycle. Phone settings can delay delivery.</Text>
             {reminderStatus.permissionBlocked && <Button secondary label="Open notification settings" onPress={() => Linking.openSettings()} />}</>}
-        </View>
+        </View>}
         <Button secondary label="Review subscription expenses in Bills" onPress={() => { close(); onBills(); }} /><Text style={s.note}>Add an expense in Bills to reserve money for it. Clubhouse entries and linked bills do not sync amounts or payment status automatically. Cancel through the provider or app store, then update your bill separately.</Text><Button label="Back to the neighborhood" onPress={close} />
       </ScrollView>
     </KeyboardAvoidingView></SafeAreaView>
