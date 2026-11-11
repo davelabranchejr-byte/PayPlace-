@@ -58,7 +58,7 @@ import { advanceReadingCircle } from "./src/neighborhood-library.mjs";
 import { neighborhoodLabel } from "./src/neighborhood-destinations.mjs";
 import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
-import SubscriptionDetective, { SubscriptionDetectiveEntry } from "./src/SubscriptionDetective";
+import SubscriptionDetective from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
 import BobbieBankDemoLogin from "./src/BobbieBankDemoLogin";
 import PrivacyLinks from './src/PrivacyLinks';
@@ -1234,6 +1234,18 @@ function PayPlaceApp() {
   const [micropaymentsVisible, setMicropaymentsVisible] = useState(false);
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
+  const subscriptionPreview = Boolean(sampleFinance);
+  function openSubscriptionDetective() {
+    if (subscriptionPreview) {
+      setDetectiveVisible(true);
+      return;
+    }
+    Alert.alert(
+      "Subscription Detective · Paid Premium",
+      "Subscription tracking is a paid PayPlace Premium feature. You can try it with sample data in Bobbie’s banking demo. In regular PayPlace, add your subscriptions as bills with their amounts and due dates.",
+      [{ text: "Close", style: "cancel" }, { text: "Open my bills", onPress: () => setTab("Bills") }]
+    );
+  }
   const quiet = quietSettings(finance.quietMode);
   const effectiveBillSettings = useMemo(() => ({...finance.billReminders,
     ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
@@ -1241,9 +1253,8 @@ function PayPlaceApp() {
   const effectiveCareSettings = useMemo(() => ({...finance.annieCare,
     ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
     ...(quiet.pauseCheckIns || sampleFinance || clearingData ? {weekly:false,checkIn:false} : {})}), [finance.annieCare,quiet.hour,quiet.minute,quiet.pauseCheckIns,!!sampleFinance,clearingData]);
-  const effectiveSubscriptionSettings = useMemo(() => ({...finance.subscriptionReminders,
-    ...(quiet.hour !== null ? {hour:quiet.hour,minute:quiet.minute} : {}),
-    ...(sampleFinance || clearingData ? {enabled:false} : {})}), [finance.subscriptionReminders,quiet.hour,quiet.minute,!!sampleFinance,clearingData]);
+  // Reconcile away old subscription reminders while paid access is unavailable.
+  const effectiveSubscriptionSettings = useMemo(() => ({ enabled: false }), []);
   function setFinanceRaw(update) { (sampleFinance ? setSampleFinance : setSavedFinance)(update); }
   function setFinance(update) { setFinanceRaw(current => recordActivity(current, recordBillHistory(current, recordBilliamReadings(current, typeof update === "function" ? update(current) : update)))); }
   async function saveCategories(next) {
@@ -1266,7 +1277,7 @@ function PayPlaceApp() {
       premiumBeta:{sampleConnected:true,useSamplePlan:true}});
     setExtraCalendarVisible(false);setEssentialsPanel(null);setPremiumPanel(null);setPremiumVisit(current=>current+1);setTab("Premium");
   }
-  function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setEssentialsPanel(null);setTab("Home"); }
+  function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setDetectiveVisible(false);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
   function saveMicropayment(entry, validateOnly = false) {
     const next = recordMicropayment(finance, entry);
@@ -1311,9 +1322,10 @@ function PayPlaceApp() {
   const reminderStatus = useBillReminders(finance.bills, effectiveBillSettings, loaded && !storageError && !clearingData,
     () => setTab("Bills"));
   const subscriptions = useMemo(() => subscriptionCases(finance), [finance.subscriptions]);
-  const subscriptionReminderStatus = useSubscriptionReminders(subscriptions, effectiveSubscriptionSettings,
-    loaded && onboardingComplete && !storageError && !clearingData, () => setDetectiveVisible(true));
+  useSubscriptionReminders(subscriptions, effectiveSubscriptionSettings,
+    loaded && onboardingComplete && !storageError && !clearingData, openSubscriptionDetective);
   function updateDetective(action) {
+    if (!subscriptionPreview) return false;
     try { setFinance(updateSubscription(finance, action)); return true; }
     catch (error) { Alert.alert("A little detective check", error.message); return false; }
   }
@@ -1801,7 +1813,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             safeToSpendDaily={safeToSpendDaily}
             switchTab={setTab}
             onBankDemo={() => openPremium("demo")}
-            onDetective={() => setDetectiveVisible(true)}
+            onDetective={openSubscriptionDetective}
             onPremium={() => openPremium()}
             onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
             onSavings={() => setSavingsVisible(true)}
@@ -1821,7 +1833,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             deleteBill={deleteBill}
             onBilliam={() => setTab("Billiam")}
             onHistory={() => setEssentialsPanel("history")}
-            onSubscriptions={() => setDetectiveVisible(true)}
+            onSubscriptions={openSubscriptionDetective}
           />
         )}
 
@@ -1869,7 +1881,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onOpenBankConnections={() => setBankConnectionsVisible(true)}
           onOpenCategories={() => setCategoriesVisible(true)}
           onBankAction={sampleFinance ? updateDemoBank : undefined}
-          onOpenSubscriptions={() => setDetectiveVisible(true)}
+          onOpenSubscriptions={openSubscriptionDetective}
           onOpenBills={() => setTab("Bills")}
           onStartDemo={startBankDemo}
           onCreditChange={text => updateNumber("creditScore", text)}
@@ -1890,7 +1902,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
           <ExpandableSection title="Annie’s porch & today’s poster">
-          <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={()=>setDetectiveVisible(true)} onPremium={()=>openPremium()}/>
+          <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective} onPremium={()=>openPremium()}/>
           </ExpandableSection>
         </ScrollView>}
         {['Spa','Calm'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" onPress={()=>setTab('Neighborhood')} style={{minHeight:44,padding:12}}><Text style={{color:palette.purple,fontWeight:'800'}}>← Neighborhood</Text></TouchableOpacity>}
@@ -1914,7 +1926,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           })} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} upcomingTotal={upcomingTotal} onHome={() => setTab("Neighborhood")}
-          onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") setDetectiveVisible(true); else if (next === "Premium") openPremium(); else setTab(next); }}
+          onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "Premium") openPremium(); else setTab(next); }}
           onMirrorAction={updateMirror} onExtraPaycheckAction={updateExtraPaycheck}
           onLibraryChange={action => setFinanceRaw(current => {
             try { return {...current, neighborhoodLibrary: action(current.neighborhoodLibrary)}; }
@@ -1938,10 +1950,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {categoriesVisible && <MerchantCategories key={`${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible
           onClose={() => setCategoriesVisible(false)} value={finance.categorization} onChange={saveCategories} sample={!!sampleFinance} />}
         {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)} />}
-        <SubscriptionDetective visible={detectiveVisible} onClose={() => setDetectiveVisible(false)}
-          finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")}
-          reminderStatus={subscriptionReminderStatus}
-          onRemindersChange={options => setFinance(current => ({ ...current, subscriptionReminders: options }))} />
+        <SubscriptionDetective visible={subscriptionPreview && detectiveVisible} onClose={() => setDetectiveVisible(false)}
+          finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")} />
         {securityPanel}
         <BankConnections visible={bankConnectionsVisible} onClose={() => setBankConnectionsVisible(false)} onUseBalance={(balance) => setFinance((current) => ({ ...current, balance, balanceUpdatedAt:Date.now(),balanceSource:"Bank connection" }))} />
       </KeyboardAvoidingView>
@@ -2014,7 +2024,7 @@ const ONBOARDING_STEPS = [
     mascot: "Bobbie",
     role: "Confidence Queen",
     question: "Would bank linking help you later?",
-    helper: "Bank linking is a planned paid Premium feature. Manual entry is available now.",
+    helper: "Plaid bank linking and subscription tracking are paid Premium features. You can enter balances, bills and subscriptions manually with regular PayPlace.",
     image: portraits.bobbie,
     type: "choice",
     options: ["I’m interested", "Maybe later", "I prefer manual mode"],
@@ -2668,7 +2678,7 @@ const importDemoBills = () => {
       <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
       <FeatureLinks items={[
         {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
-        {title:'Plaid Banking',body:'Bank connections, transaction insights and subscriptions.',artworkAction:'banking',onPress:onBanking},
+        {title:'Plaid Banking',body:'Paid Premium bank linking. Explore the fictional demo or enter balances manually.',artworkAction:'banking',onPress:onBanking},
         {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
       ]}/>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
@@ -2941,7 +2951,7 @@ const importDemoBills = () => {
         ))
       )}
       <MicropaymentsButton onPress={onMicropayments} />
-      <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Your entered subscriptions and renewal reminders.',onPress:onSubscriptions}]} />
+      <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Paid Premium subscription tracking. In regular PayPlace, add subscriptions manually as bills.',onPress:onSubscriptions}]} />
       <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a bill</Text>
