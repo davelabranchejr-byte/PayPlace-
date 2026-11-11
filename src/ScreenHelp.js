@@ -18,14 +18,14 @@ const TAB_HELP = {
   Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
   Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Choose a character’s house, Em’s Pet Spa or Calm Garden.', 'Quiet Mode controls reminders, animation and hidden amounts.', 'Back to Neighborhood returns to these visits; the bottom tabs return to money tools.']},
   Home: { summary:'Your short money overview and one next step.', steps:[
-    'Bills & Banking contains Billiam’s tools, Plaid Banking, subscriptions and debt. The fictional banking demo is inside Plaid Banking.',
+    'Bills & Banking contains Billiam’s tools, Banking Demo, subscriptions and debt. The demo uses fictional accounts.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
     'Bills holds payment history and manual entries. Plaid bank linking and Subscription Detective require paid Premium.',
     'Neighborhood holds character visits, the spa and Calm Garden. One small step offers a suggested next action.',
   ] },
   Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
   Bills: { summary: 'Your bills and banking tools in one place.', steps: [
-    'Open Billiam’s bill tools for scans and imports, Plaid Banking for bank features, or My debt plan for payoff planning.',
+    'Open Billiam’s bill tools for scans and imports, Banking Demo for fictional accounts, or My debt plan for payoff planning.',
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
     'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Bills payment history shows changes and lets you correct a recorded amount.',
     'Sample bills let you try the review flow. They enter your saved list if you add them. PayPlace does not send a payment in this beta.',
@@ -33,7 +33,7 @@ const TAB_HELP = {
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [
     'Enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
     'Safe to Spend subtracts unpaid bills, debt minimums and your buffer from your current balance. An expected paycheck is not money available now.',
-    'Open Until next payday, Extra Paycheck Calendar or Savings Goals from Budget. Credit entries and fictional credit previews live in Plaid Banking.',
+    'Open Until next payday, Extra Paycheck Calendar or Savings Goals from Budget. Credit entries and fictional credit previews live in Banking Demo.',
   ] },
   Debt: { summary: 'Choose which debt to focus on and track payments you make elsewhere.', steps: [
     'Add each debt with its balance, interest rate and minimum payment.',
@@ -46,7 +46,7 @@ const TAB_HELP = {
     'Tap Show me another story for a different message. There is no form to finish or money setting to change here.',
     'Use Home or another bottom tab whenever you are ready to return to your plan.',
   ] },
-  Premium: { summary: 'Try financial cushioning and recovery tools during beta, without a charge.', steps: [
+  BankingDemo: { summary: 'Try fictional banking and financial planning tools.', steps: [
     'Tap an illustrated feature. Its How this works card explains the purpose, steps and result.',
     'Round-ups, payday savings, Money Watch and Credit Center use fictional sample accounts. Connect them from a feature or Account connections & beta setup.',
     'Recovery plans can use your saved entries or a fictional budget. Sample activity never moves money, pays bills or retrieves a credit report.',
@@ -84,9 +84,9 @@ export const PREMIUM_HELP = {
     'Refresh sample credit score switches the example between 712 and 716 so you can test the display. Neither number is your real score.',
     'Enter or update your own credit score in Your saved credit entry below. A live credit report requires a future approved integration.',
   ] },
-  accounts: { summary: 'Set up fictional accounts for trying the Plaid Banking controls.', steps: [
+  accounts: { summary: 'Set up fictional accounts for trying the demo banking controls.', steps: [
     'Tap Connect sample accounts. The sample setup never opens a real bank account. The prominent Bobbie demo uses public username Bobbie and password litterbox.',
-    'Go Back to Plaid Banking and choose a feature. Round-ups and payday savings each have their own on/off switch.',
+    'Go Back to Banking Demo and choose a feature. Round-ups and payday savings each have their own on/off switch.',
     'Disconnect pauses both sample savings switches. Reset sample activity restores the starter samples and disconnects them; it keeps your saved preferences, real budget and bills.',
   ] },
 };

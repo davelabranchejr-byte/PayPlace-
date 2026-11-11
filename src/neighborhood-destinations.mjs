@@ -8,7 +8,7 @@ export const NEIGHBORHOOD_DESTINATIONS = [
   { id: 'Chapo', label: 'Chapo’s Kitchen', color: '#895116', tile: 6 },
   { id: 'Budget', label: 'Budget', color: '#176F9F', tile: 7 },
   { id: 'Calm', label: 'Calm Garden', color: '#08796E', tile: 8 },
-  { id: 'Premium', label: 'Plaid Banking', color: '#6550AF', tile: 9 },
+  { id: 'BankingDemo', label: 'Banking Demo', color: '#6550AF', tile: 9 },
   { id: 'Bills', label: 'Bills', color: '#9F452B' },
   { id: 'Billiam', label: 'Billiam', color: '#08796E' },
   { id: 'Debt', label: 'Debt', color: '#6550AF' },
@@ -25,6 +25,6 @@ export const PRIMARY_DESTINATIONS = ['Home', 'Budget', 'Bills', 'Neighborhood'].
       : NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
 export const NEIGHBOR_DESTINATIONS = NEIGHBORHOOD_DESTINATIONS.filter(place => ['Spa','Annie','Bobbie','Westley','Tate','Chapo','Calm'].includes(place.id));
 export function primaryDestination(id) {
-  if (['Premium', 'Billiam', 'Debt'].includes(id)) return 'Bills';
+  if (['BankingDemo', 'Billiam', 'Debt'].includes(id)) return 'Bills';
   return NEIGHBOR_DESTINATIONS.some(place => place.id === id) ? 'Neighborhood' : id;
 }

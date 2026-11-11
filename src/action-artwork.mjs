@@ -11,7 +11,7 @@ export const FEATURE_ACTIONS = Object.freeze({
   'I am overwhelmed': 'overwhelmed',
   'Quiet Mode': 'quiet',
   'Visit Annie again': 'welcome',
-  'Plaid Banking': 'banking',
+  'Banking Demo': 'banking',
   'My debt plan': 'debt',
   'Undo & payment history': 'paymentHistory',
   'Subscription Detective': 'subscriptions',
