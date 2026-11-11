@@ -61,6 +61,7 @@ import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
+import PayPlacePlans from "./src/PayPlacePlans";
 import BobbieBankDemoLogin from "./src/BobbieBankDemoLogin";
 import PrivacyLinks from './src/PrivacyLinks';
 import { clearDeviceRecords } from './src/device-deletion';
@@ -1227,11 +1228,13 @@ function PayPlaceApp() {
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   function openBankingDemo() { setBankingDemoVisit(current => current + 1); setTab("BankingDemo"); }
+  const [selectedPlan, setSelectedPlan] = useState("basic");
+  const [showPayoffStrategy, setShowPayoffStrategy] = useState(false);
   const [savedFinance, setSavedFinance] = useState(starterFinance);
   const [sampleFinance, setSampleFinance] = useState(null);
   const [essentialsPanel, setEssentialsPanel] = useState(null);
   const [micropaymentsVisible, setMicropaymentsVisible] = useState(false);
-  const [monthlyCalendarVisible, setMonthlyCalendarVisible] = useState(false);
+  const [monthlyCalendarMode, setMonthlyCalendarMode] = useState(null);
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
   const subscriptionPreview = Boolean(sampleFinance);
@@ -1278,6 +1281,23 @@ function PayPlaceApp() {
     setExtraCalendarVisible(false);
     setEssentialsPanel(null);
     openBankingDemo();
+  }
+  function openPlanTool(tool) {
+    switch (tool) {
+      case "budget": setTab("Budget"); break;
+      case "bills": setTab("Bills"); break;
+      case "neighborhood": setTab("Neighborhood"); break;
+      case "calm": setTab("Calm"); break;
+      case "debt": setShowPayoffStrategy(true); setTab("Debt"); break;
+      case "monthlyCalendar": setMonthlyCalendarMode("view"); break;
+      case "printCalendar": setMonthlyCalendarMode("print"); break;
+      case "savings": setSavingsVisible(true); break;
+      case "micropayments": setMicropaymentsVisible(true); break;
+      case "extraCalendar": setExtraCalendarVisible(true); break;
+      case "spending": setCategoriesVisible(true); break;
+      case "sampleTransactions": startBankDemo(); setCategoriesVisible(true); break;
+      case "sampleSubscriptions": startBankDemo(); setDetectiveVisible(true); break;
+    }
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setDetectiveVisible(false);setEssentialsPanel(null);setTab("Home"); }
   function saveFirstWin(entry) { const next=firstWinPlan(finance,entry);setFinance(next);setEssentialsPanel("payday"); }
@@ -1804,7 +1824,11 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowThree} />
 
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        <Header compact={tab === "BankingDemo" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
+        <Header compact={["BankingDemo", "Home", "Plans"].includes(tab)} tab={tab}
+          onHelp={tab === "Plans" ? undefined : () => setTabHelpVisible(true)}
+          onPlans={tab === "Plans" ? undefined : () => setTab("Plans")}
+          onSecurity={() => setSecurityVisible(true)} />
+        {tab === "Plans" && <PayPlacePlans selectedId={selectedPlan} onSelectPlan={setSelectedPlan} onOpenTool={openPlanTool} onOpenDemo={startBankDemo} />}
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
         {['BankingDemo','Billiam','Debt'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
 
@@ -1828,8 +1852,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             bills={finance.bills}
             onBankingDemo={openBankingDemo}
             onBankLinking={sampleFinance ? undefined : showPlaidPlan}
-            onDebt={() => setTab("Debt")}
-            onMonthlyCalendar={() => setMonthlyCalendarVisible(true)}
+            onDebt={() => { setShowPayoffStrategy(false); setTab("Debt"); }}
+            onMonthlyCalendar={() => setMonthlyCalendarMode("print")}
             onMicropayments={() => setMicropaymentsVisible(true)}
             addBill={addBill}
             updateBill={updateBill}
@@ -1864,6 +1888,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {tab === "Debt" && (
           <DebtScreen
             debts={finance.debts}
+            showPayoffStrategy={showPayoffStrategy}
             onMicropayments={() => setMicropaymentsVisible(true)}
             payoffMode={finance.payoffMode}
             mixedQuickWinId={finance.mixedQuickWinId}
@@ -1945,7 +1970,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
         <NeighborhoodNav current={tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
-        {monthlyCalendarVisible && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance} onClose={() => setMonthlyCalendarVisible(false)} />}
+        {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
+          canPrint={monthlyCalendarMode === "print"} onClose={() => setMonthlyCalendarMode(null)} />}
         <ExtraPaycheckCalendar visible={extraCalendarVisible} onClose={()=>setExtraCalendarVisible(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={updateExtraPaycheck} onBudget={()=>{setExtraCalendarVisible(false);setTab('Budget');}} />
         <Micropayments key={`micro-${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible={micropaymentsVisible}
           onClose={() => setMicropaymentsVisible(false)} finance={finance} onRecord={saveMicropayment} onUndo={undoExtraPayment} />
@@ -2254,7 +2280,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
   );
 }
 
-function Header({ onSecurity, onHelp, tab, compact = false }) {
+function Header({ onSecurity, onHelp, onPlans, tab, compact = false }) {
   return (
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
@@ -2272,6 +2298,10 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
           style={{minHeight:72,flexDirection:"row",alignItems:"center",gap:10,flex:1,paddingHorizontal:8}}>
           {tab !== "Home" && tab !== "Debt" && <Ionicons name="help-circle-outline" size={20} color={palette.purple} />}
           <Text style={{color:palette.purple,fontWeight:"800",flexShrink:1}}>How {neighborhoodLabel(tab)} works</Text>
+        </TouchableOpacity>}
+        {onPlans && <TouchableOpacity testID="open-plans" accessibilityRole="button" accessibilityLabel="Open PayPlace plans" onPress={onPlans}
+          style={{minHeight:48,paddingHorizontal:9,justifyContent:"center",backgroundColor:"#FFE455",borderColor:"#BA8500",borderRadius:16}}>
+          <Text style={{color:palette.ink,fontWeight:"900"}}>Plans</Text>
         </TouchableOpacity>}
         {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity}
           style={{width:48,minHeight:48,alignItems:"center",justifyContent:"center",marginLeft:8}}>
@@ -3322,7 +3352,7 @@ function BudgetScreen({
   );
 }
 
-function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
+function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [addingDebt, setAddingDebt] = useState(false);
   const { width, fontScale } = useWindowDimensions();
   const stackStrategyArtwork = width < 360 || fontScale > 1.2;
@@ -3417,7 +3447,7 @@ function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPa
           </View>
         ))
       )}
-      <ExpandableSection title="Payoff strategy & guidance" artworkAction="payoffGuide">
+      <ExpandableSection title="Payoff strategy & guidance" artworkAction="payoffGuide" defaultExpanded={showPayoffStrategy}>
       <View style={styles.payoffToggleCard}>
         <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
 
