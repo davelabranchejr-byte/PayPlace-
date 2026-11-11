@@ -105,6 +105,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     Household: load(path.join(root, 'src/HouseholdPlan.js')).default,
     Mirror: load(path.join(root, 'src/BobbieSmartMirror.js')).default, records, alerts, openedURLs,
     finance: () => JSON.parse(records.get(vaultModel.FINANCE_KEY)),
+    artworkId: relativePath => imageIds.get(path.join(root, relativePath)),
     authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
     setAppState: state => { appState.currentState = state; listeners.forEach(fn => fn(state)); },
   };
@@ -695,6 +696,22 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Close add a debt');
     await press('Payoff strategy & guidance');
     assert.ok(renderer.root.find(node => node.type?.name === 'DebtBuddyScene'));
+    const artworkByMethod = {
+      snowball: '857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png',
+      mixed: 'debt-mixed-snowplow.png',
+      avalanche: 'IMG_3610.png',
+    };
+    const strategy = method => renderer.root.findAllByType('TouchableOpacity')
+      .find(node => node.props.testID === `payoff-method-${method}`);
+    for (const [method, artwork] of Object.entries(artworkByMethod)) {
+      const images = strategy(method).findAllByType('Image');
+      assert.equal(images.length, 1, `${method} uses one original scene`);
+      assert.equal(images[0].props.source, harness.artworkId(`assets/characters/${artwork}`));
+      assert.equal(images[0].props.resizeMode, 'contain');
+      await act(() => strategy(method).props.onPress());
+      assert.equal(strategy(method).props.accessibilityState.selected, true);
+      assert.equal(harness.finance().payoffMode, method);
+    }
     await press('Payoff strategy & guidance');
     await press('Open Budget');
     assert.equal(input('Current bank balance'), undefined);
