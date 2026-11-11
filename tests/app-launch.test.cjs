@@ -470,9 +470,13 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Open Automatic Money Watch');
     await press('Refresh sample watch feed');
     await press('Open Subscription Detective');
-    assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, true);
-    await act(() => renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.onClose());
-    assert.ok(button('Refresh sample watch feed'), 'closing Detective returns to the same premium feature');
+    assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, false);
+    assert.match(harness.alerts.at(-1)[0], /Paid Premium/);
+    assert.match(harness.alerts.at(-1)[1], /add your subscriptions as bills/);
+    await act(() => harness.alerts.at(-1)[2].find(action => action.text === 'Open my bills').onPress());
+    assert.ok(button('Add a bill'), 'regular users can manually enter subscription bills');
+    await press('Open Plaid Banking');
+    await press('Open Automatic Money Watch');
     await press('Back to Plaid Banking');
     await press('Account connections & beta setup');
     await press('View live bank-linking availability');

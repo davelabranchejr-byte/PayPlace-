@@ -36,7 +36,7 @@ test('Clubhouse supports add/edit cents, review decisions and beta disclosure wi
   const field = label => renderer.root.findAllByType('TextInput').find(item => item.props.accessibilityLabel === label);
   await act(() => { renderer = create(render()); });
   try {
-    assert.match(JSON.stringify(renderer.toJSON()), /Available without charge during beta/);
+    assert.match(JSON.stringify(renderer.toJSON()), /Paid Premium feature.*fictional transactions/);
     assert.equal(button('Buy Premium'), undefined);
     await act(() => button('Add a subscription or trial').props.onPress());
     await act(() => field('Subscription name').props.onChangeText('My app'));
