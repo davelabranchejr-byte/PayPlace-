@@ -6,13 +6,30 @@ async function fixture({fontScale=1}={}){
   const flatten=s=>Array.isArray(s)?Object.assign({},...s.map(flatten)):s||{};
   const NativePressable=({children,...props})=>React.createElement('Pressable',props,typeof children==='function'?children({pressed:false}):children);
   const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,useWindowDimensions:()=>({width:375,height:812,fontScale}),StyleSheet:{flatten,create:value=>value}};
-  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
+  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./brand')return {payplaceLogo:'approved-payplace-icon'};if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name==='./PayPlaceBadge')return load('PayPlaceBadge.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
   return {...load('MascotTouchable.js'),FeatureLinks:load('FeatureLinks.js').default,Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
 }
-test('mascot controls preserve button behavior, disabled state and readable labels with bounded decorative artwork',async()=>{
-  const f=await fixture();let renderer,taps=0;
-  await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',accessibilityLabel:'Save my choice',disabled:true,onPress:()=>taps++,style:{padding:12}},React.createElement('Text',null,'Save my choice'))));
-  try{const button=renderer.root.findByType('TouchableOpacity'),image=renderer.root.findByType('Image');assert.equal(button.props.disabled,true);assert.equal(button.props.accessibilityLabel,'Save my choice');assert.equal(image.props.source,f.art.save);assert.equal(image.props.accessible,false);assert.equal(image.props.style.width,112);assert.equal(image.props.style.height,112);await act(()=>renderer.update(React.createElement(f.MascotTouchable,{artworkAction:'banking',accessibilityLabel:'Save bank',onPress:()=>taps++},React.createElement('Text',null,'Save bank'))));assert.equal(renderer.root.findByType('Image').props.source,f.art.banking,'explicit account semantics win over a user-entered name');await act(()=>renderer.root.findByType('TouchableOpacity').props.onPress());assert.equal(taps,1);}finally{await act(()=>renderer.unmount());}
+test('unillustrated commands keep their behavior without picking art from labels', async () => {
+  const f = await fixture();
+  let renderer, taps = 0;
+  const button = (label, artworkAction, disabled) => React.createElement(f.MascotTouchable, {
+    accessibilityRole: 'button', accessibilityLabel: label, disabled, artworkAction, onPress: () => taps++,
+  }, React.createElement('Text', null, label));
+  await act(() => renderer = create(button('Back to Bills and Banking', undefined, true)));
+  try {
+    assert.equal(renderer.root.findByType('TouchableOpacity').props.disabled, true);
+    assert.equal(renderer.root.findAllByType('Image').length, 0);
+    await act(() => renderer.update(button('Remove my loan', 'unregistered', false)));
+    assert.equal(renderer.root.findAllByType('Image').length, 0);
+    await act(() => renderer.update(button('Close', 'close', false)));
+    const image = renderer.root.findByType('Image');
+    assert.equal(image.props.source, f.art.close);
+    assert.equal(image.props.accessible, false);
+    await act(() => renderer.root.findByType('TouchableOpacity').props.onPress());
+    assert.equal(taps, 1);
+  } finally {
+    await act(() => renderer.unmount());
+  }
 });
 test('painted hotspots and already illustrated controls retain their exact artwork and hit geometry',async()=>{
   const f=await fixture();let renderer;const style={position:'absolute',left:12,top:34,width:80,height:90};
@@ -27,7 +44,7 @@ test('navigation has four visible destinations and every nested billing route re
 });
 test('action banners adapt between wide rows and narrow tiles without changing artwork or behavior',async()=>{
   const f=await fixture();let renderer,layouts=0,taps=0;
-  await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',accessibilityLabel:'Remember across my accounts',onLayout:()=>layouts++,onPress:()=>taps++,style:{backgroundColor:'#7842D2'}},React.createElement('Text',{style:{fontSize:14}},'Remember across my accounts'))));
+  await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',artworkAction:'banking',accessibilityLabel:'Explore Plaid Banking',onLayout:()=>layouts++,onPress:()=>taps++,style:{backgroundColor:'#7842D2'}},React.createElement('Text',{style:{fontSize:14}},'Explore Plaid Banking'))));
   try{
     const original=renderer.root.findByType('Image').props.source;
     for(const width of [132,166,210,340]){
@@ -48,13 +65,13 @@ test('action banners adapt between wide rows and narrow tiles without changing a
 });
 test('pressed style callbacks keep their selected colors and original action artwork',async()=>{
   const f=await fixture();let renderer;
-  await act(()=>renderer=create(React.createElement(f.MascotPressable,{artworkAction:'save',style:({pressed})=>({backgroundColor:pressed?'#FF8479':'#14C8BD'}),onPress(){}},({pressed})=>React.createElement('Text',null,pressed?'Saving':'Save'))));
+  await act(()=>renderer=create(React.createElement(f.MascotPressable,{artworkAction:'close',style:({pressed})=>({backgroundColor:pressed?'#FF8479':'#14C8BD'}),onPress(){}},({pressed})=>React.createElement('Text',null,pressed?'Saving':'Save'))));
   try{const p=renderer.root.findByType('Pressable');assert.equal(f.flatten(p.props.style({pressed:true})).backgroundColor,'#FF8479');assert.equal(f.flatten(p.props.style({pressed:false})).backgroundColor,'#14C8BD');}
   finally{await act(()=>renderer.unmount());}
 });
 test('feature shortcuts display large unchanged artwork and open the same destinations',async()=>{
   const f=await fixture();let renderer;const opened=[];
-  const items=[{title:'Billiam’s bill tools',artworkAction:'scan',body:'Scan and organize bills.'},{title:'Plaid Banking',artworkAction:'banking'},{title:'My debt plan',artworkAction:'debt'}];
+  const items=[{title:'Billiam’s bill tools',artworkAction:'billTools',body:'Scan and organize bills.'},{title:'Plaid Banking',artworkAction:'banking'},{title:'My debt plan',artworkAction:'debt'}];
   await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:items.map(item=>({...item,onPress:()=>opened.push(item.title)}))})));
   try{
     const buttons=renderer.root.findAllByType('TouchableOpacity');assert.equal(buttons.length,3);
@@ -78,18 +95,18 @@ test('state-based transparent portrait targets never acquire illustrations or bu
 test('different feature destinations use distinct relevant original scenes instead of generic fallbacks',async()=>{
   const f=await fixture();let renderer;const opened=[];
   const cases=[
-    ['One small step','showing-up-counts-westley-tate.jpg'],
+    ['One small step','feature-one-small-step-westley.png'],
     ['Until next payday','feature-until-payday.png'],
     ['Your first win with Annie','feature-first-win.png'],
-    ['Review my bills','sample-bills-westley-mailman.png'],
-    ['Neighborhood','neighborhood-panorama-day.png'],
+    ['Review my bills','feature-review-bills-westley.png'],
+    ['Neighborhood','neighborhood-tabby.png'],
     ['Billiam’s Mailbox','billiam-mailbox.png'],
     ['Billiam’s bill tools','billiam-canonical.png'],
     ['I am overwhelmed','overwhelmed-westley-cozy.jpg'],
     ['Quiet Mode','feature-quiet-mode.png'],
     ['Visit Annie again','annie-front-door-mailbox.png'],
-    ['Plaid Banking','plaid-bank-daddy-tate.png'],
-    ['My debt plan','header-debt-bobbie-tate.png'],
+    ['Plaid Banking','feature-plaid-banking-entry.png'],
+    ['My debt plan','snapshot-debt-plan.png'],
     ['Undo & payment history','feature-payment-history.png'],
     ['Subscription Detective','bobbie-premium-clubhouse.png'],
     ['Extra Paycheck Calendar','snapshot-extra-check.png'],
@@ -99,7 +116,9 @@ test('different feature destinations use distinct relevant original scenes inste
   try{
     const sources=[];
     for(const [index,button] of renderer.root.findAllByType('TouchableOpacity').entries()){
-      const images=button.findAllByType('Image');assert.equal(images.length,1);
+      const images=button.findAllByType('Image');
+      assert.equal(images.length,['Review my bills','One small step'].includes(cases[index][0])?2:1);
+      if (images.length === 2) assert.equal(images[1].props.source,'approved-payplace-icon');
       const source=images[0].props.source;sources.push(source);
       assert.equal(source,`../assets/characters/${cases[index][1]}`);
       await act(()=>button.props.onPress());
@@ -111,13 +130,13 @@ test('different feature destinations use distinct relevant original scenes inste
 
 test('collapsing a section retains the artwork for that feature',async()=>{
   const f=await fixture();let renderer;
-  const button=expanded=>React.createElement(f.MascotTouchable,{accessibilityLabel:'Quiet Mode',accessibilityState:{expanded}},React.createElement('Text',null,'Quiet Mode'));
+  const button=expanded=>React.createElement(f.MascotTouchable,{artworkAction:'quiet',accessibilityLabel:'Quiet Mode',accessibilityState:{expanded}},React.createElement('Text',null,'Quiet Mode'));
   await act(()=>renderer=create(button(false)));
   try{
     assert.equal(renderer.root.findByType('Image').props.source,f.art.quiet);
     await act(()=>renderer.update(button(true)));
     assert.equal(renderer.root.findByType('Image').props.source,f.art.quiet);
-    assert.notEqual(f.art.quiet,f.art.calm,'quiet time and the yoga garden have their own artwork');
+    assert.equal(f.actions.featureArtworkForTitle('Back to Calm Garden'),undefined);
   }finally{await act(()=>renderer.unmount());}
 });
 

@@ -8,6 +8,10 @@ import { DEFAULT_PREMIUM_STATE, buildBillShockPlans } from '../src/premium-resil
 test('approved full logo retains its exact PNG bytes', () => {
   const original = readFileSync(new URL('../assets/branding/payplace-icon.png', import.meta.url));
   assert.equal(createHash('sha256').update(original).digest('hex'), '82d6c2c7d9d64bf946726e9ab096e608ddef1562e40c3b242b468231cd7fa406');
+  const { expo } = JSON.parse(readFileSync(new URL('../app.json', import.meta.url), 'utf8'));
+  for (const icon of [expo.icon, expo.ios.icon, expo.android.icon ?? expo.icon, expo.web.favicon]) {
+    assert.equal(icon, './assets/branding/payplace-icon.png');
+  }
 });
 
 test('sample automation requires both account connection and the feature switch', () => {

@@ -18,12 +18,15 @@ test.before(async () => {
   }).code;
   const sandbox = { React, useState: React.useState, useEffect: React.useEffect,
     ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
-      'SafeAreaView', 'KeyboardAvoidingView', 'PayPlaceBrand', 'CharacterArtwork',
+      'SafeAreaView', 'KeyboardAvoidingView', 'PayPlaceBrand', 'CharacterArtwork', 'ActionArtwork',
       'ConstructionNotice', 'EmailVerification', 'PrivacyLinks', 'Ionicons', 'AcornSquare'].map(name => [name, name])),
-    styles: {}, palette: {}, portraits: {}, greatAnnieHero: {}, imageSource: value => value,
+    styles: {}, palette: {}, portraits: { westley: 'Westley portrait', bobbie: 'Bobbie portrait', chapo: 'Chapo portrait', tate: 'Tate portrait' }, greatAnnieHero: {}, require: file => file, imageSource: value => value,
     Platform: { OS: 'ios' }, Alert: { alert: () => {} }, ...progress, ...contact, module: { exports: {} } };
   vm.runInNewContext(code + '\nmodule.exports = { OnboardingFlow, ONBOARDING_STEPS };', sandbox);
   flow = sandbox.module.exports;
+  const illustrations = flow.ONBOARDING_STEPS.map(step => step.artworkAction || step.image);
+  assert.equal(new Set(illustrations).size, illustrations.length, 'onboarding questions each have their own illustration');
+
 });
 
 test('Annie revisit exits from welcome and questions without overwriting the completed profile', async () => {

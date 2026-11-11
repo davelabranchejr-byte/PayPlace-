@@ -7,7 +7,7 @@ const babel=require('@babel/core');
 const React=require('react');
 const {create,act}=require('react-test-renderer');
 global.IS_REACT_ACT_ENVIRONMENT=true;
-const flatten=style=>Object.assign({},...(Array.isArray(style)?style:[style]).filter(Boolean));
+const flatten=style=>Object.assign({},...(Array.isArray(style)?style.flat(Infinity):[style]).filter(Boolean));
 function harness(hour=12){
   // Simulate the actual failure: natural source dimensions survive unless the
   // rendered Image explicitly overrides both width AND height.
@@ -63,6 +63,14 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
         assert.equal(image.props.nativeBounds.position,'absolute','image cannot expand its container');
         assert.equal(image.props.resizeMode,'contain','all edges of the source remain visible');
         assert.equal(flatten(frame.props.style).overflow,'hidden');
+        if (id === 'bank-tab-artwork') {
+          const badge = frame.findAllByType('Image').find(node => node.props.source === '../assets/branding/payplace-icon.png');
+          assert.ok(badge, 'bank facade uses the locked PayPlace logo');
+          assert.equal(image.props.source, '../assets/characters/nav-plaid-bank-blank-sign.png');
+          const sign = frame.findAllByType('View').find(node => node.props.pointerEvents === 'none').props.style;
+          assert.equal(sign.left, (width - height) / 2 + height * 0.426);
+          assert.equal(sign.top, height * 0.23);
+        }
       }
     }
     const button=renderer.root.findByType('TouchableOpacity');assert.equal(button.props.accessibilityLabel,'Try Bobbie’s banking demo');
