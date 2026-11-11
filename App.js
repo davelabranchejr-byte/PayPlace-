@@ -77,6 +77,7 @@ import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, sug
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
 import MonthlyPaymentCalendar from "./src/MonthlyPaymentCalendar";
+import MoneyOutlook from "./src/MoneyOutlook";
 import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
 import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
@@ -1235,6 +1236,7 @@ function PayPlaceApp() {
   const [micropaymentsVisible, setMicropaymentsVisible] = useState(false);
   const [monthlyCalendarMode, setMonthlyCalendarMode] = useState(null);
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
+  const [outlookVisible, setOutlookVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
   const subscriptionPreview = Boolean(sampleFinance);
   function openSubscriptionDetective() {
@@ -1298,8 +1300,7 @@ function PayPlaceApp() {
       case "micropayments": setMicropaymentsVisible(true); break;
       case "extraCalendar": setExtraCalendarVisible(true); break;
       case "spending": setCategoriesVisible(true); break;
-      case "sampleTransactions": startBankDemo(); setCategoriesVisible(true); break;
-      case "sampleSubscriptions": startBankDemo(); setDetectiveVisible(true); break;
+      case "outlook": setOutlookVisible(true); break;
     }
   }
   function endSample() { setExtraCalendarVisible(false);setSampleFinance(null);setDetectiveVisible(false);setEssentialsPanel(null);setTab("Home"); }
@@ -1889,6 +1890,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onCalendar={() => setExtraCalendarVisible(true)}
             onSavings={() => setSavingsVisible(true)}
             onCategories={() => setCategoriesVisible(true)}
+            onOutlook={() => setOutlookVisible(true)}
           />
         )}
 
@@ -1983,6 +1985,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <NeighborhoodNav current={tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
         {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
           canPrint={monthlyCalendarMode === "print"} onClose={() => setMonthlyCalendarMode(null)} />}
+        {outlookVisible && <MoneyOutlook finance={finance} sample={!!sampleFinance} onClose={() => setOutlookVisible(false)} />}
         <ExtraPaycheckCalendar visible={extraCalendarVisible} onClose={()=>setExtraCalendarVisible(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={updateExtraPaycheck} onBudget={()=>{setExtraCalendarVisible(false);setTab('Budget');}} />
         <Micropayments key={`micro-${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible={micropaymentsVisible}
           onClose={() => setMicropaymentsVisible(false)} finance={finance} onRecord={saveMicropayment} onUndo={undoExtraPayment} />
@@ -3235,7 +3238,7 @@ function BudgetScreen({
   updateNumber,
   updateText,
   resetDemoData,
-  onPayday, onCalendar, onSavings, onCategories,
+  onPayday, onCalendar, onSavings, onCategories, onOutlook,
 }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
@@ -3347,6 +3350,10 @@ function BudgetScreen({
 
       </ExpandableSection>
       <ExpandableSection title="Paydays & savings">
+        {onOutlook && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Money outlook"
+          onPress={onOutlook} style={styles.primaryButtonTight}>
+          <Text style={styles.primaryButtonText}>Money outlook</Text>
+        </TouchableOpacity>}
         <FeatureLinks compact items={[
           {title:'Until next payday',artworkAction:'budgetPayday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},
           {title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},
