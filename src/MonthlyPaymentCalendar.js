@@ -18,7 +18,7 @@ function Button({ title, onPress, disabled, selected }) {
   </Pressable>;
 }
 
-export default function MonthlyPaymentCalendar({ finance, onClose, sample }) {
+export default function MonthlyPaymentCalendar({ finance, onClose, sample, canPrint = true }) {
   const [month, setMonth] = useState(() => {
     const today = new Date();
     return new Date(today.getFullYear(), today.getMonth(), 1, 12);
@@ -66,11 +66,11 @@ export default function MonthlyPaymentCalendar({ finance, onClose, sample }) {
             {items.length > 0 && <Text>{items.length} {items.length === 1 ? 'item' : 'items'}</Text>}
           </View>;
         })}</View>)}
-        <View style={s.controls}>
+        {canPrint && <View style={s.controls}>
           <Button title="Portrait" selected={!landscape} onPress={() => setLandscape(false)} />
           <Button title="Landscape" selected={landscape} onPress={() => setLandscape(true)} />
           <Button title={busy ? 'Opening print…' : 'Print monthly calendar'} disabled={busy} onPress={print} />
-        </View>
+        </View>}
         {!!error && <Text accessibilityRole="alert">{error}</Text>}
         <Text>Paydays and projected renewals are estimates. Recorded payments appear on the date logged in PayPlace.</Text>
         {!events.length && <Text>No dated entries for this month.</Text>}
