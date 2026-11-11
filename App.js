@@ -15,7 +15,7 @@ import { MascotTouchable as TouchableOpacity } from './src/MascotTouchable';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
@@ -3313,6 +3313,8 @@ function BudgetScreen({
 
 function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [addingDebt, setAddingDebt] = useState(false);
+  const { width, fontScale } = useWindowDimensions();
+  const stackStrategyArtwork = width < 360 || fontScale > 1.2;
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3408,19 +3410,22 @@ function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPa
       <View style={styles.payoffToggleCard}>
         <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
 
-        <View style={styles.payoffModeRow}>
+        <View style={styles.payoffModeList}>
           {[
-            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", icon: "ellipse", color: palette.snowballDark, tint: palette.snowballSoft },
-            { id: "mixed", title: "Mixed", subtitle: "Best of both", icon: "shuffle", color: palette.purple, tint: palette.lavender },
-            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", icon: "triangle", color: palette.avalancheDark, tint: palette.avalancheSoft },
+            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", artwork: snowballBuddyGraphic, color: palette.snowballDark, tint: palette.snowballSoft },
+            { id: "mixed", title: "Mixed", subtitle: "Best of both", artwork: mixedBuddyGraphic, color: palette.purple, tint: palette.lavender },
+            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", artwork: avalancheBuddyGraphic, color: palette.avalancheDark, tint: palette.avalancheSoft },
           ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
-            accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
+            artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
             accessibilityState={{ selected: mode === option.id }}
-            style={[styles.payoffModeButton, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
+            style={[styles.payoffModeButton, !stackStrategyArtwork && styles.payoffModeButtonRow, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
             onPress={() => setPayoffMode(option.id)}>
-            <Ionicons name={option.icon} size={24} color={option.color} />
-            <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
-            <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
+            <Image source={option.artwork} resizeMode="contain" accessible={false}
+              style={[styles.payoffModeArtwork, stackStrategyArtwork && styles.payoffModeArtworkStacked]} />
+            <View style={stackStrategyArtwork ? styles.payoffModeCaptionStacked : styles.payoffModeCaption}>
+              <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
+              <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
+            </View>
           </TouchableOpacity>)}
         </View>
       </View>
@@ -5223,17 +5228,36 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginBottom: 12,
   },
-  payoffModeRow: {
-    flexDirection: "row",
-    gap: 7,
+  payoffModeList: {
+    gap: 12,
   },
   payoffModeButton: {
+    width: "100%",
+    alignItems: "center",
+    borderRadius: 22,
+    padding: 12,
+    gap: 12,
+    borderWidth: 2,
+  },
+  payoffModeButtonRow: {
+    flexDirection: "row",
+  },
+  payoffModeArtwork: {
+    width: 112,
+    height: 112,
+    flexShrink: 0,
+    borderRadius: 14,
+  },
+  payoffModeArtworkStacked: {
+    width: "100%",
+    height: 160,
+  },
+  payoffModeCaption: {
     flex: 1,
     minWidth: 0,
-    borderRadius: 16,
-    paddingHorizontal: 6,
-    paddingVertical: 14,
-    borderWidth: 2,
+  },
+  payoffModeCaptionStacked: {
+    width: "100%",
   },
   payoffModeButtonActive: {
     borderWidth: 3,
@@ -5244,9 +5268,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   payoffModeTitle: {
-    fontSize: 14,
+    fontSize: 21,
     fontWeight: "900",
-    marginTop: 6,
   },
   payoffModeSub: {
     color: palette.muted,
