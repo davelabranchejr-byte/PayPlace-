@@ -13,7 +13,7 @@ import NeighborhoodLibrary, { LibraryReader } from './NeighborhoodLibrary';
 
 const introductions = {
   Annie: 'The red door is open. Come inside, meet the family, and see the quilt that makes room for everyone.',
-  Bobbie: 'A little wardrobe magic, a little confidence, and room for a treat that fits your plan.',
+  Bobbie: 'High maintenance, not high and mighty.',
   Westley: 'You can set the heavy stuff down here. Westley will help you find your next gentle step.',
   Tate: 'Small bites, big heart. Pick one little thing with Tate and celebrate showing up.',
   Chapo: 'Everyone deserves a place at the table. Let’s plan a little breathing room for your next extra paycheck.',

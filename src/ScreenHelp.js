@@ -34,7 +34,7 @@ const TAB_HELP = {
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [
     'Open Edit money info to enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
     'Safe to Spend subtracts unpaid bills, debt minimums and your buffer from your current balance. An expected paycheck is not money available now.',
-    'Open Paydays & savings for Until next payday, Extra Paycheck Calendar and Savings Goals. Purchases and categories open directly from Budget.',
+    'Open Paydays & savings for Money outlook, Until next payday, Extra Paycheck Calendar and Savings Goals. Purchases and categories open directly from Budget.',
   ] },
   Debt: { summary: 'Choose which debt to focus on and track payments you make elsewhere.', steps: [
     'Add each debt with its balance, interest rate and minimum payment.',
