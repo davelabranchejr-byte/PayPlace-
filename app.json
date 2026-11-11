@@ -20,7 +20,7 @@
     "ios": {
       "icon": "./assets/branding/payplace-icon.png",
       "bundleIdentifier": "com.davelabranchejr.payplace",
-      "buildNumber": "1",
+      "buildNumber": "62",
       "supportsTablet": false
     },
     "android": {
