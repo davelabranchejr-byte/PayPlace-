@@ -23,7 +23,7 @@ test.before(async () => {
 });
 
 // Execute the real app and its components. Only native/device services are mocked.
-function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }, scanner = {}) {
+function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@example.test', emailVerified: true, completed: true }, scanner = {}, viewport = { width: 375, height: 812, fontScale: 1 }) {
   const vaultModel = models.get(path.join(root, 'src/vault-storage.mjs'));
   const records = new Map([
     [vaultModel.PROFILE_KEY, JSON.stringify(profile)],
@@ -42,7 +42,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
   // Native Modal does not mount hidden content.
   const Modal = ({ visible, children, ...props }) => visible ? React.createElement('Modal', props, children) : null;
   Object.assign(ui, { Image, Modal, Platform: { OS: 'ios', select: values => values.ios ?? values.default }, AppState: appState,
-    useWindowDimensions: () => ({width:375,height:812,fontScale:1}),
+    useWindowDimensions: () => viewport,
     StyleSheet: { create: value => value, flatten: function flatten(value) { return Array.isArray(value) ? Object.assign({}, ...value.map(flatten)) : value || {}; }, absoluteFillObject: { position: 'absolute' } },
     BackHandler: { addEventListener: () => ({ remove() {} }) }, Alert: { alert: (...args) => alerts.push(args) }, Linking: { openURL: async url => openedURLs.push(url), openSettings: async () => {} },
     AccessibilityInfo: { isReduceMotionEnabled: async () => true, addEventListener: () => ({ remove() {} }) },
@@ -587,6 +587,73 @@ test('launch features open, payment corrections persist, sample stays separate a
     await act(async()=>{harness.completeAuthentication({success:true});await pending;});
     assert.equal(harness.finance().quietMode.hideAmounts,true);assert.equal(harness.finance().paymentHistory.length,3);
   }finally{if(renderer)await act(()=>renderer.unmount());}
+});
+
+test('plan tabs keep primary navigation visible and open working tools without paid access in beta', async () => {
+  const harness = appHarness({ balance: 87, quietMode: { hideAmounts: true } }, undefined, {}, {
+    width: 320, height: 568, fontScale: 1.6,
+  });
+  let renderer, pending;
+  const nodes = (type, predicate) => renderer.root.findAllByType(type).filter(predicate);
+  const button = label => nodes('TouchableOpacity', node => node.props.accessibilityLabel === label)[0];
+  const press = async label => {
+    assert.ok(button(label), label);
+    await act(() => button(label).props.onPress());
+  };
+  const pressCalendarButton = async label => {
+    const target = nodes('Pressable', node =>
+      node.props.accessibilityRole === 'button' &&
+      node.findAllByType('Text').some(text => textContent(text.props.children) === label))[0];
+    assert.ok(target, label);
+    await act(() => target.props.onPress());
+  };
+  const texts = () => nodes('Text', () => true).map(node => textContent(node.props.children)).join(' ');
+  const calendar = () => renderer.root.find(node => node.type?.name === 'MonthlyPaymentCalendar');
+
+  try {
+    await act(async () => { renderer = create(React.createElement(harness.App)); });
+    await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
+    await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
+    await press('Open PayPlace plans');
+    for (const label of ['Open Home', 'Open Budget', 'Open Bills & Banking', 'Open Neighborhood']) {
+      const tab = button(label);
+      assert.equal(tab.props.accessibilityRole, 'tab');
+      assert.ok(tab.findAllByType('Text').every(text => text.props.numberOfLines === undefined),
+        'large text may wrap instead of truncating the destination');
+    }
+    assert.equal(button('Basic').props.accessibilityState.selected, true);
+    assert.match(texts(), /\$0\.99/);
+    await press('Open Monthly calendar from Plans');
+    assert.equal(calendar().props.canPrint, false);
+    await pressCalendarButton('Close monthly calendar');
+
+    await press('Plus');
+    assert.equal(button('Plus').props.accessibilityState.selected, true);
+    assert.match(texts(), /\$4\.99/);
+    await press('Open Printable monthly calendar from Plans');
+    assert.equal(calendar().props.canPrint, true);
+    await pressCalendarButton('Close monthly calendar');
+    await press('Open Snowball, Mixed and Avalanche from Plans');
+    assert.ok(button('Snowball: Quick wins first'), 'the payoff shortcut opens the strategies immediately');
+    assert.equal(button('Open Bills & Banking').props.accessibilityState.selected, true);
+
+    await press('Open PayPlace plans');
+    assert.equal(button('Plus').props.accessibilityState.selected, true, 'the previous plan tab is remembered');
+    await press('Premium');
+    assert.match(texts(), /\$19\.99/);
+    assert.match(texts(), /Live bank sync and automatic subscription finding are planned/);
+    assert.equal(button('Open Plaid bank sync from Plans'), undefined);
+    const personal = JSON.stringify(harness.finance());
+    await press('Try Subscription Detective with sample data from Plans');
+    assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, true);
+    await press('Close Detective Clubhouse');
+    assert.match(texts(), /SAMPLE NEIGHBORHOOD/);
+    assert.equal(JSON.stringify(harness.finance()), personal);
+    await press('Return to my personal plan');
+    assert.ok(button('Open PayPlace plans'));
+  } finally {
+    if (renderer) await act(() => renderer.unmount());
+  }
 });
 
 test('an unverified new neighbor can explore samples and safely return to account setup', async()=>{
