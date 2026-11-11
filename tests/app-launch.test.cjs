@@ -205,6 +205,7 @@ test('Annie’s illustrated shelves, Daddy story and natural spa reading survive
     assert.notEqual(away, stocked, 'checkout selects the painted wooden-gap scene');
     assert.deepEqual(slot().props.style({pressed:false}), originalTarget, 'the book and its gap keep the exact same coordinates');
     await press('Open Neighborhood'); await press('Visit the mascots'); await press('Open Bobbie’s Boutique');
+    assert.ok(renderer.root.findAllByType('Text').some(node => node.props.children === 'High maintenance, not high and mighty.'));
     const readingScene = renderer.root.findByProps({testID:'library-reading-scene-bobbie'});
     const paintedBook = readingScene.props.source;
     assert.equal(readingScene.findAllByType('Image').length, 1, 'character and held book are one painted scene');
@@ -631,7 +632,8 @@ test('launch features open, payment corrections persist, sample stays separate a
 });
 
 test('plan tabs keep primary navigation visible and open working tools without paid access in beta', async () => {
-  const harness = appHarness({ balance: 87, quietMode: { hideAmounts: true } }, undefined, {}, {
+  const harness = appHarness({ balance: 87, quietMode: { hideAmounts: true },
+    savingsGoals: [{ id: 'trip', name: 'Weekend trip', savedCents: 2000, targetCents: 10000 }] }, undefined, {}, {
     width: 320, height: 568, fontScale: 1.6,
   });
   let renderer, pending;
@@ -679,6 +681,24 @@ test('plan tabs keep primary navigation visible and open working tools without p
     await press('Plus');
     assert.equal(button('Plus').props.accessibilityState.selected, true);
     assert.match(texts(), /\$4\.99/);
+    assert.match(texts(), /Small bites\. Big wins\./);
+    const saved = JSON.stringify(harness.finance());
+    await press('Open Money outlook from Plans');
+    const outlook = renderer.root.find(node => node.type?.name === 'MoneyOutlook');
+    const outlookText = () => outlook.findAllByType('Text').map(node => textContent(node.props.children)).join(' ');
+    assert.match(outlookText(), /Estimated money left at the end of/);
+    assert.doesNotMatch(outlookText(), /\$87\.00/);
+    assert.match(outlookText(), /\$•••/);
+    const month = new Date().toLocaleDateString('en-US', { month: 'long' });
+    await press(`Spending in ${month}`);
+    assert.match(outlookText(), /No purchases recorded this month/);
+    await press('Savings per paycheck');
+    await press('8 paychecks');
+    assert.equal(button('8 paychecks').props.accessibilityState.selected, true);
+    assert.match(outlookText(), /Weekend trip/);
+    assert.doesNotMatch(outlookText(), /\$10\.00/);
+    assert.equal(JSON.stringify(harness.finance()), saved, 'looking ahead does not write any financial data');
+    await press('Close money outlook');
     await press('Open Printable monthly calendar from Plans');
     assert.equal(calendar().props.canPrint, true);
     await pressCalendarButton('Close monthly calendar');
@@ -690,10 +710,17 @@ test('plan tabs keep primary navigation visible and open working tools without p
     assert.equal(button('Plus').props.accessibilityState.selected, true, 'the previous plan tab is remembered');
     await press('Premium');
     assert.match(texts(), /\$19\.99/);
+    assert.match(texts(), /High maintenance, not high and mighty\./);
+    assert.match(texts(), /Connected account insights/);
     assert.match(texts(), /Live bank sync and automatic subscription finding are planned/);
     assert.equal(button('Open Plaid bank sync from Plans'), undefined);
+    assert.equal(button('Try free Banking Demo from Plans'), undefined);
+    assert.equal(button('Try Subscription Detective with sample data from Plans'), undefined);
     const personal = JSON.stringify(harness.finance());
-    await press('Try Subscription Detective with sample data from Plans');
+    await press('Basic');
+    await press('Try free Banking Demo from Plans');
+    await press('Open Automatic Money Watch');
+    await press('Open Subscription Detective');
     assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, true);
     await press('Close Detective Clubhouse');
     assert.match(texts(), /SAMPLE NEIGHBORHOOD/);
@@ -901,6 +928,8 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(input('Current bank balance'), undefined);
     assert.equal(button('Open Savings Goals'), undefined);
     await press('Paydays & savings');
+    await press('Open Money outlook');
+    await press('Close money outlook');
     await press('Open Extra Paycheck Calendar');
     await press('Close extra paycheck calendar');
     assert.ok(button('Open Savings Goals'));

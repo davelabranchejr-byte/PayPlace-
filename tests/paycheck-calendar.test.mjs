@@ -1,8 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readDate, buildCalendar, nextExtraPaycheck, addBonus, suggestedSplit, validateSplit, saveSplit } from "../src/paycheck-calendar.mjs";
+import { monthEndOutlook } from "../src/money-outlook.mjs";
 const month = value => readDate(value);
 const base = { nextPaycheckDate: "2026-10-09", payFrequency: "Biweekly", nextPaycheck: 2000, balance: 50 };
+test("month-end outlook counts only future income and reserves known obligations in cents", () => {
+  const finance = { ...base, nextPaycheckDate: '2026-10-23', balance: 125.80, buffer: 40,
+    extraPaychecks: [{ id: 'today', date: '2026-10-08', amount: 300 }, { id: 'future', date: '2026-10-24', amount: 25.25 }],
+    bills: [{ due: '2026-09-25', amount: 20 }, { dueDate: '2026-10-31', amount: '75.99' },
+      { due: 'Nov 3', amount: 5 }, { due: '2026-11-01', amount: 200 }, { status: 'Paid', amount: 65 }, { paid: true, amount: 90 }],
+    debts: [{ balance: 600, minimum: 10 }, { balance: 0, minimum: 30 }],
+  };
+  assert.deepEqual(monthEndOutlook(finance, month('2026-10-08')), {
+    balance: 12580, income: 202525, billsDue: 10099, debtMinimums: 1000, buffer: 4000, estimate: 200006,
+  });
+  assert.equal(monthEndOutlook({ balance: -3.01 }, month('2026-10-08')).estimate, -301);
+});
 test("counts checks before the anchor and finds the third check, not all checks in a three-check month", () => {
   const calendar = buildCalendar({ ...base, nextPaycheckDate: "2026-10-30" }, month("2026-10-01"));
   assert.deepEqual(calendar.events.map(event => [event.date, event.extra]), [["2026-10-02", false], ["2026-10-16", false], ["2026-10-30", true]]);
