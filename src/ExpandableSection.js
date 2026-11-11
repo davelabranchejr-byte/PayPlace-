@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from './Privacy';
 
-export default function ExpandableSection({ title, artworkAction, children }) {
+export default function ExpandableSection({ title, artworkAction, compact = false, children }) {
   const [expanded, setExpanded] = useState(false);
   return <View style={s.section}>
-    <TouchableOpacity artworkAction={artworkAction} accessibilityRole="button" accessibilityState={{ expanded }}
+    <TouchableOpacity artworkAction={artworkAction} artworkMode={compact ? 'compact' : undefined}
+      accessibilityRole="button" accessibilityState={{ expanded }}
       accessibilityLabel={title} onPress={() => setExpanded(value => !value)} style={s.toggle}>
       <Text style={s.title}>{title}</Text><Text accessible={false} style={s.mark}>{expanded ? '−' : '+'}</Text>
     </TouchableOpacity>

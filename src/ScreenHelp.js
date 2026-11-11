@@ -16,7 +16,7 @@ const TAB_HELP = {
   Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Visit the Calm Garden, review your bills, or peek into Em’s Pet Spa.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
   Tate: { summary: 'One small bite at a time with Tate.', steps: ['Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
   Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
-  Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Choose a character’s house, Em’s Pet Spa or Calm Garden.', 'Quiet Mode controls reminders, animation and hidden amounts.', 'Back to Neighborhood returns to these visits; the bottom tabs return to money tools.']},
+  Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Em’s Pet Spa and Calm Garden open directly. Tap Visit the mascots to find their houses.', 'Annie’s porch & quiet tools holds her poster, care and Quiet Mode settings.', 'Find Join the Neighborhood on Facebook at the bottom of this tab.']},
   Home: { summary:'Your short money overview and one next step.', steps:[
     'Review my bills opens Bills & Banking. Payoff methods brings you to Snowball, Avalanche, Mixed and Micropayments.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
@@ -25,15 +25,16 @@ const TAB_HELP = {
   ] },
   Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
   Bills: { summary: 'Your bills and banking tools in one place.', steps: [
-    'Open Billiam’s bill tools for scans and imports, Banking Demo for fictional accounts, or My debt plan for payoff planning.',
+    'Open Bill tools, debt & payments for Billiam’s scans, payoff planning, Micropayments and payment history.',
+    'Banking & subscriptions contains the Banking Demo and Premium options. Monthly payment calendar opens directly from this tab.',
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
     'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Bills payment history shows changes and lets you correct a recorded amount.',
     'Sample bills let you try the review flow. They enter your saved list if you add them. PayPlace does not send a payment in this beta.',
   ] },
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [
-    'Enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
+    'Open Edit money info to enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
     'Safe to Spend subtracts unpaid bills, debt minimums and your buffer from your current balance. An expected paycheck is not money available now.',
-    'Open Until next payday, Extra Paycheck Calendar or Savings Goals from Budget. Credit entries and fictional credit previews live in Banking Demo.',
+    'Open Paydays & savings for Until next payday, Extra Paycheck Calendar and Savings Goals. Purchases and categories open directly from Budget.',
   ] },
   Debt: { summary: 'Choose which debt to focus on and track payments you make elsewhere.', steps: [
     'Add each debt with its balance, interest rate and minimum payment.',
