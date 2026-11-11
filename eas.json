@@ -1,11 +1,11 @@
 {
   "cli": {
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "production": {
       "distribution": "store",
-      "autoIncrement": true
+      "autoIncrement": false
     },
     "preview": {
       "distribution": "internal"

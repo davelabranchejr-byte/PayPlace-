@@ -43,12 +43,13 @@ import useAnnieCare from "./src/useAnnieCare";
 import { recordActivity } from "./src/neighborhood-progress.mjs";
 import LivingNeighborhood from "./src/LivingNeighborhood";
 import PetSpa from "./src/PetSpa";
-import NeighborhoodNav, { buildingArtwork } from "./src/NeighborhoodNav";
+import NeighborhoodNav, { buildingArtwork, spaPorchArtwork } from "./src/NeighborhoodNav";
 import { NEIGHBOR_DESTINATIONS } from "./src/neighborhood-destinations.mjs";
 import BankWelcomeCard from "./src/BankWelcomeCard";
 import SeasonalWelcome from "./src/SeasonalWelcome";
 import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
+import ActionArtwork from "./src/ActionArtwork";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
 import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
@@ -74,12 +75,12 @@ import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
 import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
+import MonthlyPaymentCalendar from "./src/MonthlyPaymentCalendar";
 import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
 import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
-import { payplaceLogo, payplaceLogoLabel } from "./src/brand";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -738,7 +739,6 @@ const addDebtMascotsGraphic = require("./assets/characters/add-debt-family-budge
 const snowballBuddyGraphic = require("./assets/characters/857054EA-5272-487D-BDD7-1F4ABE1F9DCA.png");
 const avalancheBuddyGraphic = require("./assets/characters/IMG_3610.png");
 const mixedBuddyGraphic = require("./assets/characters/debt-mixed-snowplow.png");
-const extraPaycheckDogsGraphic = portraits.together;
 const safeSpendPetStoreGraphic = portraits.together;
 
 const addBillTateGraphic = require("./assets/characters/bills-tate-convertible.jpg");
@@ -771,7 +771,7 @@ const NEIGHBORHOOD_POSTERS = [
     mascot: "Westley",
     quote: "Progress over perfection.",
     sub: "Crooked steps still move forward.",
-    image: importBillsWestleyGraphic,
+    image: require("./assets/characters/snapshot-calm-reset.png"),
     accent: "#7A5CE6",
     soft: "#F0EBFF",
   },
@@ -779,7 +779,7 @@ const NEIGHBORHOOD_POSTERS = [
     mascot: "Tate",
     quote: "One small step is enough.",
     sub: "Gentle progress is real progress.",
-    image: addBillTateGraphic,
+    image: require("./assets/characters/nav-calm-garden.png"),
     accent: "#0FAF9D",
     soft: "#E3FBF6",
   },
@@ -811,7 +811,7 @@ const NEIGHBORHOOD_POSTERS = [
     mascot: "Bobbie",
     quote: "Confidence compounds.",
     sub: "Clarity first. Courage second.",
-    image: extraPaycheckDogsGraphic,
+    image: require("./assets/characters/nav-budget-studio.png"),
     accent: "#6E56CF",
     soft: "#F1EDFF",
   },
@@ -1232,6 +1232,7 @@ function PayPlaceApp() {
   const [sampleFinance, setSampleFinance] = useState(null);
   const [essentialsPanel, setEssentialsPanel] = useState(null);
   const [micropaymentsVisible, setMicropaymentsVisible] = useState(false);
+  const [monthlyCalendarVisible, setMonthlyCalendarVisible] = useState(false);
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
   const subscriptionPreview = Boolean(sampleFinance);
@@ -1649,14 +1650,17 @@ Confidence: ${bill.confidence || "Confirmed"}`,
   }
 
   function payDebt(id, amount) {
-    setFinance((current) => ({
-      ...current,
-      debts: current.debts.map((debt) =>
-        debt.id === id
-          ? { ...debt, balance: Math.max(Number(debt.balance || 0) - amount, 0) }
-          : debt
-      ),
-    }));
+    const at = Date.now();
+    setFinance(current => {
+      const debt = current.debts.find(item => item.id === id);
+      const payment = Math.min(Number(debt?.balance || 0), Number(amount));
+      if (!Number.isFinite(payment) || payment <= 0) return current;
+      return {
+        ...current,
+        debts: current.debts.map(item => item.id === id ? { ...item, balance: Number(item.balance) - payment } : item),
+        debtPaymentHistory: [...(current.debtPaymentHistory || []), { name: debt.name, amount: payment, at }],
+      };
+    });
   }
 
   function deleteDebt(id) {
@@ -1801,7 +1805,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
         <Header compact={tab === "Premium" || tab === "Home"} tab={tab} onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)} />
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
-        {['Premium','Billiam','Debt'].includes(tab) && <TouchableOpacity artworkAction="browse" accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
+        {['Premium','Billiam','Debt'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Bills and Banking" onPress={() => setTab('Bills')} style={{minHeight:48,paddingHorizontal:18,paddingVertical:8}}><Text style={{color:palette.purple,fontWeight:'800'}}>‹ Bills & Banking</Text></TouchableOpacity>}
 
         {tab === "Home" && (
           <HomeScreen
@@ -1825,6 +1829,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             bills={finance.bills}
             onBanking={() => openPremium()}
             onDebt={() => setTab("Debt")}
+            onMonthlyCalendar={() => setMonthlyCalendarVisible(true)}
             onMicropayments={() => setMicropaymentsVisible(true)}
             addBill={addBill}
             updateBill={updateBill}
@@ -1891,6 +1896,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} />
           <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
           <FacebookNeighborhood />
+          <CharacterArtwork source={require("./assets/characters/neighborhood-navigation-mascots.png")}
+            style={{width:"100%",aspectRatio:3,marginBottom:12}} resizeMode="contain" accessible={false} />
           <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
             {NEIGHBOR_DESTINATIONS.map((place,index) => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'100%',minHeight:152,padding:12,borderRadius:28,backgroundColor:['#FFE455','#65EBEF','#DCABFF','#FFB0A4'][index%4],borderWidth:3,borderColor:place.color,flexDirection:'row',flexWrap:'wrap',gap:12,alignItems:'center'}}>
               <CharacterArtwork source={buildingArtwork(place.id)} style={{width:128,height:128}} resizeMode="contain" accessible={false}/><Text style={{flexGrow:1,flexShrink:1,flexBasis:100,fontSize:22,lineHeight:28,fontWeight:'900',color:palette.ink}}>{place.label}</Text>
@@ -1898,10 +1905,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           </View>
           <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
           <FeatureLinks items={[{title:'Billiam’s Mailbox',body:'His home outside Annie Oak Tree — scans, bill tools and household planning.',onPress:()=>setTab('Billiam')},{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
-          <ExpandableSection title="A little care from Annie">
+          <ExpandableSection title="A little care from Annie" artworkAction="annieCare">
           <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
           </ExpandableSection>
-          <ExpandableSection title="Annie’s porch & today’s poster">
+          <ExpandableSection title="Annie’s porch & today’s poster" artworkAction="anniePoster">
           <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective} onPremium={()=>openPremium()}/>
           </ExpandableSection>
         </ScrollView>}
@@ -1940,6 +1947,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
         <NeighborhoodNav current={tab} switchTab={next => next === "Premium" ? openPremium() : setTab(next)} />
+        {monthlyCalendarVisible && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance} onClose={() => setMonthlyCalendarVisible(false)} />}
         <ExtraPaycheckCalendar visible={extraCalendarVisible} onClose={()=>setExtraCalendarVisible(false)} finance={finance} upcomingTotal={upcomingTotal} onAction={updateExtraPaycheck} onBudget={()=>{setExtraCalendarVisible(false);setTab('Budget');}} />
         <Micropayments key={`micro-${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible={micropaymentsVisible}
           onClose={() => setMicropaymentsVisible(false)} finance={finance} onRecord={saveMicropayment} onUndo={undoExtraPayment} />
@@ -2014,7 +2022,7 @@ const ONBOARDING_STEPS = [
     role: "Chaos Coach",
     question: "How often do you get paid?",
     helper: "This helps Safe to Spend understand the road between paydays.",
-    image: portraits.westley,
+    artworkAction: "onboardingPayday",
     type: "choice",
     options: ["Weekly", "Every 2 weeks", "Twice a month", "Monthly", "It varies"],
     accent: palette.purple,
@@ -2025,7 +2033,7 @@ const ONBOARDING_STEPS = [
     role: "Confidence Queen",
     question: "Would bank linking help you later?",
     helper: "Plaid bank linking and subscription tracking are paid Premium features. You can enter balances, bills and subscriptions manually with regular PayPlace.",
-    image: portraits.bobbie,
+    image: require("./assets/characters/onboarding-bank-linking-bobbie.png"),
     type: "choice",
     options: ["I’m interested", "Maybe later", "I prefer manual mode"],
     accent: palette.coral,
@@ -2037,7 +2045,7 @@ const ONBOARDING_STEPS = [
     question: "Anything else you want us to know?",
     helper: "A hope, a worry, a promise to yourself. This can shape future letters.",
     placeholder: "I want Future Me to remember…",
-    image: greatAnnieHero,
+    image: require("./assets/characters/nav-post-office.png"),
     type: "multiline",
     keyboardType: "default",
     accent: palette.blue,
@@ -2180,7 +2188,11 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
           <Text style={styles.onboardingStepLabel}>Question {stepIndex + 1} of {ONBOARDING_STEPS.length}</Text>
 
           <View style={styles.onboardingCard}>
-            <CharacterArtwork source={imageSource(step.image)} style={styles.onboardingImage} resizeMode="contain" />
+            {step.artworkAction ? (
+              <View style={[styles.onboardingImage, {alignItems:"center"}]}>
+                <ActionArtwork action={step.artworkAction} size={210} />
+              </View>
+            ) : <CharacterArtwork source={imageSource(step.image)} style={styles.onboardingImage} resizeMode="contain" />}
             <View style={[styles.onboardingMascotBadge, { backgroundColor: step.accent }]}>
               <Text style={styles.onboardingMascotName}>{step.mascot}</Text>
               <Text style={styles.onboardingMascotRole}>{step.role}</Text>
@@ -2248,14 +2260,7 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
   return (
     <View style={[styles.header, compact && { paddingTop: 6, paddingBottom: 6 }]}>
       <View style={styles.headerTopRow}>
-        <View style={styles.brandWrap}>
-          <CharacterArtwork source={payplaceLogo} style={{ width: compact ? 30 : 46, height: compact ? 30 : 46, marginRight: 9 }} resizeMode="contain" accessibilityLabel={payplaceLogoLabel} />
-
-          <View style={styles.wordmark}>
-            <Text style={[styles.logoDark, compact && { fontSize: 23 }]}>Pay</Text>
-            <Text style={[styles.logoMint, compact && { fontSize: 23 }]}>Place</Text>
-          </View>
-        </View>
+        <PayPlaceBrand compact={compact} style={styles.headerBrand} />
 
         <View style={[styles.statusPill, { backgroundColor: palette.aqua }]}>
           <Ionicons name="construct" size={14} color={palette.teal} />
@@ -2263,12 +2268,17 @@ function Header({ onSecurity, onHelp, tab, compact = false }) {
         </View>
       </View>
 
-      <Text style={[styles.tagline, compact && { fontSize: 12, marginLeft: 39 }]} numberOfLines={1} adjustsFontSizeToFit>
-        Money without shame.
-      </Text>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        {onHelp && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={{ minHeight: 80, flexDirection: "row", alignItems: "center", gap: 10, flex: 1 }}><Ionicons name="help-circle-outline" size={20} color={palette.purple} /><Text style={{ color: palette.purple, fontWeight: "800", flexShrink: 1 }}>How {neighborhoodLabel(tab)} works</Text></TouchableOpacity>}
-        {onSecurity && <TouchableOpacity artworkMode="compact" artworkSize={64} accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity} style={{ paddingHorizontal: 8 }}><Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} /></TouchableOpacity>}
+        {onHelp && <TouchableOpacity artworkMode="compact" artworkAction={tab === "Home" ? "homeGuide" : tab === "Debt" ? "debtHelp" : undefined} artworkSize={64}
+          accessibilityRole="button" accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp}
+          style={{minHeight:72,flexDirection:"row",alignItems:"center",gap:10,flex:1,paddingHorizontal:8}}>
+          {tab !== "Home" && tab !== "Debt" && <Ionicons name="help-circle-outline" size={20} color={palette.purple} />}
+          <Text style={{color:palette.purple,fontWeight:"800",flexShrink:1}}>How {neighborhoodLabel(tab)} works</Text>
+        </TouchableOpacity>}
+        {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity}
+          style={{width:48,minHeight:48,alignItems:"center",justifyContent:"center",marginLeft:8}}>
+          <Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} />
+        </TouchableOpacity>}
       </View>
     </View>
   );
@@ -2398,7 +2408,7 @@ function NeighborhoodWelcome({ switchTab, safeToSpendDaily, onDetective, onPremi
 
       <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
         style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <CharacterArtwork source={require("./assets/characters/em-spa-building.png")} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
+        <CharacterArtwork source={spaPorchArtwork} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
         <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
           <Text style={{ color: "#34465E", fontSize: 14, lineHeight: 20, marginTop: 4 }}>Peek in for pampered paws, top-secret makeovers, and cookie cleanup. ›</Text></View>
       </TouchableOpacity>
@@ -2556,7 +2566,7 @@ function HomeScreen({
   );
 }
 
-function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt, onMicropayments }) {
+function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBanking, onDebt, onMicropayments, onMonthlyCalendar }) {
   const [addingBill, setAddingBill] = useState(false);
   const [newBill, setNewBill] = useState({
   name: "",
@@ -2677,6 +2687,7 @@ const importDemoBills = () => {
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
       <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, Plaid banking and debt—all together." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
       <FeatureLinks items={[
+        {title:'Monthly payment calendar',body:'See bills, recorded payments, paydays and subscriptions. Print in portrait or landscape.',artworkAction:'monthlyCalendar',onPress:onMonthlyCalendar},
         {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
         {title:'Plaid Banking',body:'Paid Premium bank linking. Explore the fictional demo or enter balances manually.',artworkAction:'banking',onPress:onBanking},
         {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
@@ -2940,7 +2951,7 @@ const importDemoBills = () => {
 </TouchableOpacity>
 
               <TouchableOpacity
-                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${bill.name}`}
+                accessibilityRole="button" accessibilityLabel={`Remove ${bill.name}`}
                 style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteBill(bill.id)}
               >
@@ -2950,7 +2961,7 @@ const importDemoBills = () => {
           </View>
         ))
       )}
-      <MicropaymentsButton onPress={onMicropayments} />
+      <MicropaymentsButton forBills onPress={onMicropayments} />
       <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Paid Premium subscription tracking. In regular PayPlace, add subscriptions manually as bills.',onPress:onSubscriptions}]} />
       <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
@@ -3294,7 +3305,7 @@ function BudgetScreen({
       </View>
 
       </ExpandableSection>
-      <FeatureLinks items={[{title:'Until next payday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},{title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},{title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings}]} />
+      <FeatureLinks items={[{title:'Until next payday',artworkAction:'budgetPayday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},{title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},{title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings}]} />
 
       <View style={styles.noteCard}>
         <Ionicons name="save" size={22} color={palette.purple} />
@@ -3396,7 +3407,7 @@ function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPa
               </TouchableOpacity>
 
               <TouchableOpacity
-                artworkAction="browse" accessibilityRole="button" accessibilityLabel={`Remove ${debt.name}`}
+                accessibilityRole="button" accessibilityLabel={`Remove ${debt.name}`}
                 style={[styles.smallButton, { backgroundColor: palette.blush }]}
                 onPress={() => deleteDebt(debt.id)}
               >
@@ -3406,7 +3417,7 @@ function DebtScreen({ debts, onMicropayments, payoffMode, mixedQuickWinId, setPa
           </View>
         ))
       )}
-      <ExpandableSection title="Payoff strategy & guidance">
+      <ExpandableSection title="Payoff strategy & guidance" artworkAction="payoffGuide">
       <View style={styles.payoffToggleCard}>
         <Text style={styles.payoffToggleTitle}>Choose your payoff strategy</Text>
 
@@ -3541,8 +3552,6 @@ function DebtBuddyScene({ mode }) {
     ? "Smallest balance first. Fast wins. Your brain gets proof that the plan is working."
     : "Highest APR first. Less interest. Tiny chihuahua panic, grown-up math.";
 
-  const graphicUri = isMixed ? mixedBuddyGraphic : isSnowball ? snowballBuddyGraphic : avalancheBuddyGraphic;
-  const graphicSource = imageSource(graphicUri);
   const heroColor = isMixed ? palette.purple : isSnowball ? palette.snowballDark : palette.avalancheDark;
   const heroTint = isMixed ? palette.lavender : isSnowball ? palette.snowballSoft : palette.avalancheSoft;
   const bullets = isSnowball
@@ -3611,20 +3620,6 @@ function DebtBuddyScene({ mode }) {
           <Text style={styles.debtBuddyTitle}>{sceneTitle}</Text>
           <Text style={styles.debtBuddyBody}>{sceneBody}</Text>
         </View>
-      </View>
-
-      <View
-        style={[
-          styles.debtBuddyImageFrame,
-          isMixed ? { aspectRatio: 1122 / 1402 } : { height: 280 },
-        ]}
-      >
-        <CharacterArtwork
-          source={graphicSource}
-          style={styles.debtBuddyImage}
-          resizeMode="contain"
-          accessibilityLabel={isMixed ? "Glamorous Bobbie drives the PayPlace snowplow with Chapo enjoying steaming cocoa and a cookie; Tate rides the avalanche while Westley throws snowballs from his fort in a snowsuit" : isSnowball ? portraits.westley.label : portraits.tate.label}
-        />
       </View>
 
       {isMixed ? <DebtMethodComparison /> : <View style={styles.methodCard}>
@@ -4250,71 +4245,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  brandWrap: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingRight: 8,
-  },
-  appIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 16,
-    backgroundColor: palette.mint,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    marginRight: 9,
-  },
-  iconBlobPurple: {
-    position: "absolute",
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: palette.purple,
-    left: -8,
-    bottom: -6,
-  },
-  iconBlobGold: {
-    position: "absolute",
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: palette.gold,
-    right: -6,
-    top: -5,
-  },
-  iconBlobCoral: {
-    position: "absolute",
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: palette.coral,
-    right: -10,
-    bottom: -8,
-  },
-  wordmark: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  logoDark: {
-    fontSize: 30,
-    fontWeight: "900",
-    color: palette.ink,
-  },
-  logoMint: {
-    fontSize: 30,
-    fontWeight: "900",
-    color: palette.mintDark,
-  },
-  tagline: {
-    fontSize: 15,
-    color: palette.purple,
-    marginTop: 4,
-    marginLeft: 55,
-    fontWeight: "800",
-    maxWidth: 260,
-  },
+  headerBrand: { flex: 1, minWidth: 0, marginRight: 8 },
   statusPill: {
     flexDirection: "row",
     alignItems: "center",
@@ -5680,20 +5611,6 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1.2,
     marginBottom: 4,
-  },
-  debtBuddyImageFrame: {
-    width: "100%",
-    borderRadius: 24,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.95)",
-    backgroundColor: "white",
-    marginTop: 16,
-    overflow: "hidden",
-  },
-  debtBuddyImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 21,
   },
   methodCard: {
     backgroundColor: "rgba(255,255,255,0.78)",
