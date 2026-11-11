@@ -70,7 +70,7 @@ import { normalizePremiumBeta } from "./src/premium-beta.mjs";
 import useSubscriptionReminders from "./src/useSubscriptionReminders";
 import { subscriptionCases, updateSubscription } from "./src/subscription-detective.mjs";
 import TesterFeedback from "./src/TesterFeedback";
-import BobbieCabaret, { BobbieCabaretEntry } from "./src/BobbieCabaret";
+import BobbieCabaret from "./src/BobbieCabaret";
 import ScreenHelp from "./src/ScreenHelp";
 import SavingsGoals from "./src/SavingsGoals";
 import { addBonus, saveSplit, nextExtraPaycheck, readDate, scheduleSettings, suggestedSplit, buildCalendar } from "./src/paycheck-calendar.mjs";
@@ -81,7 +81,6 @@ import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
 import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
 import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
-const artStudioArtwork = require("./assets/characters/payplace-art-studio.png");
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
 const lockedTate = portraits.tate;
@@ -1923,25 +1922,29 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onCreditChange={text => updateNumber("creditScore", text)}
         />}
 
-        {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+        {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
           <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} />
-          <SectionTitle title="Neighborhood" subtitle="Visit the family, unwind, or take one small step." />
+          <SectionTitle title="Neighborhood" />
+          <NeighborhoodLinks places={NEIGHBOR_DESTINATIONS.filter(place => ['Spa', 'Calm'].includes(place.id))} onOpen={setTab} />
+          <ExpandableSection title="Visit the mascots">
+            <CharacterArtwork source={require("./assets/characters/neighborhood-navigation-mascots.png")}
+              style={{width:'100%',aspectRatio:3,marginBottom:12}} resizeMode="contain" accessible={false} />
+            <NeighborhoodLinks places={NEIGHBOR_DESTINATIONS.filter(place => !['Spa', 'Calm'].includes(place.id))} onOpen={setTab} />
+          </ExpandableSection>
+          <ExpandableSection title="Annie’s porch & quiet tools">
+            <FeatureLinks compact items={[
+              {title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},
+              {title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},
+              {title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding},
+            ]} />
+            <ExpandableSection title="A little care from Annie" artworkAction="annieCare" compact>
+              <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
+            </ExpandableSection>
+            <ExpandableSection title="Annie’s porch & today’s poster" artworkAction="anniePoster" compact>
+              <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective}/>
+            </ExpandableSection>
+          </ExpandableSection>
           <FacebookNeighborhood />
-          <CharacterArtwork source={require("./assets/characters/neighborhood-navigation-mascots.png")}
-            style={{width:"100%",aspectRatio:3,marginBottom:12}} resizeMode="contain" accessible={false} />
-          <View style={{flexDirection:'row',flexWrap:'wrap',gap:10,marginBottom:16}}>
-            {NEIGHBOR_DESTINATIONS.map((place,index) => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button" accessibilityLabel={`Open ${place.label}`} onPress={() => setTab(place.id)} style={{width:'100%',minHeight:152,padding:12,borderRadius:28,backgroundColor:['#FFE455','#65EBEF','#DCABFF','#FFB0A4'][index%4],borderWidth:3,borderColor:place.color,flexDirection:'row',flexWrap:'wrap',gap:12,alignItems:'center'}}>
-              <CharacterArtwork source={buildingArtwork(place.id)} style={{width:128,height:128}} resizeMode="contain" accessible={false}/><Text style={{flexGrow:1,flexShrink:1,flexBasis:100,fontSize:22,lineHeight:28,fontWeight:'900',color:palette.ink}}>{place.label}</Text>
-            </TouchableOpacity>)}
-          </View>
-          <BobbieCabaretEntry onOpen={() => setCabaretVisible(true)} />
-          <FeatureLinks items={[{title:'Billiam’s Mailbox',body:'His home outside Annie Oak Tree — scans, bill tools and household planning.',onPress:()=>setTab('Billiam')},{title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},{title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},{title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding}]} />
-          <ExpandableSection title="A little care from Annie" artworkAction="annieCare">
-          <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
-          </ExpandableSection>
-          <ExpandableSection title="Annie’s porch & today’s poster" artworkAction="anniePoster">
-          <NeighborhoodWelcome reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective}/>
-          </ExpandableSection>
         </ScrollView>}
         {['Spa','Calm'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" onPress={()=>setTab('Neighborhood')} style={{minHeight:44,padding:12}}><Text style={{color:palette.purple,fontWeight:'800'}}>← Neighborhood</Text></TouchableOpacity>}
         {tab === "Calm" && (
@@ -2535,7 +2538,7 @@ function HomeScreen({
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <View style={[styles.safeHeroCard, { padding: 16 }]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
@@ -2612,6 +2615,17 @@ function HomeScreen({
       </ExpandableSection>
     </ScrollView>
   );
+}
+
+function NeighborhoodLinks({ places, onOpen }) {
+  return <View style={styles.neighborLinks}>
+    {places.map((place, index) => <TouchableOpacity artworkMode="integrated" key={place.id} accessibilityRole="button"
+      accessibilityLabel={`Open ${place.label}`} onPress={() => onOpen(place.id)}
+      style={[styles.neighborLink, {backgroundColor:['#FFE455','#65EBEF','#DCABFF','#FFB0A4'][index % 4],borderColor:place.color}]}>
+      <CharacterArtwork source={buildingArtwork(place.id)} style={styles.neighborLinkArt} resizeMode="contain" accessible={false} />
+      <Text style={styles.neighborLinkLabel}>{place.label}</Text>
+    </TouchableOpacity>)}
+  </View>;
 }
 
 function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBankingDemo, onBankLinking, onDebt, onMicropayments, onMonthlyCalendar }) {
@@ -2732,17 +2746,32 @@ const importDemoBills = () => {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <SectionTitle title="Bills & Banking" subtitle="Your bills, Billiam’s tools, the banking demo and debt planning." artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
-      <FeatureLinks items={[
-        {title:'Monthly payment calendar',body:'See bills, recorded payments, paydays and subscriptions. Print in portrait or landscape.',artworkAction:'monthlyCalendar',onPress:onMonthlyCalendar},
-        {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
-        {title:'Banking Demo',body:'Explore Bobbie’s fictional accounts and transactions.',onPress:onBankingDemo},
-        {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
-      ]}/>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
+      <SectionTitle title="Bills & Banking" artwork={require("./assets/characters/header-bills-billiam-westley.png")} artworkLabel="Billiam delivers colorful bill envelopes with Westley's help" />
       <TouchableOpacity accessibilityRole="button" accessibilityLabel="Add a bill" style={styles.primaryButtonTight} onPress={() => setAddingBill(true)}>
         <Text style={styles.primaryButtonText}>Add bill</Text>
       </TouchableOpacity>
+      <FeatureLinks compact items={[
+        {title:'Monthly payment calendar',body:'Bills, paydays and subscriptions. Print in portrait or landscape.',artworkAction:'monthlyCalendar',onPress:onMonthlyCalendar},
+      ]} />
+      <ExpandableSection title="Bill tools, debt & payments">
+        <FeatureLinks compact items={[
+          {title:'Billiam’s bill tools',body:'Scan, import, compare and organize bills.',artworkAction:'billTools',onPress:onBilliam},
+          {title:'My debt plan',body:'Choose a payoff approach and track progress.',artworkAction:'debt',onPress:onDebt},
+          {title:'Undo & payment history',body:'Correct or undo a recorded payment.',onPress:onHistory},
+        ]} />
+        <MicropaymentsButton forBills onPress={onMicropayments} />
+      </ExpandableSection>
+      <ExpandableSection title="Banking & subscriptions">
+        <FeatureLinks compact items={[
+          {title:'Banking Demo',body:'Explore Bobbie’s fictional accounts and transactions.',onPress:onBankingDemo},
+          {title:'Subscription Detective',body:'Automatic subscription finding with Premium. Add subscriptions manually as bills anytime.',onPress:onSubscriptions},
+        ]} />
+        {onBankLinking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Plaid bank-linking availability"
+          style={styles.primaryButtonTight} onPress={onBankLinking}>
+          <Text style={styles.primaryButtonText}>Plaid bank linking · Premium availability</Text>
+        </TouchableOpacity>}
+      </ExpandableSection>
 
 
 {selectedReviewBill && (
@@ -3009,12 +3038,6 @@ const importDemoBills = () => {
           </View>
         ))
       )}
-      <MicropaymentsButton forBills onPress={onMicropayments} />
-      {onBankLinking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Plaid bank-linking availability"
-        style={styles.primaryButtonTight} onPress={onBankLinking}>
-        <Text style={styles.primaryButtonText}>Plaid bank linking · Premium availability</Text>
-      </TouchableOpacity>}
-      <FeatureLinks items={[{title:'Undo & payment history',body:'Correct a recorded payment or undo a mistake.',onPress:onHistory},{title:'Subscription Detective',body:'Paid Premium subscription tracking. In regular PayPlace, add subscriptions manually as bills.',onPress:onSubscriptions}]} />
       <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a bill</Text>
@@ -3215,10 +3238,9 @@ function BudgetScreen({
   onPayday, onCalendar, onSavings, onCategories,
 }) {
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <SectionTitle
         title="Budget"
-        subtitle="Update your money numbers. This is the cockpit."
         artwork={require("./assets/characters/header-budget-daddy-chapo.png")}
         artworkLabel="Daddy plans a colorful budget while Chapo adds a coin to their savings jar"
       />
@@ -3233,20 +3255,6 @@ function BudgetScreen({
         <Text style={styles.safeSpendSub}>
           Balance minus unpaid bills, debt minimums and your emergency buffer.
         </Text>
-
-        <View
-          style={[
-            styles.budgetHeroImageFrame,
-
-          ]}
-        >
-          <CharacterArtwork
-            source={artStudioArtwork}
-            style={styles.budgetHeroDogsImage}
-            resizeMode="contain"
-            accessibilityLabel="PayPlace art studio: Bobbie designs clothes, Daddy shapes clay, Westley paints, Tate develops film, and Chapo bakes cookies"
-          />
-        </View>
 
         <View style={styles.safeMiniGrid}>
           <SafeMiniCard
@@ -3338,19 +3346,25 @@ function BudgetScreen({
       </View>
 
       </ExpandableSection>
-      <FeatureLinks items={[{title:'Until next payday',artworkAction:'budgetPayday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},{title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},{title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings}]} />
-
-      <View style={styles.noteCard}>
-        <Ionicons name="save" size={22} color={palette.purple} />
-        <Text style={styles.noteText}>
-          PayPlace encrypts your entries on this device. Use Security & backup to save a portable, password-protected copy.
-        </Text>
-      </View>
-
-      <TouchableOpacity style={styles.resetButton} onPress={resetDemoData}>
-        <Ionicons name="refresh-circle" size={20} color={palette.coralDark} />
-        <Text style={styles.resetButtonText}>Reset demo data</Text>
-      </TouchableOpacity>
+      <ExpandableSection title="Paydays & savings">
+        <FeatureLinks compact items={[
+          {title:'Until next payday',artworkAction:'budgetPayday',body:'Groceries, gas and your detailed payday calculation.',onPress:onPayday},
+          {title:'Extra Paycheck Calendar',body:'Regular paydays, bonuses and your extra-check plan.',onPress:onCalendar},
+          {title:'Savings Goals',body:'Your goals and manually recorded progress.',onPress:onSavings},
+        ]} />
+      </ExpandableSection>
+      <ExpandableSection title="Budget data settings">
+        <View style={styles.noteCard}>
+          <Ionicons name="save" size={22} color={palette.purple} />
+          <Text style={styles.noteText}>
+            PayPlace encrypts your entries on this device. Use Security & backup to save a portable, password-protected copy.
+          </Text>
+        </View>
+        <TouchableOpacity style={styles.resetButton} onPress={resetDemoData}>
+          <Ionicons name="refresh-circle" size={20} color={palette.coralDark} />
+          <Text style={styles.resetButtonText}>Reset demo data</Text>
+        </TouchableOpacity>
+      </ExpandableSection>
     </ScrollView>
   );
 }
@@ -3882,7 +3896,7 @@ function SectionTitle({ title, subtitle, artwork, artworkLabel }) {
           </View>
         </View>
       ) : <Text style={styles.sectionHeading}>{title}</Text>}
-      <Text style={styles.sectionSubtitle}>{subtitle}</Text>
+      {subtitle && <Text style={styles.sectionSubtitle}>{subtitle}</Text>}
     </View>
   );
 }
@@ -4310,6 +4324,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 150,
   },
+  tabContent: { paddingBottom: 24 },
   safeHeroCard: {
     backgroundColor: palette.teal,
     borderRadius: 30,
@@ -4424,24 +4439,10 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: palette.gold,
   },
-  budgetHeroImageFrame: {
-    width: "100%",
-    aspectRatio: 3 / 2,
-    borderRadius: 24,
-    overflow: "hidden",
-    marginTop: 16,
-    marginBottom: 18,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.78)",
-    backgroundColor: "rgba(255,255,255,0.22)",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#071A3A",
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
-  },
-  budgetHeroDogsImage: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
+  neighborLinks: { gap: 10, marginBottom: 12 },
+  neighborLink: { minHeight: 104, padding: 10, borderRadius: 26, borderWidth: 3, flexDirection: 'row', flexWrap: 'wrap', gap: 10, alignItems: 'center' },
+  neighborLinkArt: { width: 78, height: 78 },
+  neighborLinkLabel: { flexGrow: 1, flexShrink: 1, flexBasis: 110, fontSize: 20, fontWeight: '900', color: palette.ink },
   safeMiniGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
