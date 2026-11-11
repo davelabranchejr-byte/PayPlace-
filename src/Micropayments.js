@@ -1,9 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, View, StyleSheet } from 'react-native';
+import { Modal, ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from './Privacy';
+import ContainedIllustration from './ContainedIllustration';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { micropaymentTargets, micropaymentTotal, canUndoMicropayment } from './micropayments.mjs';
 
+const westleyArtwork = require('../assets/characters/feature-micropayments-westley.png');
 const money = cents => `$${(cents / 100).toFixed(2)}`;
 function Button({ title, onPress, selected, disabled, testID }) {
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={title}
@@ -13,12 +15,18 @@ function Button({ title, onPress, selected, disabled, testID }) {
   </TouchableOpacity>;
 }
 
-// Artwork remains pending; never substitute an unrelated or repeated scene.
 export function MicropaymentsButton({ onPress }) {
+  const [width, setWidth] = useState(0);
+  const { fontScale } = useWindowDimensions();
+  const stacked = width < 320 || fontScale > 1.2;
   return <TouchableOpacity artworkMode="integrated" testID="open-micropayments" accessibilityRole="button"
-    accessibilityLabel="Micropayments: small extra payments" onPress={onPress} style={s.entry}>
-    <Text style={s.title}>Micropayments</Text>
-    <Text style={s.body}>Small extra payments. Every little bit counts.</Text>
+    accessibilityLabel="Micropayments: small extra payments" onPress={onPress} onLayout={event => setWidth(event.nativeEvent.layout.width)}
+    style={[s.entry, !stacked && s.entryRow]}>
+    <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />
+    <View style={stacked ? s.stackedCaption : s.caption}>
+      <Text style={s.title}>Micropayments</Text>
+      <Text style={s.body}>Track small extra payments.</Text>
+    </View>
   </TouchableOpacity>;
 }
 
@@ -89,13 +97,20 @@ export default function Micropayments({ visible, onClose, finance, onRecord, onU
   return <Modal visible={visible} onRequestClose={onClose} animationType={finance.quietMode?.reduceAnimation ? 'none' : 'slide'}>
     {visible && <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
       <Button title="Back to my plan" onPress={onClose} />
+      <ContainedIllustration source={westleyArtwork} aspectRatio={1} style={s.hero}
+        accessible accessibilityLabel="Westley in his PayPlace hoodie drops a gold coin into a purple paw-print box" />
       <Content finance={finance} onRecord={onRecord} onUndo={onUndo} />
     </ScrollView>}
   </Modal>;
 }
 const s = StyleSheet.create({
   page: { padding: 20, paddingTop: 55, paddingBottom: 48, gap: 16, backgroundColor: '#F1FDFF' },
-  section: { gap: 14 }, entry: { padding: 18, borderRadius: 22, backgroundColor: '#FFE455', borderColor: '#E1AC00', gap: 6, marginTop: 12 },
+  section: { gap: 14 }, entry: { padding: 18, borderRadius: 22, backgroundColor: '#FFE455', borderColor: '#E1AC00', gap: 12, marginTop: 12, alignItems: 'center' },
+  entryRow: { flexDirection: 'row' },
+  thumbnail: { width: 108, borderRadius: 14 },
+  caption: { flex: 1, minWidth: 0, gap: 4 },
+  stackedCaption: { width: '100%', gap: 4 },
+  hero: { width: '100%', maxWidth: 320, alignSelf: 'center', borderRadius: 24 },
   title: { fontSize: 25, fontWeight: '900', color: '#101344' }, heading: { fontSize: 18, fontWeight: '800', color: '#101344' },
   body: { fontSize: 16, lineHeight: 24, color: '#263651' }, note: { fontSize: 14, lineHeight: 21, color: '#43546B' },
   total: { fontSize: 22, fontWeight: '900', color: '#5E278E' }, notice: { backgroundColor: '#FFF1AC', padding: 14, borderRadius: 16 },
