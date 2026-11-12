@@ -1,6 +1,6 @@
 import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, AppState, Easing, Image, View, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Animated, AppState, Easing, Image, Pressable, ScrollView, View, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FittedArtwork from './FittedArtwork';
 import { RoomDestinations } from './InteractiveRoom';
@@ -145,14 +145,29 @@ function ScenePass({ kind, width }) {
 }
 
 const landmarks = [
-  { id: 'Billiam', label: 'Tap the mailbox to visit Billiam', x: 27, y: 74 },
-  { id: 'Calm', label: 'Tap the bridge to visit Calm Garden', x: 54, y: 78 },
+  { id: 'Billiam', label: 'Tap the mailbox to visit Billiam', caption: 'Billiam’s Mailbox', x: 27, y: 74 },
+  { id: 'Calm', label: 'Tap the bridge to visit Calm Garden', caption: 'Calm Garden', x: 54, y: 78 },
 ];
 
-export default function LivingNeighborhood({ reduceAnimation = false, paused = false, onOpen, weatherZip, onWeatherZip, children }) {
-  const now=useNeighborhoodClock();
+const treehouses = [
+  { id: 'Westley', caption: 'Westley’s Den', x: 11, y: 65 },
+  { id: 'Tate', caption: 'Tate’s Hangout', x: 22, y: 40 },
+  { id: 'Chapo', caption: 'Chapo’s Kitchen', x: 72, y: 61 },
+  { id: 'Annie', caption: 'Annie’s House', x: 83, y: 43 },
+  { id: 'Bobbie', caption: 'Bobbie’s Boutique', x: 89, y: 81 },
+];
+
+export default function LivingNeighborhood({ reduceAnimation = false, paused = false, onOpen, weatherZip, onWeatherZip, showTreehouses = false, children }) {
+  const now = useNeighborhoodClock();
+  const weather = useNeighborhoodWeather(weatherZip);
+  const weatherKind = weather?.kind || seasonalNeighborhoodWeather(now);
+  const leaves = isNeighborhoodLeafSeason(now);
+  const residents = neighborhoodResidents(now);
   const [reduce,setReduce]=useState(true);
   const [active,setActive]=useState(AppState.currentState==='active');
+  const scroll = useRef(null);
+  const [viewportWidth, setViewportWidth] = useState(0);
+  const [offset, setOffset] = useState(0);
   const [{ width, height }, setBounds] = useState({ width: 0, height: 0 });
   useEffect(()=>{
     let mounted=true;
@@ -165,16 +180,25 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
   const hour = now.getHours();
   const lateNight = dark && (hour >= 23 || hour < 5);
   const seasonalCameos = neighborhoodSeasonalCameos(now, dark);
-  const weather = useNeighborhoodWeather(weatherZip);
-  const weatherKind = weather?.kind || seasonalNeighborhoodWeather(now);
-  const leaves = isNeighborhoodLeafSeason(now);
-  const residents = neighborhoodResidents(now);
   const walkers = neighborhoodWalkers(residents, now);
   const playing=active&&!reduce&&!reduceAnimation&&!paused;
+  const sceneWidth = Math.max(viewportWidth, Math.min(viewportWidth * 1.85, 960));
+  const scrollEnd = sceneWidth - viewportWidth;
+  const shownOffset = Math.min(offset, scrollEnd);
+  const move = direction => scroll.current?.scrollTo({
+    x: Math.max(0, Math.min(scrollEnd, shownOffset + direction * viewportWidth * 0.55)),
+    animated: !reduce && !reduceAnimation,
+  });
+  const description = dark ? 'PayPlace at night with lanterns, fireflies and occasional shooting stars.' : 'PayPlace by day with butterflies and an occasional passing plane.';
+  const destinations = showTreehouses ? [...landmarks, ...treehouses] : landmarks;
   return <>
-  <FittedArtwork accessible={false} source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={({ nativeEvent: { layout } }) => setBounds(previous => previous.width === layout.width && previous.height === layout.height
+  <View style={s.viewport} onLayout={event => setViewportWidth(event.nativeEvent.layout.width)} testID="neighborhood-panorama-viewport">
+  <ScrollView ref={scroll} horizontal nestedScrollEnabled directionalLockEnabled showsHorizontalScrollIndicator={false}
+    accessibilityLabel={description} scrollEventThrottle={32} onScroll={event => setOffset(Math.max(0, event.nativeEvent.contentOffset.x))}
+    testID="neighborhood-panorama-scroll">
+  <FittedArtwork accessible={false} source={dark?night:day} style={[s.scene, sceneWidth > 0 && { width: sceneWidth }]} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={({ nativeEvent: { layout } }) => setBounds(previous => previous.width === layout.width && previous.height === layout.height
       ? previous : { width: layout.width, height: layout.height })}
-    accessibilityLabel={dark ? 'PayPlace at night with lanterns, fireflies and occasional shooting stars.' : 'PayPlace by day with butterflies and an occasional passing plane.'}>
+    accessibilityLabel={description}>
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
       <Waterfall playing={playing} />
       {playing && width > 0 && <>
@@ -188,22 +212,44 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
       <NeighborhoodEffects weather={weatherKind} {...{leaves, dark, walkers, playing, width, height}} />
     </View>
-    {onOpen && <RoomDestinations destinations={landmarks.map(({ id, label, x, y }) => ({
-      label, open: () => onOpen(id),
+    {onOpen && <RoomDestinations destinations={destinations.map(({ id, label, caption, x, y }) => ({
+      label: label || `Visit ${caption} from the map`, caption, open: () => onOpen(id),
       area: { ...s.landmark, left: `${x}%`, top: `${y}%` },
     }))} />}
     <EncouragementSpot place="town" style={{ left: '73%' }} />
   </FittedArtwork>
-  {onOpen && <Text style={s.hint}>{neighborhoodWeatherNames[weatherKind]} · Tap the mailbox or bridge to explore.</Text>}
+  </ScrollView>
+  </View>
+  <View style={s.mapControls}>
+    <Text style={s.hint}>{neighborhoodWeatherNames[weatherKind]}{scrollEnd > 1 ? ' · Swipe to explore' : ''}</Text>
+    {scrollEnd > 1 && <View style={s.arrows}>
+      <PanButton direction="left" disabled={shownOffset < 1} onPress={() => move(-1)} />
+      <PanButton direction="right" disabled={shownOffset >= scrollEnd - 1} onPress={() => move(1)} />
+    </View>}
+  </View>
   {children}
-  {onOpen && onWeatherZip && <TownLife {...{residents, onOpen, weather, weatherKind, leaves, onWeatherZip}} zip={weatherZip} />}
+  {onOpen && onWeatherZip && <TownLife {...{ residents, onOpen, weather, weatherKind, leaves, onWeatherZip }} zip={weatherZip} />}
   </>;
 }
+
+function PanButton({ direction, disabled, onPress }) {
+  return <Pressable accessibilityRole="button" accessibilityLabel={`Pan neighborhood ${direction}`}
+    accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[s.arrow, disabled && s.arrowDisabled]}>
+    <Ionicons name={`chevron-${direction}`} size={21} color="#4F2676" accessible={false} />
+  </Pressable>;
+}
+
 const s=StyleSheet.create({
-  scene:{borderRadius:18,backgroundColor:'#173C50'},
-  landmark: { width: 48, height: 48, justifyContent: 'center', alignItems: 'center', padding: 0, transform: [{ translateX: -24 }, { translateY: -24 }] },
+  viewport: { borderRadius: 18, overflow: 'hidden', backgroundColor: '#173C50' },
+  scene: { backgroundColor: '#173C50' },
+  mapControls: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 5, marginBottom: 10 },
+  arrows: { flexDirection: 'row', gap: 6 },
+  arrow: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 14,
+    backgroundColor: '#E9D4FF', borderWidth: 1, borderColor: '#9E75C1' },
+  arrowDisabled: { opacity: 0.42 },
+  landmark: { width: 110, height: 48, justifyContent: 'center', padding: 0, transform: [{ translateX: -55 }, { translateY: -24 }] },
   water: { position: 'absolute', left: '49.5%', top: '72%', width: '9%', height: '3.5%', borderRadius: 6, backgroundColor: '#C9F4FF' },
-  hint: { marginTop: 6, marginBottom: 12, fontSize: 13, color: '#34465E' },
+  hint: { flex: 1, fontSize: 13, color: '#34465E' },
   skyPass: { position: 'absolute' },
   airplane: { left: '32%', top: '16%' },
   plane: { textShadowColor: '#26425F99', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2,

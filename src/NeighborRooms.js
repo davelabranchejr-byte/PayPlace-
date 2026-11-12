@@ -62,6 +62,12 @@ const rooms = {
   },
 };
 
+const spotCaptions = {
+  library: 'Library', family: 'Family Wall', quilt: 'Quilt', Billiam: 'Mailbox', mirror: 'Smart Mirror',
+  story: 'My Story', Calm: 'Calm Garden', Bills: 'Review Bills', Spa: 'Pet Spa', steps: 'Small Steps',
+  Calendar: 'Extra Payday', Budget: 'Budget',
+};
+
 export default function NeighborRoom({ destination, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
@@ -84,7 +90,8 @@ export default function NeighborRoom({ destination, finance, onHome, onNavigate,
       <Text accessibilityRole="header" style={s.title}>{title}</Text>
       {destination === 'Bobbie' && <Text style={s.body}>High maintenance, not high and mighty.</Text>}
       <InteractiveRoom source={room.image} testID="neighbor-room-artwork" destinations={room.spots.map(([label, target, x, y, width, height]) => ({
-        label, area: { left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%` }, open: () => open(target),
+        label, caption: spotCaptions[target],
+        area: { left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%` }, open: () => open(target),
       }))}>
         <EncouragementSpot place="room" style={{ left: '49%', top: '91%' }} />
       </InteractiveRoom>

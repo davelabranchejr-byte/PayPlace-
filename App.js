@@ -36,7 +36,7 @@ import { hasVerifiedContact } from "./src/contact-verification.mjs";
 import { canEnterNeighborhood, onboardingPosition, onboardingDraft, completedProfile, restoredProfile } from "./src/onboarding-progress.mjs";
 import FamilyWall, { CharacterStory } from "./src/FamilyWall";
 import BelongingQuilt, { AcornSquare, QuiltDetail } from "./src/BelongingQuilt";
-import CalmGardenScene from "./src/CalmGardenScene";
+import CalmGardenScene, { CalmGardenStory } from "./src/CalmGardenScene";
 import { RoomDestinations } from "./src/InteractiveRoom";
 import useNeighborhoodArtwork from "./src/useNeighborhoodArtwork";
 import NeighborCare, { SmallSteps } from "./src/NeighborCare";
@@ -1231,6 +1231,8 @@ function PayPlaceApp() {
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
   const [billiamBack, setBilliamBack] = useState("Bills");
+  const [calmBack, setCalmBack] = useState("Neighborhood");
+  useEffect(() => { if (tab !== "Calm") setCalmBack("Neighborhood"); }, [tab]);
   function openBankingDemo() { setBankingDemoVisit(current => current + 1); setTab("BankingDemo"); }
   const [selectedPlan, setSelectedPlan] = useState("basic");
   const [debtEntry, setDebtEntry] = useState({ showMethods: false, back: "Bills" });
@@ -1872,6 +1874,12 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onCabaret={() => setCabaretVisible(true)}
             onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
             onSavings={() => setSavingsVisible(true)}
+            mapPaused={tabHelpVisible || securityVisible || !!essentialsPanel || detectiveVisible || cabaretVisible || savingsVisible}
+            reduceAnimation={quiet.reduceAnimation}
+            onOpenMapDestination={next => {
+              if (next === "Billiam") openBilliam("Home");
+              else { setCalmBack("Home"); setTab(next); }
+            }}
           />
         )}
 
@@ -1946,7 +1954,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
         {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
           <SectionTitle title="Neighborhood" />
-          <LivingNeighborhood reduceAnimation={quiet.reduceAnimation} paused={tabHelpVisible || securityVisible || !!essentialsPanel}
+          <LivingNeighborhood showTreehouses reduceAnimation={quiet.reduceAnimation} paused={tabHelpVisible || securityVisible || !!essentialsPanel}
             onOpen={next => next === "Billiam" ? openBilliam("Neighborhood") : setTab(next)}
             weatherZip={finance.neighborhoodWeatherZip}
             onWeatherZip={zip => setFinanceRaw(current => ({ ...current, neighborhoodWeatherZip: zip }))}>
@@ -1967,7 +1975,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           </ExpandableSection>
           <FacebookNeighborhood />
         </ScrollView>}
-        {['Spa','Calm'].includes(tab) && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" onPress={()=>setTab('Neighborhood')} style={{minHeight:44,padding:12}}><Text style={{color:palette.purple,fontWeight:'800'}}>← Neighborhood</Text></TouchableOpacity>}
+        {tab === "Spa" && <MoneyToolBack destination="Neighborhood" onBack={setTab} />}
+        {tab === "Calm" && <MoneyToolBack destination={calmBack} onBack={setTab} />}
         {tab === "Calm" && (
           <CalmScreen
             pearl={pearlCollections[pearlCategory].pearls[calmIndex % pearlCollections[pearlCategory].pearls.length]}
@@ -1994,7 +2003,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
-        <NeighborhoodNav current={tab === "Billiam" && billiamBack === "Neighborhood" ? billiamBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
+        <NeighborhoodNav current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
         {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
           canPrint={monthlyCalendarMode !== "view"} startGrooming={monthlyCalendarMode === "grooming"} onClose={() => setMonthlyCalendarMode(null)}
           onAppointmentsChange={groomingAppointments => setFinanceRaw(current => keepQuiltMilestones(current, { ...current, groomingAppointments }))} />}
@@ -2531,6 +2540,9 @@ function HomeScreen({
   onCabaret,
   onSavings,
   onStepsChange,
+  onOpenMapDestination,
+  mapPaused,
+  reduceAnimation,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2555,6 +2567,8 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
+      <LivingNeighborhood paused={mapPaused || guidanceVisible} reduceAnimation={reduceAnimation}
+        weatherZip={finance.neighborhoodWeatherZip} onOpen={onOpenMapDestination} />
       <View style={[styles.safeHeroCard, { padding: 16 }]}>
         <Text style={styles.safeHeroLabel}>SAFE TO SPEND</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
@@ -2636,12 +2650,15 @@ function HomeScreen({
 const neighborhoodTileFills = ['#FFB0A4', '#65EBEF', '#FFE455', '#DCABFF'];
 
 function NeighborhoodLinks({ onOpen }) {
-  return <NavigationTiles testID="neighborhood-destinations" items={NEIGHBOR_DESTINATIONS.map((place, index) => ({
-    title: place.label,
-    source: buildingArtwork(place.id),
-    colors: { fill: neighborhoodTileFills[index % neighborhoodTileFills.length], border: place.color },
-    onPress: () => onOpen(place.id),
-  }))} />;
+  return <>
+    <Text style={styles.sectionSubtitle}>Swipe for places to visit.</Text>
+    <NavigationTiles testID="neighborhood-destinations" horizontal items={NEIGHBOR_DESTINATIONS.map((place, index) => ({
+      title: place.label,
+      source: buildingArtwork(place.id),
+      colors: { fill: neighborhoodTileFills[index % neighborhoodTileFills.length], border: place.color },
+      onPress: () => onOpen(place.id),
+    }))} />
+  </>;
 }
 
 function BillsScreen({ bills, addBill, updateBill, toggleBillPaid, reviewBill, deleteBill, onHistory, onSubscriptions, onBilliam, onBankingDemo, onBankLinking, onDebt, onMicropayments, onMonthlyCalendar }) {
@@ -3384,7 +3401,8 @@ function BudgetScreen({
 function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [addingDebt, setAddingDebt] = useState(false);
   const { width, fontScale } = useWindowDimensions();
-  const stackStrategyArtwork = width < 360 || fontScale > 1.2;
+  const stackStrategyArtwork = width < 370 || fontScale > 1.1;
+  const strategyArtworkWidth = Math.min(226, Math.floor((width - 80) * (stackStrategyArtwork ? 0.9 : 0.56)));
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3412,16 +3430,16 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
 
         <View style={styles.payoffModeList}>
           {[
-            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", artwork: snowballBuddyGraphic, color: palette.snowballDark, tint: palette.snowballSoft },
-            { id: "mixed", title: "Mixed", subtitle: "Best of both", artwork: mixedBuddyGraphic, color: palette.purple, tint: palette.lavender },
-            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", artwork: avalancheBuddyGraphic, color: palette.avalancheDark, tint: palette.avalancheSoft },
+            { id: "snowball", title: "Snowball", subtitle: "Quick wins first", artwork: snowballBuddyGraphic, artworkRatio: 589 / 582, color: palette.snowballDark, tint: palette.snowballSoft },
+            { id: "mixed", title: "Mixed", subtitle: "Best of both", artwork: mixedBuddyGraphic, artworkRatio: 1122 / 1402, color: palette.purple, tint: palette.lavender },
+            { id: "avalanche", title: "Avalanche", subtitle: "Save more on interest", artwork: avalancheBuddyGraphic, artworkRatio: 556 / 485, color: palette.avalancheDark, tint: palette.avalancheSoft },
           ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
             artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
             accessibilityState={{ selected: mode === option.id }}
             style={[styles.payoffModeButton, !stackStrategyArtwork && styles.payoffModeButtonRow, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
             onPress={() => setPayoffMode(option.id)}>
             <Image source={option.artwork} resizeMode="contain" accessible={false}
-              style={[styles.payoffModeArtwork, stackStrategyArtwork && styles.payoffModeArtworkStacked]} />
+              style={[styles.payoffModeArtwork, { width: strategyArtworkWidth, height: strategyArtworkWidth / option.artworkRatio }]} />
             <View style={stackStrategyArtwork ? styles.payoffModeCaptionStacked : styles.payoffModeCaption}>
               <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
               <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
@@ -3731,7 +3749,7 @@ function CalmScreen({ pearl, count, nextPearl, category, collections, categoryOr
       <View style={{ width: "100%", aspectRatio: 4 / 5, borderRadius: 26, overflow: "hidden", marginBottom: 8 }}>
         <CalmGardenScene>
           <RoomDestinations destinations={categoryOrder.map(key => ({
-            label: `Open ${collections[key].label} stories`, area: calmStorySpots[key],
+            label: `Open ${collections[key].label} stories`, caption: collections[key].label, area: calmStorySpots[key],
             open: () => { selectCategory(key); scroll.current?.scrollTo?.({ y: storyTop.current, animated: false }); },
           }))} />
         </CalmGardenScene>
@@ -3739,26 +3757,14 @@ function CalmScreen({ pearl, count, nextPearl, category, collections, categoryOr
       <Text style={styles.sectionSubtitle}>Tap a marked spot for a story.</Text>
 
       <View style={styles.storyCard} onLayout={event => { storyTop.current = event.nativeEvent.layout.y; }}>
-        <View style={styles.storyImageWrap}>
-          <CalmGardenScene
-  pearl={pearl}
-  category={category}
-  collectionLabel={collection.label}
-/>
+        <View style={styles.storyHeading}>
+          <Text style={styles.storyCollectionTitle}>{collection.subtitle || `${collection.label} Neighborhood Stories`}</Text>
+          <Text style={styles.storyTitle} accessibilityRole="header">{pearl.title}</Text>
         </View>
-        <View style={{ padding: 22 }}>
-          <Text style={[styles.storyCollectionTitle, { color: palette.mintDark }]}>{collection.subtitle || `${collection.label} Neighborhood Stories`}</Text>
-          <Text style={[styles.storyTitle, { color: palette.ink }]}>{pearl.title}</Text>
-        </View>
-
-        <View style={styles.storyQuotePanel}>
-          <Ionicons name="chatbubble-ellipses" size={24} color={palette.purple} />
-          <Text style={styles.storyBody}>“{pearl.body}”</Text>
-          <Text style={styles.storySignature}>— {pearl.signature || collection.label} 🐾</Text>
-        </View>
+        <CalmGardenStory key={pearl.id} pearl={pearl} collectionLabel={collection.label} />
       </View>
 
-      <TouchableOpacity style={styles.primaryButton} onPress={nextPearl}>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Show me another story" style={styles.primaryButton} onPress={nextPearl}>
         <Ionicons name="sparkles" size={20} color="white" />
         <Text style={styles.primaryButtonText}>Show me another story</Text>
       </TouchableOpacity>
@@ -5184,7 +5190,7 @@ const styles = StyleSheet.create({
   payoffToggleCard: {
     backgroundColor: palette.card,
     borderRadius: 28,
-    padding: 18,
+    padding: 12,
     borderWidth: 1,
     borderColor: palette.border,
     marginBottom: 16,
@@ -5207,22 +5213,16 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     borderRadius: 22,
-    padding: 12,
-    gap: 12,
+    padding: 9,
+    gap: 10,
     borderWidth: 2,
   },
   payoffModeButtonRow: {
     flexDirection: "row",
   },
   payoffModeArtwork: {
-    width: 112,
-    height: 112,
     flexShrink: 0,
     borderRadius: 14,
-  },
-  payoffModeArtworkStacked: {
-    width: "100%",
-    height: 160,
   },
   payoffModeCaption: {
     flex: 1,
@@ -5379,78 +5379,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.border,
   },
-  storyImageWrap: {
-    height: 430,
-    position: "relative",
-    backgroundColor: "#DFF5F1",
-  },
-  storyImage: {
-    width: "100%",
-    height: "100%",
-  },
-  storyImageShade: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 155,
-    backgroundColor: "rgba(8,25,52,0.52)",
-  },
-  storyNumberBadge: {
-    position: "absolute",
-    top: 18,
-    left: 18,
-    minWidth: 56,
-    height: 56,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: palette.purple,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.92)",
-  },
-  storyNumberText: {
-    color: "white",
-    fontSize: 21,
-    fontWeight: "900",
-  },
-  storyImageTitleWrap: {
-    position: "absolute",
-    left: 22,
-    right: 22,
-    bottom: 22,
-  },
+  storyHeading: { paddingHorizontal: 16, paddingVertical: 12 },
   storyCollectionTitle: {
-    color: "#BFF8EF",
+    color: palette.mintDark,
     fontSize: 13,
     fontWeight: "900",
     letterSpacing: 1.1,
     textTransform: "uppercase",
   },
   storyTitle: {
-    color: "white",
-    fontSize: 31,
-    lineHeight: 35,
+    color: palette.ink,
+    fontSize: 23,
+    lineHeight: 28,
     fontWeight: "900",
     marginTop: 5,
-  },
-  storyQuotePanel: {
-    paddingHorizontal: 22,
-    paddingVertical: 22,
-  },
-  storyBody: {
-    color: palette.ink,
-    fontSize: 19,
-    lineHeight: 29,
-    fontWeight: "700",
-    marginTop: 8,
-  },
-  storySignature: {
-    color: palette.mintDark,
-    fontSize: 17,
-    fontWeight: "900",
-    textAlign: "right",
-    marginTop: 14,
   },
   storyCountNote: {
     color: palette.muted,

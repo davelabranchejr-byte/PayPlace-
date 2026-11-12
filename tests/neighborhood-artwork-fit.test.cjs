@@ -13,7 +13,7 @@ function harness(hour=12, motionEnabled=false, date = new Date(2026,9,15,hour), 
   // Simulate the actual failure: natural source dimensions survive unless the
   // rendered Image explicitly overrides both width AND height.
   const Image=props=>React.createElement('Image',{...props,nativeBounds:flatten([{width:2048,height:1254},props.style])});
-  const ui={Image,View:'View',TouchableOpacity:'TouchableOpacity',StyleSheet:{create:s=>s,absoluteFillObject:{position:'absolute'}},
+  const ui={Image,View:'View',TouchableOpacity:'TouchableOpacity',Pressable:'Pressable',ScrollView:'ScrollView',Text:'Text',StyleSheet:{create:s=>s,absoluteFillObject:{position:'absolute'}},
     AppState:{currentState:'active',addEventListener:()=>({remove(){}})},
     AccessibilityInfo:{isReduceMotionEnabled:async()=>!motionEnabled,addEventListener:()=>({remove(){}})},
     Easing:{linear:'linear',sin:'sin',inOut:fn=>fn},
@@ -56,9 +56,11 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
     for(const frame of frames)assert.equal(frame.findAllByType('Image').filter(image=>image.props.testID?.endsWith('-image')).length,0,
       'large bundled images never mount at natural size before the frame is measured');
     for(const phoneWidth of [320,393,430,740]){
+      const viewport = renderer.root.findByProps({testID:'neighborhood-panorama-viewport'});
+      await act(() => viewport.props.onLayout({nativeEvent:{layout:{width:phoneWidth-40}}}));
       for(const frame of frames){
         const id=frame.props.testID;
-        const width=id==='bank-corner-artwork'?Math.min((phoneWidth-64)*0.3,110):id==='bank-tab-artwork'?45:phoneWidth-40;
+        const width=id==='neighborhood-panorama-artwork'?Math.min((phoneWidth-40)*1.85,960):id==='bank-corner-artwork'?Math.min((phoneWidth-64)*0.3,110):id==='bank-tab-artwork'?45:phoneWidth-40;
         const height=id==='bank-corner-artwork'?width:id==='bank-tab-artwork'?35:id==='neighborhood-panorama-artwork'?width/3:width/(1672/941);
         await act(()=>frame.props.onLayout({nativeEvent:{layout:{width,height,x:0,y:0}}}));
         const image=frame.findAllByType('Image').find(image=>image.props.testID===`${id}-image`);
@@ -70,6 +72,7 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
         assert.equal(flatten(frame.props.style).overflow,'hidden');
         if (id === 'neighborhood-panorama-artwork') {
           assert.equal(image.props.source, `../assets/characters/neighborhood-panorama-${hour >= 18 ? 'night' : 'day'}.png`);
+          assert.equal(flatten(frame.props.style).width,width,'the complete scene is wider than the viewport');
         }
         if (id === 'bank-tab-artwork') {
           const badge = frame.findAllByType('Image').find(node => node.props.source === '../assets/branding/payplace-icon.png');
@@ -83,6 +86,28 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
     }
     const button=renderer.root.findByType('TouchableOpacity');assert.equal(button.props.accessibilityLabel,'Try Bobbie’s banking demo');
   }finally{await act(()=>renderer.unmount());}
+});
+
+test('the neighborhood can pan by swipe or by its left and right controls', async () => {
+  const { Panorama } = harness();
+  const calls = [];
+  let renderer;
+  try {
+    await act(() => { renderer = create(React.createElement(Panorama, { reduceAnimation: true }), {
+      createNodeMock: element => element.type === 'ScrollView' ? { scrollTo: options => calls.push(options) } : null,
+    }); });
+    await act(() => renderer.root.findByProps({testID:'neighborhood-panorama-viewport'}).props.onLayout({nativeEvent:{layout:{width:320}}}));
+    const scroller = renderer.root.findByType('ScrollView');
+    const arrow = direction => renderer.root.findAllByType('Pressable').find(node => node.props.accessibilityLabel === `Pan neighborhood ${direction}`);
+    assert.equal(scroller.props.horizontal,true);
+    assert.equal(arrow('left').props.disabled,true);
+    await act(() => arrow('right').props.onPress());
+    assert.deepEqual({...calls[0]}, {x:176,animated:false});
+    await act(() => scroller.props.onScroll({nativeEvent:{contentOffset:{x:272}}}));
+    assert.equal(arrow('right').props.disabled,true);
+    await act(() => arrow('left').props.onPress());
+    assert.deepEqual({...calls[1]}, {x:96,animated:false});
+  } finally { if (renderer) await act(() => renderer.unmount()); }
 });
 
 test('the panorama pauses its day and night effects while a panel covers it or Quiet Mode reduces motion',async()=>{

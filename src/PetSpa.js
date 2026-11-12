@@ -82,10 +82,10 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
   if (panel === 'room') return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <Text accessibilityRole="header" style={s.title}>Em’s Pet Spa</Text>
     <InteractiveRoom source={spaRoom} testID="spa-room-artwork" destinations={[
-      ...(onGrooming ? [{label:'Open grooming appointments',area:{left:'8%',top:'14%',width:'30%',height:'31%'},open:onGrooming}] : []),
-      {label:'Open current spa stay',area:{left:'61%',top:'14%',width:'30%',height:'30%'},open:()=>openVisit('slumber-party')},
-      {label:'Open Em’s scrapbook',area:{left:'8%',top:'62%',width:'30%',height:'29%'},open:()=>setPanel('scrapbook')},
-      ...(bobbieHasBook ? [{label:'Open the library book Bobbie borrowed',area:{left:'61%',top:'62%',width:'30%',height:'29%'},open:()=>setBookDetails(true)}] : []),
+      ...(onGrooming ? [{label:'Open grooming appointments',caption:'Grooming',area:{left:'8%',top:'14%',width:'30%',height:'31%'},open:onGrooming}] : []),
+      {label:'Open current spa stay',caption:'Current Stay',area:{left:'61%',top:'14%',width:'30%',height:'30%'},open:()=>openVisit('slumber-party')},
+      {label:'Open Em’s scrapbook',caption:'Scrapbook',area:{left:'8%',top:'62%',width:'30%',height:'29%'},open:()=>setPanel('scrapbook')},
+      ...(bobbieHasBook ? [{label:'Open the library book Bobbie borrowed',caption:'Borrowed Book',area:{left:'61%',top:'62%',width:'30%',height:'29%'},open:()=>setBookDetails(true)}] : []),
     ]}><EncouragementSpot place="spa" style={{ left: '48%', top: '91%' }} /></InteractiveRoom>
     <Text style={s.body}>Tap the grooming station, lounge, or scrapbook.</Text>
     {bookOverlay}

@@ -13,13 +13,13 @@ import {BREAKDOWN_FIELDS,compareBills,previousReading,recurringDraft,saveRecurri
 const billShortcutArtwork = require('../assets/characters/snapshot-upcoming-bills-billiam.png');
 const mailbox=require('../assets/characters/billiam-interactive-mailroom.jpg');
 export const BILLIAM_TASKS=[
-  {id:'scan',title:'Scan a bill',image:require('../assets/characters/billiam-bill-scanner.png')},
-  {id:'import',title:'Import PDFs & screenshots',image:require('../assets/characters/billiam-import.png')},
-  {id:'batch',title:'Review a stack of bills',image:require('../assets/characters/billiam-batch.png')},
-  {id:'compare',title:'Why did this bill go up?',image:require('../assets/characters/billiam-compare.png')},
-  {id:'recurring',title:'Recognize recurring bills',image:require('../assets/characters/billiam-recurring.png')},
-  {id:'breakdown',title:'Understand a bill',image:require('../assets/characters/billiam-breakdown.png')},
-  {id:'household',title:'Our household plan',image:require('../assets/characters/billiam-household.png')},
+  {id:'scan',title:'Scan a bill',caption:'Scan a bill'},
+  {id:'import',title:'Import PDFs & screenshots',caption:'Import files',image:require('../assets/characters/billiam-import.png')},
+  {id:'batch',title:'Review a stack of bills',caption:'Batch scan',image:require('../assets/characters/billiam-batch.png')},
+  {id:'compare',title:'Why did this bill go up?',caption:'Compare bills',image:require('../assets/characters/billiam-compare.png')},
+  {id:'recurring',title:'Recognize recurring bills',caption:'Recurring bills',image:require('../assets/characters/billiam-recurring.png')},
+  {id:'breakdown',title:'Understand a bill',caption:'Bill breakdown',image:require('../assets/characters/billiam-breakdown.png')},
+  {id:'household',title:'Our household plan',caption:'Household plan',image:require('../assets/characters/billiam-household.png')},
 ];
 const taskSpots = {
   scan: [4, 12, 28, 27], import: [36, 6, 26, 23], batch: [69, 10, 27, 28],
@@ -76,11 +76,12 @@ export default function BilliamHome({finance,onAdd,onUpdate,onTemplates,onHouseh
     <Text accessibilityRole="header" style={s.heading}>Billiam’s Mailbox</Text>
     <InteractiveRoom source={mailbox} testID="billiam-mailbox-artwork" destinations={BILLIAM_TASKS.map(item => {
       const [x, y, width, height] = taskSpots[item.id];
-      return { label: `Billiam: ${item.title}`, area: { left:`${x}%`, top:`${y}%`, width:`${width}%`, height:`${height}%` }, open: () => setTool(item.id) };
+      return { label: `Billiam: ${item.title}`, caption: item.caption,
+        area: { left:`${x}%`, top:`${y}%`, width:`${width}%`, height:`${height}%` }, open: () => setTool(item.id) };
     })} />
     <Text style={s.body}>Tap a marked station for help with your bills.</Text>
     <EntrySheet visible={!!task} title={task?.title || 'Billiam'} onClose={()=>setTool(null)}>
-      {task && <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false} />}
+      {task?.image && <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false} />}
       {tool==='scan'&&<BillScanner initialOpen bills={bills} onAdd={onAdd} onUpdate={onUpdate} history={history} templates={templates} onRecurring={recurring}/>}
       {(tool==='import'||tool==='batch')&&<ImportReview batch={tool==='batch'} bills={bills} history={history} templates={templates} onAdd={onAdd} onUpdate={onUpdate} onRecurring={recurring}/>}
       {tool==='compare'&&<Comparison bills={bills} history={history}/>}

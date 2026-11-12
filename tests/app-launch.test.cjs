@@ -354,17 +354,19 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(button('Open Extra Paycheck Calendar'),undefined,'payday tools have one home in Budget');
     assert.equal(button('Open Subscription Detective'),undefined,'manual subscriptions live in Bills');
     const home=renderer.root.find(node=>node.type?.name==='HomeScreen');
-    assert.equal(home.findAll(node => node.type?.name === 'SeasonalWelcome').length, 0, 'Home starts with the money summary');
+    assert.equal(home.findAll(node => node.type?.name === 'SeasonalWelcome').length, 0, 'the welcome remains collapsible');
     await act(() => button('Welcome & beta feedback').props.onPress());
     assert.equal(home.findAll(node => node.type?.name === 'SeasonalWelcome').length, 1, 'Annie’s welcome remains easy to open');
     await act(() => button('Welcome & beta feedback').props.onPress());
     assert.equal(home.findAll(node=>node.type?.name==='BankWelcomeCard').length,0,'Home keeps the snapshot clear of duplicate banking cards');
-    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama is absent from Home and its shared header');
+    assert.equal(home.findAll(node=>node.type?.name==='LivingNeighborhood').length,1,'the panorama opens on Home');
+    assert.equal(home.findAllByType('ScrollView')[0].children[0].type.name,'LivingNeighborhood');
     await act(()=>button('Open Neighborhood').props.onPress());
-    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,1,'Neighborhood has exactly one animated panorama');
-    assert.ok(renderer.root.findAllByType('ScrollView').some(node=>node.children[1]?.type?.name==='LivingNeighborhood'&&node.children[1].props.children.type.name==='NeighborhoodLinks'),'one compact panorama leads into the directory');
+    const neighborhoodMap = renderer.root.find(node=>node.type?.name==='LivingNeighborhood');
+    assert.equal(neighborhoodMap.props.showTreehouses,true);
+    assert.equal(neighborhoodMap.props.children.type.name,'NeighborhoodLinks');
     await act(()=>button('Open Home').props.onPress());
-    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,0,'the panorama unmounts when leaving Neighborhood');
+    assert.equal(renderer.root.findAll(node=>node.type?.name==='LivingNeighborhood').length,1,'returning Home restores the panorama');
     const priorDemo=JSON.stringify(harness.finance());
     await act(()=>button('Open Bills & Banking').props.onPress());
     await act(()=>button('Banking & subscriptions').props.onPress());
@@ -662,8 +664,9 @@ test('plan tabs keep primary navigation visible and open working tools without p
     await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await press('Open Neighborhood');
-    const directory = nodes('View', node => node.props.testID === 'neighborhood-destinations')[0];
-    assert.equal(directory.props.style.at(-1).flexDirection, 'column');
+    const directory = nodes('ScrollView', node => node.props.testID === 'neighborhood-destinations')[0];
+    assert.equal(directory.props.horizontal, true);
+    assert.ok(button('Open Chapo’s Kitchen').findAllByType('Text').every(node => node.props.numberOfLines === undefined));
     await press('Open Chapo’s Kitchen');
     assert.equal(button('Open Neighborhood').props.accessibilityState.selected, true);
     await press('Back to Neighborhood');
@@ -939,6 +942,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
       assert.equal(images.length, 1, `${method} uses one original scene`);
       assert.equal(images[0].props.source, harness.artworkId(`assets/characters/${artwork}`));
       assert.equal(images[0].props.resizeMode, 'contain');
+      assert.ok(images[0].props.style.at(-1).width > 150, 'the approved art gets the larger part of the card');
       await act(() => strategy(method).props.onPress());
       assert.equal(strategy(method).props.accessibilityState.selected, true);
       assert.equal(harness.finance().payoffMode, method);
@@ -961,8 +965,8 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Close extra paycheck calendar');
     assert.ok(button('Open Savings Goals'));
     await press('Open Neighborhood');
-    assert.ok(renderer.root.find(node => node.type?.name === 'LivingNeighborhood'));
-    const directory = renderer.root.findAllByType('View').find(node => node.props.testID === 'neighborhood-destinations');
+    const directory = renderer.root.findAllByType('ScrollView').find(node => node.props.testID === 'neighborhood-destinations');
+    assert.equal(directory.props.horizontal,true);
     const tiles = directory.findAllByType('TouchableOpacity');
     assert.deepEqual(tiles.map(tile => tile.props.accessibilityLabel), [
       'Open Em’s Pet Spa', 'Open Calm Garden', 'Open Annie’s House', 'Open Bobbie’s Boutique',
@@ -973,13 +977,31 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(button('Visit the mascots'), undefined);
     const neighborhoodScroll = renderer.root.findAllByType('ScrollView').find(node => node.children[1]?.type?.name === 'LivingNeighborhood');
     assert.equal(neighborhoodScroll.children.at(-1)?.type?.name, 'FacebookNeighborhood');
+    await press('Visit Chapo’s Kitchen from the map');
+    assert.ok(renderer.root.find(node => node.type?.name === 'NeighborRoom'));
+    await press('Back to Neighborhood');
+    await press('Tap the mailbox to visit Billiam');
+    assert.equal(button('Open Neighborhood').props.accessibilityState.selected,true);
+    await press('Back to Neighborhood');
+    await press('Open Home');
     await press('Tap the mailbox to visit Billiam');
     assert.ok(renderer.root.find(node => node.type?.name === 'BilliamHome'));
-    assert.equal(button('Open Neighborhood').props.accessibilityState.selected, true);
-    await press('Back to Neighborhood');
+    assert.equal(button('Open Home').props.accessibilityState.selected, true);
+    await press('Back to Home');
     await press('Tap the bridge to visit Calm Garden');
-    assert.ok(renderer.root.find(node => node.type?.name === 'CalmScreen'));
-    await press('Back to Neighborhood');
+    const calm = renderer.root.find(node => node.type?.name === 'CalmScreen');
+    await press('Open Annie stories');
+    await press('Show me another story');
+    const quoteFrame = calm.findByProps({testID:'calm-garden-quote-frame'});
+    const caption = calm.findByProps({testID:'calm-garden-quote-caption'});
+    await act(() => quoteFrame.props.onLayout({nativeEvent:{layout:{height:350}}}));
+    await act(() => caption.props.onLayout({nativeEvent:{layout:{height:72}}}));
+    assert.match(textContent(caption.findAllByType('Text').map(node => node.props.children)), /Rest is not falling behind/);
+    assert.equal(caption.props.style.at(-1).marginTop,-72);
+    await act(() => caption.props.onLayout({nativeEvent:{layout:{height:160}}}));
+    assert.equal(caption.props.style.at(-1).marginTop,-77,'larger text can extend below the clear foreground');
+    await press('Back to Home');
+    await press('Open Neighborhood');
 
     await press('Around town');
     assert.ok(renderer.root.findAllByType('Pressable').some(node => node.props.accessibilityLabel?.startsWith('Billiam, Mail carrier.')));
@@ -1023,10 +1045,11 @@ test('Billiam contains the full artwork, reviews before saving and prevents dupl
     await act(async () => {renderer = create(React.createElement(harness.Scanner, {bills:[], onAdd:bill => {saved.push(bill); return true;}}));});
     const frame = renderer.root.findAllByType('View').find(node => node.props.testID === 'billiam-scanner-artwork');
     for (const width of [248,318,358]) {
-      await act(() => frame.props.onLayout({nativeEvent:{layout:{width,height:128}}}));
+      const height = width / 1.5;
+      await act(() => frame.props.onLayout({nativeEvent:{layout:{width,height}}}));
       const image = renderer.root.findByProps({testID:'billiam-scanner-artwork-image'});
       assert.equal(image.props.resizeMode,'contain');
-      assert.equal(image.props.style.width,width); assert.equal(image.props.style.height,128);
+      assert.equal(image.props.style.width,width); assert.equal(image.props.style.height,height);
     }
     await press('Billiam’s bill scanning');
     await press('Choose a bill photo');
@@ -1080,15 +1103,20 @@ test('Billiam mailbox opens seven room stations and their original bounded artwo
     const tasks=renderer.root.findAllByType('Pressable').filter(n=>n.props.accessibilityLabel?.startsWith('Billiam: '));
     const ids=['scan','import','batch','compare','recurring','breakdown','household'];
     assert.equal(tasks.length,ids.length);
+    assert.deepEqual(tasks.map(task => task.findByType('Text').props.children),
+      ['Scan a bill','Import files','Batch scan','Compare bills','Recurring bills','Bill breakdown','Household plan']);
     for(const [index,id] of ids.entries()){
       await act(()=>tasks[index].props.onPress());
-      const frame=renderer.root.findAllByType('View').find(n=>n.props.testID===`billiam-${id}-artwork`);
-      await act(()=>frame.props.onLayout({nativeEvent:{layout:{width:88,height:88}}}));
-      const img=renderer.root.findByProps({testID:`billiam-${id}-artwork-image`});
+      const artworkId = id === 'scan' ? 'billiam-scanner-artwork' : `billiam-${id}-artwork`;
+      const { width, height } = id === 'scan' ? {width:330,height:220} : {width:88,height:88};
+      const frame=renderer.root.findAllByType('View').find(n=>n.props.testID===artworkId);
+      await act(()=>frame.props.onLayout({nativeEvent:{layout:{width,height}}}));
+      const img=renderer.root.findByProps({testID:`${artworkId}-image`});
       assert.equal(img.props.resizeMode,'contain');
-      assert.equal(img.props.style.width,88);
-      assert.equal(img.props.style.height,88);
+      assert.equal(img.props.style.width,width);
+      assert.equal(img.props.style.height,height);
       const sheet=renderer.root.find(n=>n.type?.name==='EntrySheet'&&n.props.visible);
+      if (id === 'scan') assert.equal(sheet.findAllByType('Image').filter(node => node.props.source === img.props.source).length,1);
       await act(()=>sheet.props.onClose());
     }
   }finally{await act(()=>renderer.unmount());}
