@@ -37,7 +37,7 @@ const sandbox = {
   ExpandableSection: disclosureModule.exports.default,
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
-    'FeatureLinks', 'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
+    'NavigationTiles', 'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
   styles: {}, palette: {}, approvedClothedCharacterArtwork: {}, portraits: { together: {} }, artStudioArtwork: {},
   scheduleSettings: () => ({ kind: 'biweekly' }), module: { exports: {} },
 };

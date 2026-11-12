@@ -1,10 +1,14 @@
 import { buildCalendar, dateKey, readDate } from './paycheck-calendar.mjs';
+import { planBillReminders } from './bill-reminders.mjs';
 
 export const calendarKinds = {
   due: { label: 'Bill due', mascot: 'Billiam', color: '#D8FAF3' },
   paid: { label: 'Payment recorded', mascot: 'Westley', color: '#DDE9FF' },
   pay: { label: 'Payday', mascot: 'Chapo', color: '#FFF0A7' },
+  bonus: { label: 'Extra paycheck', mascot: 'Daddy', color: '#FFE1AB' },
   subscription: { label: 'Subscription fee', mascot: 'Bobbie', color: '#F2DCFF' },
+  reminder: { label: 'Bill reminder', mascot: 'Annie', color: '#E3F2C6' },
+  grooming: { label: 'Grooming appointment', mascot: 'Em', color: '#FFDCE9' },
 };
 
 function renewalDates(item, month) {
@@ -32,11 +36,11 @@ function renewalDates(item, month) {
   return [dateKey(new Date(start.getFullYear(), start.getMonth(), day, 12))];
 }
 
-export function paymentCalendar(finance, month) {
+export function paymentCalendar(finance, month, now = new Date()) {
   const prefix = dateKey(month).slice(0, 7);
   const events = [];
-  const add = (date, kind, name, amount) => {
-    if (readDate(date) && date.startsWith(prefix)) events.push({ date, kind, name, amount });
+  const add = (date, kind, name, amount, appointmentId) => {
+    if (readDate(date) && date.startsWith(prefix)) events.push({ date, kind, name, amount, ...(appointmentId ? { appointmentId } : {}) });
   };
   const bills = finance.bills || [];
   const subscriptions = (finance.subscriptions || []).filter(item => item.status !== 'Cancelled');
@@ -63,8 +67,12 @@ export function paymentCalendar(finance, month) {
     const date = record.at == null ? null : readDate(new Date(record.at));
     if (date) add(dateKey(date), 'paid', record.name, record.amount);
   }
-  for (const item of buildCalendar(finance, month).events) add(item.date, 'pay', item.label, item.amount);
+  for (const item of buildCalendar(finance, month).events) add(item.date, item.extra ? 'bonus' : 'pay', item.label, item.amount);
   for (const item of renewals) add(item.date, 'subscription', item.name, item.amount);
+  for (const reminder of planBillReminders(bills, finance.billReminders, now).reminders) add(dateKey(reminder.date), 'reminder', 'Annie’s reminder');
+  for (const item of finance.groomingAppointments || []) {
+    add(item.date, 'grooming', [item.pet, item.time].filter(Boolean).join(' · '), undefined, item.id);
+  }
   return events.sort((a, b) => a.date.localeCompare(b.date));
 }
 
@@ -76,6 +84,25 @@ export function calendarWeeks(month) {
       const day = week * 7 + index - offset + 1;
       return day >= 1 && day <= days ? day : null;
     }));
+}
+
+export const calendarArtCount = 12;
+
+export function illustratedCalendarWeeks(month, events) {
+  const byDay = new Map();
+  for (const event of events) {
+    const day = Number(event.date.slice(-2));
+    if (!byDay.has(day)) byDay.set(day, []);
+    byDay.get(day).push(event);
+  }
+  const nextArt = Object.fromEntries(Object.keys(calendarKinds).map(kind => [kind, month.getMonth()]));
+  return calendarWeeks(month).map(week => week.map(day => {
+    const items = byDay.get(day) || [];
+    const illustrations = [...new Set(items.map(item => item.kind))].map(kind => ({
+      kind, key: `${kind}-${nextArt[kind]++ % calendarArtCount}`,
+    }));
+    return { day, items, illustrations };
+  }));
 }
 
 export const calendarTitle = month => month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -93,11 +120,12 @@ export function calendarHtml(month, events, hideAmounts, artwork, landscape, sam
   const list = (items, limit) => items.slice(0, limit).map(event =>
     `<div class="event" style="background:${calendarKinds[event.kind].color}"><b>${calendarKinds[event.kind].label}</b> ${escape(eventText(event, hideAmounts))}</div>`).join('');
   const overflow = [];
-  const rows = calendarWeeks(month).map(week => '<tr>' + week.map(day => {
+  const rows = illustratedCalendarWeeks(month, events).map(week => '<tr>' + week.map(({ day, items, illustrations }) => {
     if (!day) return '<td class="empty"></td>';
-    const items = events.filter(event => Number(event.date.slice(-2)) === day);
     if (items.length > 2) overflow.push([day, items.slice(2)]);
-    return `<td><b>${day}</b>${list(items, 2)}${items.length > 2 ? '<small>More in list below</small>' : ''}</td>`;
+    const images = illustrations.filter(({ key }) => artwork[key]).map(({ kind, key }) =>
+      `<img src="${escape(artwork[key])}" alt="${calendarKinds[kind].mascot}">`).join('');
+    return `<td><b>${day}</b>${images ? `<div class="day-art">${images}</div>` : ''}${list(items, 2)}${items.length > 2 ? '<small>More in list below</small>' : ''}</td>`;
   }).join('') + '</tr>').join('');
   return `<!doctype html><html lang="en"><meta charset="utf-8"><title>PayPlace · ${calendarTitle(month)}</title>
 <style>
@@ -105,12 +133,13 @@ export function calendarHtml(month, events, hideAmounts, artwork, landscape, sam
 *{box-sizing:border-box;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 body{font:12px Arial,sans-serif;color:#152649;margin:0}
 h1{font-size:25px;margin:0} p{margin:4px 0 8px}
-.legend{display:flex;gap:8px;margin:8px 0}.legend div{flex:1;padding:5px 8px;border-radius:10px;display:flex;gap:7px;align-items:center}
-img{width:38px;height:38px;object-fit:contain}
-table{width:100%;border-collapse:collapse;table-layout:fixed} th{background:#692da5;color:white;padding:4px} td{border:1px solid #cdc3e4;height:65px;vertical-align:top;padding:3px;overflow-wrap:anywhere}
+.legend{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.legend div{padding:3px 6px;border-radius:6px;font-size:9px}
+.day-art{display:flex;flex-wrap:wrap;gap:2px;margin:1px 0}.day-art img{width:25px;height:25px;object-fit:contain}
+.day-art img:only-child{width:35px;height:35px}
+table{width:100%;border-collapse:collapse;table-layout:fixed} th{background:#692da5;color:white;padding:4px} td{border:1px solid #cdc3e4;height:${landscape ? 74 : 92}px;vertical-align:top;padding:3px;overflow-wrap:anywhere}
 tr{break-inside:avoid}.empty{background:#f6f3fb}.event{border-radius:3px;padding:2px;margin-top:2px;font-size:9px} small{font-size:8px}.overflow{break-before:page}
 </style><h1>PayPlace · ${calendarTitle(month)}</h1><p>Money without shame. · Monthly payment calendar</p>${sample ? '<p><b>Sample calendar · fictional data</b></p>' : ''}
-<div class="legend">${Object.entries(calendarKinds).map(([id, entry]) => `<div style="background:${entry.color}">${artwork[id] ? `<img src="${escape(artwork[id])}" alt="">` : ''}<span><b>${entry.mascot}</b><br>${entry.label}</span></div>`).join('')}</div>
+<div class="legend">${Object.values(calendarKinds).map(entry => `<div style="background:${entry.color}">${entry.label}</div>`).join('')}</div>
 <table><thead><tr>${calendarWeekdays.map(day => '<th>' + day + '</th>').join('')}</tr></thead><tbody>${rows}</tbody></table>
 <p>Paydays and projected renewals are estimates. Recorded payments are shown on the date logged in PayPlace.</p>
 ${overflow.length ? '<section class="overflow"><h2>More dates for ' + calendarTitle(month) + '</h2>' + overflow.map(([day, items]) => '<h3>' + day + '</h3>' + list(items, items.length)).join('') + '</section>' : ''}</html>`;

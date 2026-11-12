@@ -1,6 +1,8 @@
 import { EncouragementSpot, EncouragementScene } from "./Encouragement";
 import React, { useEffect, useState } from "react";
 import { AppState, Image, StyleSheet, View } from "react-native";
+import CaptionedArtwork from "./CaptionedArtwork";
+import { Text } from "./Privacy";
 
 const sunset = require("../assets/characters/annie-backyard-sunset.png");
 const night = require("../assets/characters/annie-backyard-night.png");
@@ -8,7 +10,7 @@ const isNighttime = () => {
   const hour = new Date().getHours();
   return hour >= 20 || hour < 6;
 };
-function BackyardScene() {
+function BackyardScene({ children }) {
   const [isNight, setIsNight] = useState(isNighttime);
   useEffect(() => {
     const app = AppState.addEventListener("change", state => {
@@ -23,6 +25,7 @@ function BackyardScene() {
         accessibilityLabel={isNight
           ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
           : "Annie's fenced backyard at sunset, with birds and butterflies among the flowers"} />
+      {children}
       <EncouragementSpot place="garden" />
     </View>
   );
@@ -110,16 +113,36 @@ const pearlScenes = {
   "bobbie-16": require("../assets/characters/bobbie-pearl-16.png"),
 };
 
-export default function CalmGardenScene({ pearl }) {
+// These illustrations have foreground space below the characters and story props.
+const lowerForeground = new Set([
+  "together-01", "together-04", "together-05", "together-12", "together-13", "together-16",
+  "westley-01", "westley-04", "westley-08", "westley-11", "westley-15",
+  "tate-01", "tate-02", "tate-04", "tate-06", "tate-07", "tate-10", "tate-12", "tate-15",
+]);
+
+export function CalmGardenStory({ pearl, collectionLabel }) {
+  const overlap = pearl.id === "together-02" ? 0.22 : lowerForeground.has(pearl.id) ? 0.16 : 0;
+  return <CaptionedArtwork overlapFraction={overlap} captionStyle={s.quoteCaption} testID="calm-garden-quote"
+    artwork={<View style={s.storyArt}><CalmGardenScene pearl={pearl} /></View>}>
+    <Text style={s.quote}>“{pearl.body}”</Text>
+    <Text style={s.signature}>— {pearl.signature || collectionLabel}</Text>
+  </CaptionedArtwork>;
+}
+
+export default function CalmGardenScene({ pearl, children }) {
   const pearlScene = pearlScenes[pearl?.id];
   if (pearlScene) {
     return <EncouragementScene place="garden" style={s.scene}>
     <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("together-") ? "Annie" : pearl.id.startsWith("chapo-") ? "Chapo" : pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} /></EncouragementScene>;
   }
-  return <BackyardScene />;
+  return <BackyardScene>{children}</BackyardScene>;
 }
 
 const s = StyleSheet.create({
   artwork: { width: "100%", height: "100%" },
   scene: { width: "100%", height: "100%", overflow: "hidden", backgroundColor: "#183A35" },
+  storyArt: { width: "100%", aspectRatio: 1, backgroundColor: "#183A35" },
+  quoteCaption: { backgroundColor: "rgba(15, 43, 39, 0.94)" },
+  quote: { color: "#FFF9E9", fontSize: 15, lineHeight: 20, fontWeight: "600" },
+  signature: { color: "#BFF8EF", fontSize: 13, lineHeight: 17, marginTop: 4, fontWeight: "800", textAlign: "right" },
 });

@@ -1,6 +1,6 @@
 # PayPlace Privacy Policy
 
-Last updated: October 16, 2026
+Last updated: November 12, 2026
 
 PayPlace is operated by David LaBranche, Jr. Contact [annieoaktree@payplace.app](mailto:annieoaktree@payplace.app) for support or privacy questions. This policy covers the mobile beta, hosted preview, email service and restricted owner bank testing. The current beta does not move real money, pay bills or retrieve a real consumer credit score.
 
@@ -11,6 +11,10 @@ Your entered balances, income, bills, debts, notes, savings goals, subscription 
 Mobile releases use an encrypted local vault for the budget and onboarding profile. Its random key is held in protected phone storage. Supported configured phones use device authentication for app lock and cover the app when inactive. Device unlock does not establish a cloud budget account or authorize banking.
 
 Web security differs: the hosted preview stores its plan in browser storage and has no native device-authentication app lock. Same-origin scripts and other people using that browser may access its storage. Clearing browser data can remove your plan.
+
+## Optional Neighborhood weather
+
+When you choose **Use ZIP for weather**, the app saves the U.S. ZIP code with your local plan preferences and sends it to Zippopotam.us to look up approximate coordinates. The app sends those coordinates to the National Weather Service for local weather. PayPlace does not request GPS permission or attach your profile, contact details, bills or financial data to these requests. Weather providers receive standard network information as part of the requests. The ZIP preference can be included in a password-protected PayPlace backup. Choose **Use seasonal weather** to remove the saved ZIP and stop the lookups.
 
 ## Bobbie's fictional banking demo
 

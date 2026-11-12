@@ -26,7 +26,7 @@ export function MicropaymentsButton({ onPress, forBills = false }) {
     {forBills ? <ActionArtwork action="billMicropayment" size={108} /> :
       <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />}
     <View style={stacked ? s.stackedCaption : s.caption}>
-      <Text style={s.title}>Micropayments</Text>
+      <Text style={s.title} numberOfLines={1} adjustsFontSizeToFit>Micropayments</Text>
       <Text style={s.body}>Track small extra payments.</Text>
     </View>
   </TouchableOpacity>;
@@ -55,7 +55,7 @@ function Content({ finance, onRecord, onUndo }) {
     } catch (error) { saving.current = false; setMessage(error.message); setConfirming(false); }
   }
   return <View style={s.section}>
-    <Text accessibilityRole="header" style={s.title}>Small payments, real progress</Text>
+    <Text accessibilityRole="header" style={s.title} numberOfLines={1} adjustsFontSizeToFit>Micropayments</Text>
     <Text style={s.body}>An extra dollar counts, too. Choose a bill or debt and record a small payment after you make it through your biller.</Text>
     <View style={s.notice}><Text style={s.body}>Manual tracking · PayPlace does not send money. Bank-connected sending is planned for a future update.</Text></View>
     <Text style={s.total}>Extra payments recorded: {money(micropaymentTotal(finance))}</Text>
@@ -99,8 +99,6 @@ export default function Micropayments({ visible, onClose, finance, onRecord, onU
   return <Modal visible={visible} onRequestClose={onClose} animationType={finance.quietMode?.reduceAnimation ? 'none' : 'slide'}>
     {visible && <ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
       <Button title="Back to my plan" onPress={onClose} />
-      <ContainedIllustration source={westleyArtwork} aspectRatio={1} style={s.hero}
-        accessible accessibilityLabel="Westley in his PayPlace hoodie drops a gold coin into a purple paw-print box" />
       <Content finance={finance} onRecord={onRecord} onUndo={onUndo} />
     </ScrollView>}
   </Modal>;
@@ -112,7 +110,6 @@ const s = StyleSheet.create({
   thumbnail: { width: 108, borderRadius: 14 },
   caption: { flex: 1, minWidth: 0, gap: 4 },
   stackedCaption: { width: '100%', gap: 4 },
-  hero: { width: '100%', maxWidth: 320, alignSelf: 'center', borderRadius: 24 },
   title: { fontSize: 25, fontWeight: '900', color: '#101344' }, heading: { fontSize: 18, fontWeight: '800', color: '#101344' },
   body: { fontSize: 16, lineHeight: 24, color: '#263651' }, note: { fontSize: 14, lineHeight: 21, color: '#43546B' },
   total: { fontSize: 22, fontWeight: '900', color: '#5E278E' }, notice: { backgroundColor: '#FFF1AC', padding: 14, borderRadius: 16 },

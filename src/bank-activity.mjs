@@ -104,10 +104,10 @@ export function recurringCandidates(finance, now = new Date(), includeTracked = 
   }
   return candidates.sort((a, b) => a.renewalDate.localeCompare(b.renewalDate));
 }
-export function bankSpending(finance) {
+export function bankSpending(finance, month) {
   const state = categoryState(finance.categorization), totals = new Map();
   for (const transaction of state.transactions) {
-    if (transaction.pending || transaction.amountCents <= 0 || transaction.transfer) continue;
+    if (transaction.pending || transaction.amountCents <= 0 || transaction.transfer || (month && transaction.date.slice(0, 7) !== month)) continue;
     const choice = purchaseCategory(state, transaction);
     for (const part of choice.splits || [{ category: choice.category, amountCents: transaction.amountCents }]) totals.set(part.category, (totals.get(part.category) || 0) + part.amountCents);
   }

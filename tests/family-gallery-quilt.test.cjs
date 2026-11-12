@@ -48,11 +48,19 @@ test('gallery fits full artwork at phone and tablet widths; all six frame target
   } finally { await act(()=>renderer.unmount()); }
 });
 test('quilt uses approved stitched acorn art and opens/returns from its detailed view',async()=>{
-  const {BelongingQuilt,QuiltDetail,AcornSquare}=load('BelongingQuilt.js',{},['BelongingQuilt','QuiltDetail','AcornSquare']);
+  const {BelongingQuilt,QuiltDetail,AcornSquare}=load('BelongingQuilt.js',{...await import('../src/quilt-milestones.mjs'), FACEBOOK_NEIGHBORHOOD_URL:'https://www.facebook.com/example'},['BelongingQuilt','QuiltDetail','AcornSquare']);
   let opened=0,back=0,r;
+  const claimed=[];
   await act(()=>{r=create(React.createElement(BelongingQuilt,{onOpen:()=>opened++}));});
   await act(()=>r.root.findByProps({testID:'belonging-quilt-preview'}).props.onPress()); assert.equal(opened,1);
-  await act(()=>r.update(React.createElement(QuiltDetail,{onBack:()=>back++})));
+  await act(()=>r.update(React.createElement(QuiltDetail,{onBack:()=>back++,onMilestone:id=>claimed.push(id),finance:{quiltMilestones:['firstBill']}})));
+  await act(()=>r.root.findByProps({testID:'quilt-square-firstBill'}).props.onPress());
+  assert.ok(r.root.findAllByType('Text').some(n=>n.props.children==='Saved your first bill'));
+  for (const label of ['I joined the group','I invited a friend']) {
+    const button=r.root.findAllByType('TouchableOpacity').find(n=>n.findAllByType('Text').some(t=>t.props.children===label));
+    await act(()=>button.props.onPress());
+  }
+  assert.deepEqual(claimed,['joinedFacebook','invitedFriend']);
   const artwork=r.root.findAllByType('CharacterArtwork');
   assert.ok(artwork.some(n=>n.props.source.label.includes('embroidered golden acorn')));
   for(const n of artwork) {

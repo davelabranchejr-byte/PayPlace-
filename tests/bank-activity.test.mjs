@@ -55,6 +55,19 @@ test('saved merchant categories immediately change spending insights and future 
   finance = demoBankAction(finance, { type: 'purchase-batch' }, now);
   assert.equal(purchaseCategory(finance.categorization, finance.categorization.transactions.find(t => t.id === 'demo-costco-1')).category, 'Groceries');
 });
+test('monthly spending uses the same category splits and excludes other months', () => {
+  const finance = base();
+  const october = bankSpending(finance, '2026-10');
+  assert.ok(october.length);
+  assert.ok(october.reduce((sum, item) => sum + item.amountCents, 0) < bankSpending(finance).reduce((sum, item) => sum + item.amountCents, 0));
+  assert.deepEqual(bankSpending(finance, '2020-01'), []);
+  finance.categorization = categoryAction(finance.categorization, { type: 'categorize', id: 'sample-costco', scope: 'once',
+    splits: [{ category: 'Pets', amountCents: 3000 }, { category: 'Household', amountCents: 10000 }] });
+  assert.deepEqual(bankSpending(finance, '2026-10'), october);
+  const november = bankSpending(finance, '2026-11');
+  assert.equal(november.find(item => item.category === 'Pets').amountCents, 3000);
+  assert.equal(november.find(item => item.category === 'Household').amountCents, 10000);
+});
 test('round-ups debit fictional checking, credit savings, honor caps and never process history twice', () => {
   let finance = base();
   finance.premiumBeta.roundUpEnabled = true;

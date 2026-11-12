@@ -37,23 +37,23 @@ export const tabArtwork = {
 };
 export default function NeighborhoodNav({ current, switchTab }) {
   const { width, fontScale } = useWindowDimensions();
-  const wrap = width < 350 || fontScale > 1.2;
-  return <View style={s.wrap}><View style={[s.strip, wrap && s.wrapStrip]}>
+  const wrap = width < 340 || fontScale > 1.2;
+  return <View style={s.wrap}><View accessibilityRole="tablist" style={[s.strip, wrap && s.wrapStrip]}>
     {PRIMARY_DESTINATIONS.map(place => {
       const selected = place.id === primaryDestination(current);
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
         onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Neighborhood'?1.5:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab]}>
         {place.id === 'Bills' ? <BankBuildingMark style={[s.artwork, wrap && s.compactArt]} /> :
           <CharacterArtwork source={tabArtwork[place.id]} style={[s.artwork, wrap && s.compactArt]} resizeMode="contain" accessible={false} />}
-        <Text numberOfLines={wrap ? undefined : place.id==='Bills'?2:1} adjustsFontSizeToFit={!wrap} minimumFontScale={0.75} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap ? 'Bills &\nBanking' : place.label}</Text>
-        {selected && <View style={[s.selectedMark,{backgroundColor:place.color}]} />}
+        <Text adjustsFontSizeToFit={!wrap} minimumFontScale={0.85} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap ? 'Bills &\nBanking' : place.label}</Text>
+        <View accessible={false} style={[s.selectedMark,{backgroundColor:selected?place.color:'transparent'}]} />
       </TouchableOpacity>;
     })}
   </View></View>;
 }
 const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:6,gap:5},tab:{flex:1,minHeight:106,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:6,paddingHorizontal:2,alignItems:'center',justifyContent:'center'},
+  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},tab:{flex:1,minHeight:74,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:4,paddingHorizontal:3,alignItems:'center',justifyContent:'center'},
   wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:58,paddingVertical:3},compactArt:{height:28},
-  artwork:{width:'100%',maxWidth:84,height:60},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:3,lineHeight:18},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
+  artwork:{width:'100%',maxWidth:64,height:36},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:1,lineHeight:17},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });

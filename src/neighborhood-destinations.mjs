@@ -23,7 +23,8 @@ export const PRIMARY_DESTINATIONS = ['Home', 'Budget', 'Bills', 'Neighborhood'].
   id === 'Neighborhood' ? {id, label:'Neighborhood', color:'#A52167', tile:0}
     : id === 'Bills' ? {...NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id), label:'Bills & Banking'}
       : NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
-export const NEIGHBOR_DESTINATIONS = NEIGHBORHOOD_DESTINATIONS.filter(place => ['Spa','Annie','Bobbie','Westley','Tate','Chapo','Calm'].includes(place.id));
+export const NEIGHBOR_DESTINATIONS = ['Spa', 'Calm', 'Annie', 'Bobbie', 'Westley', 'Tate', 'Chapo']
+  .map(id => NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
 export function primaryDestination(id) {
   if (['BankingDemo', 'Billiam', 'Debt'].includes(id)) return 'Bills';
   return NEIGHBOR_DESTINATIONS.some(place => place.id === id) ? 'Neighborhood' : id;

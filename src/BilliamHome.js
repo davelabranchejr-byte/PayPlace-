@@ -3,31 +3,31 @@ import React,{useEffect,useRef,useState} from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import {Text} from './Privacy';
 import FittedArtwork from './FittedArtwork';
+import InteractiveRoom from './InteractiveRoom';
 import EntrySheet from './EntrySheet';
 import BillScanner from './BillScanner';
 import BillDraftReview from './BillDraftReview';
 import HouseholdPlan from './HouseholdPlan';
 import {importBillDocuments,importBillBatch,supportsBillImport} from './bill-import';
 import {BREAKDOWN_FIELDS,compareBills,previousReading,recurringDraft,saveRecurring,vendorKey} from './billiam-tools.mjs';
-const taskColors=['#65EBEF','#FFE455','#DCABFF','#FFB0A4'];
 const billShortcutArtwork = require('../assets/characters/snapshot-upcoming-bills-billiam.png');
-const mailbox=require('../assets/characters/billiam-mailbox.png');
+const mailbox=require('../assets/characters/billiam-interactive-mailroom.jpg');
 export const BILLIAM_TASKS=[
-  {id:'scan',title:'Scan a bill',body:'Daddy’s photo shoot, with a practical twist.',image:require('../assets/characters/billiam-bill-scanner.png')},
-  {id:'import',title:'Import PDFs & screenshots',body:'Bring your digital bills to the mailbox.',image:require('../assets/characters/billiam-import.png')},
-  {id:'batch',title:'Review a stack of bills',body:'Read several photos; review one at a time.',image:require('../assets/characters/billiam-batch.png')},
-  {id:'compare',title:'Why did this bill go up?',body:'Compare totals and recorded charges.',image:require('../assets/characters/billiam-compare.png')},
-  {id:'recurring',title:'Recognize recurring bills',body:'Keep familiar bills organized by cycle.',image:require('../assets/characters/billiam-recurring.png')},
-  {id:'breakdown',title:'Understand a bill',body:'Look at charges, past-due amounts and fees.',image:require('../assets/characters/billiam-breakdown.png')},
-  {id:'household',title:'Our household plan',body:'Choose who covers what and what to share.',image:require('../assets/characters/billiam-household.png')},
+  {id:'scan',title:'Scan a bill',caption:'Scan a bill'},
+  {id:'import',title:'Import PDFs & screenshots',caption:'Import files',image:require('../assets/characters/billiam-import.png')},
+  {id:'batch',title:'Review a stack of bills',caption:'Batch scan',image:require('../assets/characters/billiam-batch.png')},
+  {id:'compare',title:'Why did this bill go up?',caption:'Compare bills',image:require('../assets/characters/billiam-compare.png')},
+  {id:'recurring',title:'Recognize recurring bills',caption:'Recurring bills',image:require('../assets/characters/billiam-recurring.png')},
+  {id:'breakdown',title:'Understand a bill',caption:'Bill breakdown',image:require('../assets/characters/billiam-breakdown.png')},
+  {id:'household',title:'Our household plan',caption:'Household plan',image:require('../assets/characters/billiam-household.png')},
 ];
+const taskSpots = {
+  scan: [4, 12, 28, 27], import: [36, 6, 26, 23], batch: [69, 10, 27, 28],
+  compare: [4, 42, 28, 22], recurring: [68, 41, 27, 22],
+  breakdown: [4, 68, 32, 26], household: [65, 67, 31, 27],
+};
 export function BilliamShortcut({onPress}){
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={billShortcutArtwork} style={{height:112}} testID="billiam-shortcut-artwork" accessible={false}/><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></TouchableOpacity>;
-}
-export function BilliamTaskButton({task,onPress}){
-  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Billiam: ${task.title}`} onPress={onPress} style={[s.task,{backgroundColor:taskColors[BILLIAM_TASKS.findIndex(item=>item.id===task.id)%taskColors.length]}]} testID={`billiam-task-${task.id}`}>
-    <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false}/><View style={s.caption}><Text style={s.taskTitle}>{task.title}</Text><Text style={s.taskBody}>{task.body}</Text></View>
-  </TouchableOpacity>;
 }
 function ImportReview({batch,bills,history,templates,onAdd,onUpdate,onRecurring}){
   const [queue,setQueue]=useState([]),[index,setIndex]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(0),[skipped,setSkipped]=useState(0);
@@ -72,9 +72,16 @@ export default function BilliamHome({finance,onAdd,onUpdate,onTemplates,onHouseh
   const [tool,setTool]=useState(null),templates=Array.isArray(finance.billiamRecurring)?finance.billiamRecurring:[],history=Array.isArray(finance.billiamHistory)?finance.billiamHistory:[],bills=finance.bills || [];
   const task=BILLIAM_TASKS.find(t=>t.id===tool);
   const recurring=(bill,cadence)=>onTemplates(saveRecurring(templates,bill,cadence,`repeat-${Date.now()}`));
-  return <ScrollView contentContainerStyle={s.content} style={s.screen}><Text style={s.heading}>Billiam’s Mailbox</Text><Text style={s.body}>His little home outside Annie Oak Tree. Bring a bill; leave with a clearer plan.</Text><FittedArtwork source={mailbox} style={s.hero} testID="billiam-mailbox-artwork" accessibilityLabel="Billiam peeks out of his teal mailbox home beside Annie Oak Tree’s red door"/>
-    <View style={s.grid}>{BILLIAM_TASKS.map(t=><BilliamTaskButton key={t.id} task={t} onPress={()=>setTool(t.id)}/>)}</View>
+  return <ScrollView contentContainerStyle={s.content} style={s.screen}>
+    <Text accessibilityRole="header" style={s.heading}>Billiam’s Mailbox</Text>
+    <InteractiveRoom source={mailbox} testID="billiam-mailbox-artwork" destinations={BILLIAM_TASKS.map(item => {
+      const [x, y, width, height] = taskSpots[item.id];
+      return { label: `Billiam: ${item.title}`, caption: item.caption,
+        area: { left:`${x}%`, top:`${y}%`, width:`${width}%`, height:`${height}%` }, open: () => setTool(item.id) };
+    })} />
+    <Text style={s.body}>Tap a marked station for help with your bills.</Text>
     <EntrySheet visible={!!task} title={task?.title || 'Billiam'} onClose={()=>setTool(null)}>
+      {task?.image && <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false} />}
       {tool==='scan'&&<BillScanner initialOpen bills={bills} onAdd={onAdd} onUpdate={onUpdate} history={history} templates={templates} onRecurring={recurring}/>}
       {(tool==='import'||tool==='batch')&&<ImportReview batch={tool==='batch'} bills={bills} history={history} templates={templates} onAdd={onAdd} onUpdate={onUpdate} onRecurring={recurring}/>}
       {tool==='compare'&&<Comparison bills={bills} history={history}/>}
@@ -84,4 +91,4 @@ export default function BilliamHome({finance,onAdd,onUpdate,onTemplates,onHouseh
     </EntrySheet>
   </ScrollView>;
 }
-const s=StyleSheet.create({screen:{flex:1,backgroundColor:'#FFFDF8'},content:{padding:16,paddingBottom:32},heading:{fontSize:26,fontWeight:'900',color:'#243447'},title:{fontSize:18,fontWeight:'800',color:'#243447',marginTop:8},body:{fontSize:15,lineHeight:23,color:'#34465E',marginTop:6},hero:{height:144,marginVertical:14,borderRadius:18,backgroundColor:'#F8EEDB'},grid:{flexDirection:'row',flexWrap:'wrap',justifyContent:'space-between',rowGap:12},task:{width:'100%',minHeight:164,padding:12,flexDirection:'row',flexWrap:'wrap',alignItems:'center',gap:12,borderWidth:3,borderColor:'#9F3DE5',borderRadius:28,overflow:'hidden'},taskArt:{width:128,height:144,borderRadius:18},caption:{flexGrow:1,flexShrink:1,flexBasis:120,minWidth:0,gap:6},taskTitle:{fontSize:22,lineHeight:28,fontWeight:'900',color:'#071A3A'},taskBody:{fontSize:15,lineHeight:21,color:'#173C50'},shortcut:{marginVertical:16,borderRadius:18,borderWidth:2,borderColor:'#D8CCFF',padding:12,backgroundColor:'#F7F3FF'},button:{minHeight:48,backgroundColor:'#6545B9',padding:13,borderRadius:14,marginTop:12,justifyContent:'center'},buttonText:{fontSize:15,fontWeight:'700',color:'white',textAlign:'center'},choice:{minHeight:48,padding:12,backgroundColor:'#F3EEFF',borderRadius:14,marginTop:10},notice:{padding:14,backgroundColor:'#EEE8FF',borderRadius:14,marginTop:12,color:'#44336C'},row:{flexDirection:'row',flexWrap:'wrap',gap:8},smallButton:{minHeight:48,padding:12,backgroundColor:'#6545B9',borderRadius:12,marginTop:8,justifyContent:'center'}});
+const s=StyleSheet.create({screen:{flex:1,backgroundColor:'#FFFDF8'},content:{padding:16,paddingBottom:32},heading:{fontSize:26,fontWeight:'900',color:'#243447'},title:{fontSize:18,fontWeight:'800',color:'#243447',marginTop:8},body:{fontSize:15,lineHeight:23,color:'#34465E',marginTop:6},taskArt:{width:88,height:88,borderRadius:12},shortcut:{marginVertical:16,borderRadius:18,borderWidth:2,borderColor:'#D8CCFF',padding:12,backgroundColor:'#F7F3FF'},button:{minHeight:48,backgroundColor:'#6545B9',padding:13,borderRadius:14,marginTop:12,justifyContent:'center'},buttonText:{fontSize:15,fontWeight:'700',color:'white',textAlign:'center'},choice:{minHeight:48,padding:12,backgroundColor:'#F3EEFF',borderRadius:14,marginTop:10},notice:{padding:14,backgroundColor:'#EEE8FF',borderRadius:14,marginTop:12,color:'#44336C'},row:{flexDirection:'row',flexWrap:'wrap',gap:8},smallButton:{minHeight:48,padding:12,backgroundColor:'#6545B9',borderRadius:12,marginTop:8,justifyContent:'center'}});

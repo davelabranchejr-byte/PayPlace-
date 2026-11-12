@@ -43,14 +43,16 @@ function CategoryTiles({ selected, onSelect, customCategories = [] }) {
 }
 const budgetCategoryArtwork = require('../assets/characters/feature-purchase-categories-daddy.png');
 const bankingCategoryArtwork = require('../assets/characters/feature-purchase-categories-bobbie.png');
-export function CategoryEntry({ onOpen, inBanking = false }) {
+export function CategoryEntry({ onOpen, inBanking = false, compact = false }) {
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories"
-    onPress={onOpen} style={s.entry}>
-    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} style={s.entryArtwork} />
+    onPress={onOpen} style={[s.entry, compact && s.entryCompact]}>
+    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} style={[s.entryArtwork, compact && s.entryArtCompact]} />
     <View style={s.entryCopy}>
-      <Text style={s.title}>Your purchases. Your categories.</Text>
-      <Text style={s.body}>Fix it once. Let PayPlace remember.</Text>
-      <Text style={s.entryLink}>Choose my categories →</Text>
+      <Text style={s.title}>{compact ? 'Purchases & categories' : 'Your purchases. Your categories.'}</Text>
+      {!compact && <>
+        <Text style={s.body}>Fix it once. Let PayPlace remember.</Text>
+        <Text style={s.entryLink}>Choose my categories →</Text>
+      </>}
     </View>
   </TouchableOpacity>;
 }
@@ -179,5 +181,6 @@ const s = StyleSheet.create({
   footer: { padding: 16, paddingBottom: 34, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#DCE9F0' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, check: { minHeight: 48, paddingVertical: 10, justifyContent: 'center' }, error: { color: '#92273B', fontSize: 16, lineHeight: 24 }, notice: { padding: 16, borderRadius: 18, backgroundColor: '#DFFCF7', gap: 12 }, split: { gap: 8, borderBottomWidth: 1, borderBottomColor: '#DCE9F0', paddingBottom: 12 },
   entry: { padding: 16, backgroundColor: '#EEE7FF', borderRadius: 24, gap: 10, borderWidth: 2, borderColor: '#B799EC', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
+  entryCompact: { padding: 8, marginBottom: 12 }, entryArtCompact: { width: 64 },
   entryArtwork: { width: 128 }, entryCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 120, minWidth: 0 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
 });
