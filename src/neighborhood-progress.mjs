@@ -1,3 +1,5 @@
+import { keepQuiltMilestones } from './quilt-milestones.mjs';
+
 const cents = n => Math.max(0, Math.round((Number(n) || 0) * 100));
 const paid = b => b.status === 'Paid' || b.paid === true;
 export function recordActivity(before, after, now = Date.now()) {
@@ -28,7 +30,7 @@ export function recordActivity(before, after, now = Date.now()) {
     if (delta > 0) add('saving', g.id, delta);
     if (delta < 0) events.push({kind:'saving', id:g.id, amount:delta, at:now});
   }
-  return { ...after, neighborEvents: events.slice(-2000) };
+  return keepQuiltMilestones(before, { ...after, neighborEvents: events.slice(-2000) });
 }
 export function weeklyRecap(finance, now = Date.now()) {
   const events = (finance.neighborEvents || []).filter(e => e.at > now - 7 * 86400000 && e.at <= now);

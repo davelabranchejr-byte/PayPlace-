@@ -1,62 +1,110 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
-import { EncouragementScene } from './Encouragement';
+import { EncouragementSpot } from './Encouragement';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import CharacterArtwork from './CharacterArtwork';
+import { Modal, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
 import FamilyWall, { CharacterStory, FAMILY_STORIES } from './FamilyWall';
-import BelongingQuilt, { QuiltDetail } from './BelongingQuilt';
+import { QuiltDetail } from './BelongingQuilt';
 import BobbieSmartMirror from './BobbieSmartMirror';
 import { SmallSteps } from './NeighborCare';
-import { buildingArtwork } from './NeighborhoodNav';
 import { neighborhoodLabel } from './neighborhood-destinations.mjs';
 import NeighborhoodLibrary, { LibraryReader } from './NeighborhoodLibrary';
+import InteractiveRoom from './InteractiveRoom';
 
-const introductions = {
-  Annie: 'The red door is open. Come inside, meet the family, and see the quilt that makes room for everyone.',
-  Bobbie: 'High maintenance, not high and mighty.',
-  Westley: 'You can set the heavy stuff down here. Westley will help you find your next gentle step.',
-  Tate: 'Small bites, big heart. Pick one little thing with Tate and celebrate showing up.',
-  Chapo: 'Everyone deserves a place at the table. Let’s plan a little breathing room for your next extra paycheck.',
+const rooms = {
+  Annie: {
+    image: require('../assets/characters/annie-interactive-house.jpg'),
+    hint: 'Tap the books, family portraits, quilt, or mailbox.',
+    spots: [
+      ['Visit Annie’s Neighborhood Library', 'library', 7, 9, 32, 33],
+      ['Open the family wall', 'family', 60, 8, 34, 32],
+      ['Open the belonging quilt', 'quilt', 6, 58, 33, 32],
+      ['Visit Billiam’s mailbox outside', 'Billiam', 62, 56, 32, 34],
+    ],
+  },
+  Bobbie: {
+    image: require('../assets/characters/bobbie-interactive-boutique.jpg'),
+    hint: 'Tap the smart mirror, bookshelf, or framed photo.',
+    spots: [
+      ["Visit Bobbie's house and smart mirror", 'mirror', 5, 13, 36, 43],
+      ['Visit Annie’s Neighborhood Library', 'library', 65, 11, 30, 32],
+      ['Read Bobbie’s story', 'story', 66, 43, 30, 31],
+    ],
+  },
+  Westley: {
+    image: require('../assets/characters/westley-interactive-den.jpg'),
+    hint: 'Tap the garden door, books, bills, grooming bag, or photo.',
+    spots: [
+      ['Take a breath in the Calm Garden', 'Calm', 5, 7, 32, 30],
+      ['Visit Annie’s Neighborhood Library', 'library', 62, 7, 33, 34],
+      ['Check the bills with Westley', 'Bills', 5, 39, 30, 23],
+      ['Visit Em’s Pet Spa', 'Spa', 6, 65, 31, 29],
+      ['Read Westley’s story', 'story', 65, 42, 32, 31],
+    ],
+  },
+  Tate: {
+    image: require('../assets/characters/tate-interactive-hangout.jpg'),
+    hint: 'Tap the small-steps board, bookshelf, or framed photo.',
+    spots: [
+      ['Open Tate’s small steps', 'steps', 5, 11, 35, 39],
+      ['Visit Annie’s Neighborhood Library', 'library', 64, 10, 31, 33],
+      ['Read Tate’s story', 'story', 69, 43, 27, 33],
+    ],
+  },
+  Chapo: {
+    image: require('../assets/characters/chapo-interactive-kitchen.jpg'),
+    hint: 'Tap the fridge calendar, bookshelf, notebook, or photo.',
+    spots: [
+      ['Fridge calendar · Open the extra-paycheck calendar', 'Calendar', 8, 12, 30, 30],
+      ['Bookshelf · Visit Annie’s Neighborhood Library', 'library', 63, 12, 29, 30],
+      ['Counter notebook · Make room in my budget', 'Budget', 6, 52, 37, 26],
+      ['Framed photo · Read Chapo’s story', 'story', 68, 46, 27, 27],
+    ],
+  },
 };
 
-export default function NeighborRoom({ destination, finance, upcomingTotal, onHome, onNavigate, onMirrorAction, onExtraPaycheckAction, onStepsChange, onLibraryChange }) {
+export default function NeighborRoom({ destination, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
+  const [panel, setPanel] = useState(null);
   const title = neighborhoodLabel(destination);
   const neighbor = FAMILY_STORIES.find(person => person.id === destination.toLowerCase());
-  const action = (label, target) => <TouchableOpacity key={target} accessibilityRole="button" style={s.action} onPress={() => onNavigate(target)}><Text style={s.actionText}>{label}</Text></TouchableOpacity>;
+  const room = rooms[destination];
+  const showRoom = !panel || panel === 'mirror';
+
+  function open(target) {
+    if (target === 'quilt') setQuilt(true);
+    else if (target === 'story') setStory(neighbor);
+    else if (['library', 'family', 'steps', 'mirror'].includes(target)) setPanel(target);
+    else onNavigate(target);
+  }
+
   return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to Neighborhood" style={s.back} onPress={onHome}><Text style={s.backText}>‹ Back to the neighborhood</Text></TouchableOpacity>
-    <EncouragementScene place="room" style={{alignSelf:"center"}}><CharacterArtwork source={buildingArtwork(destination)} style={s.building} resizeMode="contain" accessibilityLabel={title} /></EncouragementScene>
-    <Text accessibilityRole="header" style={s.title}>{title}</Text>
-    <Text style={s.body}>{introductions[destination]}</Text>
-    {destination === 'Annie' && <>
-      {action('Visit Billiam’s mailbox outside', 'Billiam')}
-      <NeighborhoodLibrary value={finance.neighborhoodLibrary} onChange={onLibraryChange} onNavigate={onNavigate} />
-      <FamilyWall onSelect={setStory} />
-      <BelongingQuilt onOpen={() => setQuilt(true)} />
+    {showRoom ? <>
+      <Text accessibilityRole="header" style={s.title}>{title}</Text>
+      {destination === 'Bobbie' && <Text style={s.body}>High maintenance, not high and mighty.</Text>}
+      <InteractiveRoom source={room.image} testID="neighbor-room-artwork" destinations={room.spots.map(([label, target, x, y, width, height]) => ({
+        label, area: { left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%` }, open: () => open(target),
+      }))}>
+        <EncouragementSpot place="room" style={{ left: '49%', top: '91%' }} />
+      </InteractiveRoom>
+      <Text style={s.body}>{room.hint}</Text>
+      {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} showLibraryLink={false} />}
+    </> : <>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Back to ${title}`} style={s.back} onPress={() => setPanel(null)}><Text style={s.backText}>‹ {title}</Text></TouchableOpacity>
+      {panel === 'library' && <NeighborhoodLibrary value={finance.neighborhoodLibrary} onChange={onLibraryChange} onNavigate={onNavigate} />}
+      {panel === 'family' && <FamilyWall onSelect={setStory} />}
+      {panel === 'steps' && <SmallSteps finance={finance} onChange={onStepsChange} onOpen={onNavigate} />}
     </>}
-    {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} />}
-    {destination === 'Bobbie' && <BobbieSmartMirror finance={finance} onAction={onMirrorAction} onBudget={() => onNavigate('Budget')} />}
-    {destination === 'Westley' && <View style={s.actions}>
-      {action('Take a breath in the Calm Garden', 'Calm')}
-      {action('Check the bills with Westley', 'Bills')}
-      {action('Visit Em’s Pet Spa', 'Spa')}
-    </View>}
-    {destination === 'Tate' && <SmallSteps finance={finance} onChange={onStepsChange} onOpen={onNavigate} />}
-    {destination === 'Chapo' && <>
-      <TouchableOpacity accessibilityRole="button" style={s.action} onPress={() => onNavigate('Calendar')}><Text style={s.actionText}>Open the extra-paycheck calendar</Text></TouchableOpacity>
-      {action('Make room in my budget', 'Budget')}
-    </>}
-    {neighbor && destination !== 'Annie' && <TouchableOpacity accessibilityRole="button" onPress={() => setStory(neighbor)} style={s.storyButton}><Text style={s.backText}>Read {neighbor.name}’s story</Text></TouchableOpacity>}
+    {destination === 'Bobbie' && <BobbieSmartMirror open={panel === 'mirror'} onVisibilityChange={visible => setPanel(visible ? 'mirror' : null)}
+      finance={finance} onAction={onMirrorAction} onBudget={() => onNavigate('Budget')} />}
     <Modal visible={!!story || quilt} onRequestClose={() => { setStory(null); setQuilt(false); }} animationType="slide">
-      <SafeAreaView style={s.screen}>{quilt ? <QuiltDetail onBack={() => setQuilt(false)} /> : story && <CharacterStory person={story} backLabel={`Back to ${title}`} onBack={() => setStory(null)} />}</SafeAreaView>
+      <SafeAreaView style={s.screen}>{quilt ? <QuiltDetail finance={finance} onMilestone={onQuiltMilestone} backLabel="Back to Annie’s House" onBack={() => setQuilt(false)} /> : story && <CharacterStory person={story} backLabel={`Back to ${title}`} onBack={() => setStory(null)} />}</SafeAreaView>
     </Modal>
   </ScrollView>;
 }
 
 const s = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#FFF8F2' }, content: { padding: 18, paddingBottom: 28, gap: 12 },
-  back: { minHeight: 48, justifyContent: 'center' }, backText: { color: '#6550AF', fontWeight: '800', fontSize: 15 }, building: { alignSelf: 'center', width: 180, height: 150 },
-  title: { color: '#173557', fontWeight: '900', fontSize: 28 }, body: { color: '#34465E', fontSize: 16, lineHeight: 24 }, actions: { gap: 10 },
-  action: { borderRadius: 15, padding: 16, minHeight: 48, backgroundColor: '#6550AF' }, actionText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800' }, storyButton: { backgroundColor: '#EEE8FC', padding: 16, borderRadius: 15, minHeight: 48 },
+  back: { minHeight: 48, justifyContent: 'center' }, backText: { color: '#6550AF', fontWeight: '800', fontSize: 15 },
+  title: { color: '#173557', fontWeight: '900', fontSize: 28 }, body: { color: '#34465E', fontSize: 16, lineHeight: 24 },
 });

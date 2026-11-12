@@ -1,3 +1,4 @@
+import { isWeatherZip } from './neighborhood-local-weather.mjs';
 import { gcm } from '@noble/ciphers/aes';
 import { bytesToHex, hexToBytes, utf8ToBytes, bytesToUtf8 } from '@noble/ciphers/utils';
 import { pbkdf2Async } from '@noble/hashes/pbkdf2';
@@ -7,6 +8,9 @@ import { validateSavingsGoal } from './savings-goals.mjs';
 import { validateCategoryState } from './merchant-categories.mjs';
 import { validateBilliamState } from './billiam-tools.mjs';
 import { normalizeHousehold } from './household-plan.mjs';
+import { validateGroomingAppointments } from './grooming-appointments.mjs';
+
+import { validateQuiltMilestones } from './quilt-milestones.mjs';
 
 export const BACKUP_ITERATIONS = 600000;
 export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
@@ -42,6 +46,9 @@ export function validateBackup(data) {
   validateCategoryState(f.categorization);
   if (f.subscriptionDetection !== undefined && (!f.subscriptionDetection || !Array.isArray(f.subscriptionDetection.dismissed) || f.subscriptionDetection.dismissed.length > 2000 || f.subscriptionDetection.dismissed.some(key => typeof key !== 'string' || key.length > 600))) throw new Error('Invalid dismissed subscription clues.');
   validateBilliamState(f);
+  validateGroomingAppointments(f.groomingAppointments);
+  validateQuiltMilestones(f.quiltMilestones);
+  if (f.neighborhoodWeatherZip !== undefined && f.neighborhoodWeatherZip !== '' && !isWeatherZip(f.neighborhoodWeatherZip)) throw new Error('Invalid neighborhood weather ZIP code.');
   if (f.householdPlan !== undefined) f.householdPlan = normalizeHousehold(f.householdPlan);
   if (f.savingsGoals !== undefined) {
     if (!Array.isArray(f.savingsGoals) || f.savingsGoals.length > 100) throw new Error('Invalid savings goals.');

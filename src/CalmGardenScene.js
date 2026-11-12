@@ -8,7 +8,7 @@ const isNighttime = () => {
   const hour = new Date().getHours();
   return hour >= 20 || hour < 6;
 };
-function BackyardScene() {
+function BackyardScene({ children }) {
   const [isNight, setIsNight] = useState(isNighttime);
   useEffect(() => {
     const app = AppState.addEventListener("change", state => {
@@ -23,6 +23,7 @@ function BackyardScene() {
         accessibilityLabel={isNight
           ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
           : "Annie's fenced backyard at sunset, with birds and butterflies among the flowers"} />
+      {children}
       <EncouragementSpot place="garden" />
     </View>
   );
@@ -110,13 +111,13 @@ const pearlScenes = {
   "bobbie-16": require("../assets/characters/bobbie-pearl-16.png"),
 };
 
-export default function CalmGardenScene({ pearl }) {
+export default function CalmGardenScene({ pearl, children }) {
   const pearlScene = pearlScenes[pearl?.id];
   if (pearlScene) {
     return <EncouragementScene place="garden" style={s.scene}>
     <Image source={pearlScene} style={[s.scene, { backgroundColor: "#E0F6F1" }]} resizeMode="contain" accessibilityLabel={`${pearl.id.startsWith("together-") ? "Annie" : pearl.id.startsWith("chapo-") ? "Chapo" : pearl.id.startsWith("bobbie-") ? "Bobbie" : pearl.id.startsWith("tate-") ? "Tate" : "Westley"} — ${pearl.title}`} /></EncouragementScene>;
   }
-  return <BackyardScene />;
+  return <BackyardScene>{children}</BackyardScene>;
 }
 
 const s = StyleSheet.create({

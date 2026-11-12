@@ -6,24 +6,25 @@ import { Text } from "./Privacy";
 
 const TAB_HELP = {
   Spa: { summary: 'Em’s cozy neighborhood pet spa.', steps: [
-    'The current stay includes grooming, a slumber party, a blanket fort and a seaside daydream. Choose Previous, Next or a thumbnail; scenes start paused.',
+    'Tap the grooming station to track an appointment, the lounge to view the current stay, or the scrapbook to revisit favorite scenes.',
+    'The current stay includes grooming, a slumber party, a blanket fort and a seaside daydream. Use Previous or Next to see each illustration.',
     'Em’s scrapbook keeps past spa visits. Bobbie’s borrowed memoir remains available there and through her book-details button.',
     'Tap the character button for a little reply. Play resumes the scene rotation; reduced motion keeps the artwork still.',
     'Four fixed tabs keep Home, Budget, Bills & Banking, and Neighborhood visible without swiping.',
   ] },
-  Annie: { summary: 'Come inside Annie’s house, visit the library, and meet the family.', steps: ['Tap a painted book on Annie’s library shelves. The mascot books open original neighborhood stories, including Daddy’s Everyone Belongs Here beside Emma’s memoir.', 'Take a closer look enlarges the shelves; swipe across or down and tap a book.', 'Tap Emma’s book or the empty gap on shelf A1 for checkout and returns.', 'Choose a reader to borrow the illustrated copy. Its shelf stays empty until you return it; the checkout ledger remembers each visit.', 'Tap View Emma’s book on Amazon to find the memoir. Borrowing does not unlock an ebook in PayPlace.', 'Visit the mascot rooms to see their current reads. Manual loans wait for your return; the reading circle changes on a new day.', 'Tap any portrait on the family wall to read their story, or open the belonging quilt.', 'Use Back or the building tabs to return to your money tools.'] },
-  Bobbie: { summary: 'Visit Bobbie’s smart mirror and boutique.', steps: ['Use the smart mirror to check a purchase against your saved budget.', 'Record a treat or save a look using the existing mirror controls.', 'Budget Corner opens your budget; the building tabs take you home.'] },
-  Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Visit the Calm Garden, review your bills, or peek into Em’s Pet Spa.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
-  Tate: { summary: 'One small bite at a time with Tate.', steps: ['Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
-  Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Open the extra-paycheck calendar to plan your bonus paydays.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
-  Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Em’s Pet Spa and Calm Garden open directly. Tap Visit the mascots to find their houses.', 'Annie’s porch & quiet tools holds her poster, care and Quiet Mode settings.', 'Find Join the Neighborhood on Facebook at the bottom of this tab.']},
+  Annie: { summary: 'Come inside Annie’s house, visit the library, and meet the family.', steps: ['Tap the bookshelf, family portraits, quilt, or mailbox to open that part of Annie’s home.', 'Tap a painted book on Annie’s library shelves. The mascot books open original neighborhood stories, including Daddy’s Everyone Belongs Here beside Emma’s memoir.', 'Take a closer look enlarges the shelves; swipe across or down and tap a book.', 'Tap Emma’s book or the empty gap on shelf A1 for checkout and returns.', 'Choose a reader to borrow the illustrated copy. Its shelf stays empty until you return it; the checkout ledger remembers each visit.', 'Tap View Emma’s book on Amazon to find the memoir. Borrowing does not unlock an ebook in PayPlace.', 'Visit the mascot rooms to see their current reads. Manual loans wait for your return; the reading circle changes on a new day.', 'Tap any portrait on the family wall to read their story, or open the belonging quilt.', 'Use Back or the building tabs to return to your money tools.'] },
+  Bobbie: { summary: 'Visit Bobbie’s smart mirror and boutique.', steps: ['Tap the mirror, bookshelf, or framed photo. Use the smart mirror to check a purchase against your saved budget.', 'Record a treat or save a look using the existing mirror controls.', 'Budget Corner opens your budget; the building tabs take you home.'] },
+  Westley: { summary: 'A gentle place to pause with Westley.', steps: ['Tap the garden door, bills, grooming bag, bookshelf, or portrait.', 'Read Westley’s story to learn how he found his home.', 'Use the building tabs to return to your plan.'] },
+  Tate: { summary: 'One small bite at a time with Tate.', steps: ['Tap the small-steps board, bookshelf, or portrait. Choose one small task and tap Take a look.', 'Mark done records today’s progress. Undo removes that mark.', 'Read Tate’s story or return to the neighborhood when you are ready.'] },
+  Chapo: { summary: 'Make room for a treat with Chapo.', steps: ['Tap the fridge calendar to plan bonus paydays, the counter notebook to open Budget, or the bookshelf or photo to read.', 'Use the calendar’s existing split controls or visit Budget Corner.', 'Read Chapo’s story and return home using the building tabs.'] },
+  Neighborhood: {summary:'All your character visits and quiet moments in one place.',steps:['Tap the mailbox or bridge in the panorama, or open any place from the illustrated tiles. Annie’s house holds the library, family wall and Belonging Quilt.', 'Around town shows where the neighbors are. Neighborhood weather can use an optional U.S. ZIP code.', 'Annie’s porch & quiet tools holds her poster, care and Quiet Mode settings.', 'Find Join the Neighborhood on Facebook at the bottom of this tab.']},
   Home: { summary:'Your short money overview and one next step.', steps:[
     'Review my bills opens Bills & Banking. Payoff methods brings you to Snowball, Avalanche, Mixed and Micropayments.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
     'Bills holds payment history and manual entries. Plaid bank linking and Subscription Detective require paid Premium.',
-    'Bobbie’s Cabaret Show opens the show and question form. Find One small step under Payday details & getting started.',
+    'Bobbie’s Cabaret Show opens the show and question form. One small step opens your next suggested action from Home.',
   ] },
-  Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Choose an illustrated tool to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
+  Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Tap a station in the mailroom to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
   Bills: { summary: 'Your bills and banking tools in one place.', steps: [
     'Open Bill tools, debt & payments for Billiam’s scans, payoff planning, Micropayments and payment history.',
     'Banking & subscriptions contains the Banking Demo and Premium options. Monthly payment calendar opens directly from this tab.',
@@ -43,7 +44,7 @@ const TAB_HELP = {
     'Record payments after making them with your lender. This updates your plan; it does not send money or create a repayment agreement.',
   ] },
   Calm: { summary: 'Take a pause when the money stuff feels heavy.', steps: [
-    'Visit the garden and choose a character to read their stories and encouragement.',
+    'Tap an illustrated spot in the garden to choose a character to read their stories and encouragement.',
     'Tap Show me another story for a different message. There is no form to finish or money setting to change here.',
     'Use Home or another bottom tab whenever you are ready to return to your plan.',
   ] },

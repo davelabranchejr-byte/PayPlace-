@@ -35,8 +35,10 @@ function Button({ children, onPress, disabled = false, secondary = false }) {
   </TouchableOpacity>;
 }
 
-export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
-  const [visible, setVisible] = useState(false);
+export default function BobbieSmartMirror({ finance, onAction, onBudget, open, onVisibilityChange }) {
+  const [localVisible, setLocalVisible] = useState(false);
+  const visible = open ?? localVisible;
+  const setVisible = onVisibilityChange || setLocalVisible;
   const [viewportWidth, setViewportWidth] = useState(0);
   const [tab, setTab] = useState("check");
   const [purchaseName, setPurchaseName] = useState("");
@@ -71,7 +73,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
   }
 
   return <>
-    <TouchableOpacity artworkMode="integrated" testID="bobbie-smart-mirror" accessibilityRole="button"
+    {open === undefined && <TouchableOpacity artworkMode="integrated" testID="bobbie-smart-mirror" accessibilityRole="button"
       accessibilityLabel="Visit Bobbie's house and smart mirror" activeOpacity={0.92}
       onPress={() => setVisible(true)} style={s.visitCard}>
       <Image source={room} resizeMode="contain" style={s.thumbnail} accessibilityLabel="Bobbie in her gold smart mirror room, with blonde curls, yellow plaid and white boots" />
@@ -81,7 +83,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget }) {
         <Text style={s.visitBody}>Plan a purchase. Make room for joy.</Text>
         <Text style={s.visitLink}>Visit her smart mirror →</Text>
       </View>
-    </TouchableOpacity>
+    </TouchableOpacity>}
 
     <Modal visible={visible} animationType="slide" onRequestClose={() => setVisible(false)}>
       <SafeAreaView style={s.safe}>

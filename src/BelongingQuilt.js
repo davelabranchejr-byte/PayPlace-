@@ -1,16 +1,34 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
-import React from "react";
-import { ScrollView, StyleSheet, View } from 'react-native';
+import React, { useState } from "react";
+import { Image, Linking, Platform, Pressable, ScrollView, Share, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import CharacterArtwork from "./CharacterArtwork";
+import Alert from "./alert";
+import { FACEBOOK_NEIGHBORHOOD_URL } from "./FacebookNeighborhood";
+import { quiltMilestones } from "./quilt-milestones.mjs";
 
 // Extract views of the approved mockup without changing its fabric or artwork.
 const approvedQuilt = require("../assets/characters/belonging-quilt-approved.png");
 const artwork = (crop, label) => ({ source: approvedQuilt, width: 851, height: 1847, crop, label });
 const acorn = artwork([258, 249, 335, 337], "An embroidered golden acorn on a padded cream quilt square with floral patchwork and hand stitching");
 const quiltRoom = artwork([83, 1069, 690, 327], "Annie's warm room with the colorful Belonging Quilt hanging on a wooden rail");
-const hangingQuilt = artwork([439, 1081, 295, 247], "The Belonging Quilt with stitched acorns, a home, flowers, a heart, and neighborhood squares");
+const patches = {
+  firstBill: [require("../assets/characters/quilt-first-bill.png"), "Saved your first bill"],
+  paidBill: [require("../assets/characters/quilt-paid-bill.png"), "Recorded your first bill payment"],
+  foundNote: [require("../assets/characters/quilt-found-note.png"), "Found your first hidden note"],
+  sentNote: [require("../assets/characters/quilt-sent-note.png"), "Sent encouragement for review"],
+  savingsGoal: [require("../assets/characters/quilt-savings-goal.png"), "Set your first savings goal"],
+  micropayment: [require("../assets/characters/quilt-micropayment.png"), "Logged your first extra payment"],
+  plannedPayday: [require("../assets/characters/quilt-planned-payday.png"), "Planned your first payday"],
+  addedSavings: [require("../assets/characters/quilt-added-savings.png"), "Added to savings"],
+  paidDebt: [require("../assets/characters/quilt-paid-debt.png"), "Paid off your first debt"],
+  trackedSubscription: [require("../assets/characters/quilt-tracked-subscription.png"), "Tracked your first subscription"],
+  savedGrooming: [require("../assets/characters/quilt-saved-grooming.png"), "Saved your first grooming appointment"],
+  borrowedBook: [require("../assets/characters/quilt-borrowed-book.png"), "Borrowed your first library book"],
+  joinedFacebook: [require("../assets/characters/quilt-joined-facebook.png"), "Joined the Facebook group"],
+  invitedFriend: [require("../assets/characters/quilt-invited-friend.png"), "Invited a friend"],
+};
 
 export function AcornSquare() {
   return <View style={s.firstSquare}>
@@ -38,21 +56,59 @@ export default function BelongingQuilt({ onOpen }) {
   </TouchableOpacity>;
 }
 
-export function QuiltDetail({ onBack }) {
+const inviteMessage = `Come visit the PayPlace neighborhood with me. Money without shame. ${FACEBOOK_NEIGHBORHOOD_URL}`;
+const communitySteps = [
+  { id: 'joinedFacebook', openLabel: 'Open the PayPlace Facebook group', claim: 'I joined the group',
+    open: () => Linking.openURL(FACEBOOK_NEIGHBORHOOD_URL) },
+  { id: 'invitedFriend', openLabel: 'Share an invitation', claim: 'I invited a friend',
+    open: () => Platform.OS === 'web'
+      ? Linking.openURL(`mailto:?subject=PayPlace%20Neighborhood&body=${encodeURIComponent(inviteMessage)}`)
+      : Share.share({ message: inviteMessage }) },
+];
+
+export function QuiltDetail({ onBack, finance, onMilestone, backLabel = "Back to the family gallery" }) {
+  const [selected, setSelected] = useState("acorn");
+  const earned = quiltMilestones(finance);
+  const community = onMilestone && finance?.planSource !== "Sample" ? communitySteps.filter(step => !earned.includes(step.id)) : [];
   return <ScrollView style={s.screen} contentContainerStyle={s.detail}>
-    <TouchableOpacity testID="quilt-back" style={s.back} onPress={onBack} accessibilityRole="button" accessibilityLabel="Back to the family gallery">
-      <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.footerTitle}>Back to the family gallery</Text>
+    <TouchableOpacity testID="quilt-back" style={s.back} onPress={onBack} accessibilityRole="button" accessibilityLabel={backLabel}>
+      <Ionicons name="arrow-back" size={21} color="#173557" /><Text style={s.footerTitle}>{backLabel}</Text>
     </TouchableOpacity>
     <View style={s.detailCard}>
       <Text style={s.eyebrow}>ANNIE'S BELONGING QUILT</Text>
       <Text style={s.title} accessibilityRole="header">You have a place here.</Text>
-      <CharacterArtwork source={hangingQuilt} style={s.fullQuilt} resizeMode="contain" />
-      <AcornSquare />
+      <Text accessibilityRole="header" style={s.title}>Your quilt · {earned.length + 1} {earned.length ? 'squares' : 'square'}</Text>
+      <Text style={s.body}>See how big your quilt can grow as you take small steps and share kindness.</Text>
+      <View style={s.patchwork}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Your first acorn square"
+          accessibilityState={{ selected: selected === "acorn" }} style={s.patch} onPress={() => setSelected("acorn")}>
+          <CharacterArtwork source={acorn} style={s.patchArt} resizeMode="contain" />
+        </Pressable>
+        {earned.map(id => {
+          const [source, label] = patches[id];
+          return <Pressable key={id} style={s.patch} testID={`quilt-square-${id}`} onPress={() => setSelected(id)}
+            accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: selected === id }}>
+            <Image source={source} style={s.patchArt} resizeMode="contain" accessible={false} />
+          </Pressable>;
+        })}
+      </View>
+      <Text style={s.patchLabel} accessibilityLiveRegion="polite">{earned.includes(selected) ? patches[selected][1] : "Your first acorn square"}</Text>
       <Text style={s.promise}>“Belonging isn't something you earn. It's something you're given.”</Text>
-      <Text style={s.body}>Your acorn is a beginning, not a reward. Annie stitched its matching half into the neighborhood quilt when you arrived.</Text>
       <Text style={s.signature}>Welcome home. Love, Annie.</Text>
+      {community.length > 0 && <View style={s.community}>
+        <Text accessibilityRole="header" style={s.footerTitle}>Grow the neighborhood</Text>
+        <Text style={s.body}>Add a square after you join or invite someone.</Text>
+        {community.map(step => <View key={step.id} style={s.communityRow}>
+          <TouchableOpacity artworkMode="integrated" accessibilityRole="button" style={s.communityButton} onPress={async () => {
+            try { await step.open(); }
+            catch { Alert.alert('Try again in a moment', 'That link could not open just now.'); }
+          }}><Text style={s.footerTitle}>{step.openLabel}</Text></TouchableOpacity>
+          <TouchableOpacity artworkMode="integrated" accessibilityRole="button" style={s.communityButton} onPress={() => onMilestone(step.id)}>
+            <Text style={s.footerTitle}>{step.claim}</Text>
+          </TouchableOpacity>
+        </View>)}
+      </View>}
     </View>
-    <TouchableOpacity style={s.done} onPress={onBack} accessibilityRole="button"><Text style={s.doneText}>Back to the family gallery</Text></TouchableOpacity>
   </ScrollView>;
 }
 
@@ -74,9 +130,14 @@ const s = StyleSheet.create({
   detail: { width: "100%", maxWidth: 650, alignSelf: "center", padding: 18, paddingBottom: 40 },
   back: { minHeight: 48, flexDirection: "row", alignItems: "center", gap: 9, marginBottom: 14 },
   detailCard: { backgroundColor: "#FFFDF7", borderRadius: 25, padding: 20, borderWidth: 1, borderColor: "#D9BD87" },
-  fullQuilt: { width: "100%", aspectRatio: 295 / 247, marginTop: 18, borderRadius: 14, overflow: "hidden" },
   promise: { fontSize: 20, lineHeight: 28, color: "#3D7A62", fontWeight: "800", textAlign: "center", marginTop: 6 },
   signature: { fontSize: 17, color: "#735940", fontStyle: "italic", textAlign: "center", marginTop: 18 },
-  done: { minHeight: 50, backgroundColor: "#7A5CE6", borderRadius: 17, padding: 15, marginTop: 18, alignItems: "center", justifyContent: "center" },
-  doneText: { fontSize: 16, color: "#FFF", fontWeight: "800", textAlign: "center" },
+  community: { marginTop: 20, gap: 4 },
+  communityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
+  communityButton: { minHeight: 48, justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: "#F3E3FF" },
+  patchwork: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 4, marginTop: 14, padding: 6, borderRadius: 12, backgroundColor: "#E4CCA7" },
+  patch: { width: "31%", maxWidth: 160, borderRadius: 4, overflow: "hidden", backgroundColor: "#FFF9EB" },
+  patchArt: { width: "100%", aspectRatio: 1 },
+  patchLabel: { color: "#173557", fontSize: 14, fontWeight: "800", textAlign: "center", padding: 7 },
+
 });

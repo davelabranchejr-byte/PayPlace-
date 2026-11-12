@@ -1,9 +1,15 @@
 import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, AppState, Easing, View, StyleSheet } from 'react-native';
+import { AccessibilityInfo, Animated, AppState, Easing, Image, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import FittedArtwork from './FittedArtwork';
-import { isNeighborhoodNight } from './neighborhood-time.mjs';
+import { RoomDestinations } from './InteractiveRoom';
+import { Text } from './Privacy';
+import { isNeighborhoodNight, neighborhoodSeasonalCameos } from './neighborhood-time.mjs';
 import useNeighborhoodClock from './useNeighborhoodClock';
+import useNeighborhoodWeather from './useNeighborhoodWeather';
+import { NeighborhoodEffects, TownLife } from './NeighborhoodWorld';
+import { isNeighborhoodLeafSeason, neighborhoodResidents, neighborhoodWalkers, neighborhoodWeatherNames, seasonalNeighborhoodWeather } from './neighborhood-world.mjs';
 const day=require('../assets/characters/neighborhood-panorama-day.png');
 const night=require('../assets/characters/neighborhood-panorama-night.png');
 const butterfly=require('../assets/characters/monarch-butterfly.png');
@@ -59,11 +65,95 @@ function Butterfly({width,index,playing}) {
       style={{width:index?23:29,height:index?23:29,transform:[{scaleX:flap}]}}/>
   </Animated.View>;
 }
-export default function LivingNeighborhood({reduceAnimation=false}) {
+function Waterfall({ playing }) {
+  const shimmer = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    shimmer.setValue(0);
+    if (!playing) return;
+    const flow = Animated.loop(Animated.sequence([
+      Animated.timing(shimmer, { toValue: 1, duration: 1900, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+      Animated.timing(shimmer, { toValue: 0, duration: 1300, easing: Easing.inOut(Easing.sin), useNativeDriver: true }),
+    ]));
+    flow.start();
+    return () => flow.stop();
+  }, [playing, shimmer]);
+  return <Animated.View style={[s.water, {
+    opacity: shimmer.interpolate({ inputRange: [0, 1], outputRange: [0, 0.42] }),
+    transform: [{ translateY: shimmer.interpolate({ inputRange: [0, 1], outputRange: [0, 4] }) }],
+  }]} />;
+}
+
+const skyPasses = {
+  airplane: { wait: 4500, duration: 6800, rest: 17000, x: 0.35, y: -0.014 },
+  'shooting-star': { wait: 7200, duration: 1050, rest: 25000, x: -0.19, y: 0.084 },
+  saucer: { wait: 16000, duration: 4200, rest: 54000, x: 0.23, y: -0.035 },
+  santa: { wait: 11000, duration: 6600, rest: 36000, x: 0.30, y: -0.035,
+    source: require('../assets/characters/cameo-santa.png'), width: 62, height: 27 },
+  witches: { wait: 10500, duration: 5200, rest: 36500, x: -0.24, y: 0.033,
+    source: require('../assets/characters/cameo-witches.png'), width: 49, height: 28 },
+  cashper: { wait: 18500, duration: 5000, rest: 53000, x: 0.16, y: -0.052,
+    source: require('../assets/characters/cameo-cashper.png'), width: 28, height: 32, bob: 4 },
+  bunny: { wait: 8500, duration: 5300, rest: 37500, x: 0.15, y: 0,
+    source: require('../assets/characters/cameo-bunny.png'), width: 35, height: 34, bob: 6 },
+  turkey: { wait: 9000, duration: 5400, rest: 38000, x: 0.11, y: 0.012,
+    source: require('../assets/characters/cameo-turkey.png'), width: 35, height: 35, bob: 2 },
+};
+
+function ScenePass({ kind, width }) {
+  const travel = useRef(new Animated.Value(0)).current;
+  const flight = skyPasses[kind];
+  useEffect(() => {
+    const pass = Animated.loop(Animated.sequence([
+      Animated.delay(flight.wait),
+      Animated.timing(travel, {
+        toValue: 1, duration: flight.duration, easing: Easing.linear, useNativeDriver: true,
+      }),
+      Animated.delay(flight.rest),
+    ]), { resetBeforeIteration: true });
+    pass.start();
+    return () => pass.stop();
+  }, [flight, travel]);
+
+  const rise = width * flight.y;
+  const vertical = flight.bob ? travel.interpolate({
+    inputRange: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
+    outputRange: Array.from({ length: 9 }, (_, step) => rise * step / 8 - (step % 2 ? flight.bob : 0)),
+  }) : travel.interpolate({ inputRange: [0, 1], outputRange: [0, rise] });
+  return <Animated.View testID={`neighborhood-${kind}`}
+    style={[s.skyPass, s[kind], {
+      opacity: travel.interpolate({ inputRange: [0, 0.2, 0.73, 1], outputRange: [0, 0.92, 0.92, 0] }),
+      transform: [
+        { translateX: travel.interpolate({ inputRange: [0, 1], outputRange: [0, width * flight.x] }) },
+        { translateY: vertical },
+      ],
+    }]}>
+    {flight.source && <Image source={flight.source} resizeMode="contain" accessible={false}
+      style={{ width: flight.width, height: flight.height }} />}
+    {kind === 'shooting-star' && <View style={s.star}>
+      <View style={s.starHead} />
+      <View style={s.starTrail} />
+      <View style={s.starTail} />
+    </View>}
+    {kind === 'airplane' && <Ionicons name="airplane" size={15} color="#FFFDF4" style={s.plane} />}
+    {kind === 'saucer' && <View style={s.saucerShape}>
+      <View style={s.saucerDome} />
+      <View style={s.saucerRim}>
+        {[0, 1, 2].map(light => <View key={light} style={s.saucerLight} />)}
+      </View>
+    </View>}
+  </Animated.View>;
+}
+
+const landmarks = [
+  { id: 'Billiam', label: 'Tap the mailbox to visit Billiam', x: 27, y: 74 },
+  { id: 'Calm', label: 'Tap the bridge to visit Calm Garden', x: 54, y: 78 },
+];
+
+export default function LivingNeighborhood({ reduceAnimation = false, paused = false, onOpen, weatherZip, onWeatherZip, children }) {
   const now=useNeighborhoodClock();
   const [reduce,setReduce]=useState(true);
   const [active,setActive]=useState(AppState.currentState==='active');
-  const [width,setWidth]=useState(0);
+  const [{ width, height }, setBounds] = useState({ width: 0, height: 0 });
   useEffect(()=>{
     let mounted=true;
     AccessibilityInfo.isReduceMotionEnabled().then(value=>{if(mounted)setReduce(value);}).catch(()=>{});
@@ -72,20 +162,68 @@ export default function LivingNeighborhood({reduceAnimation=false}) {
     return ()=>{mounted=false;motion.remove();app.remove();};
   },[]);
   const dark=isNeighborhoodNight(now);
-  const playing=active&&!reduce&&!reduceAnimation;
-  return <FittedArtwork accessible={false} source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={event=>setWidth(event.nativeEvent.layout.width)}
-    accessibilityLabel={dark?'PayPlace at night: glowing lanterns, twinkling lights and blinking fireflies.':'PayPlace by day: realistic monarch butterflies flutter among the treehouses.'}>
+  const hour = now.getHours();
+  const lateNight = dark && (hour >= 23 || hour < 5);
+  const seasonalCameos = neighborhoodSeasonalCameos(now, dark);
+  const weather = useNeighborhoodWeather(weatherZip);
+  const weatherKind = weather?.kind || seasonalNeighborhoodWeather(now);
+  const leaves = isNeighborhoodLeafSeason(now);
+  const residents = neighborhoodResidents(now);
+  const walkers = neighborhoodWalkers(residents, now);
+  const playing=active&&!reduce&&!reduceAnimation&&!paused;
+  return <>
+  <FittedArtwork accessible={false} source={dark?night:day} style={s.scene} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={({ nativeEvent: { layout } }) => setBounds(previous => previous.width === layout.width && previous.height === layout.height
+      ? previous : { width: layout.width, height: layout.height })}
+    accessibilityLabel={dark ? 'PayPlace at night with lanterns, fireflies and occasional shooting stars.' : 'PayPlace by day with butterflies and an occasional passing plane.'}>
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
+      <Waterfall playing={playing} />
+      {playing && width > 0 && <>
+        <ScenePass key={dark ? 'night' : 'day'} kind={dark ? 'shooting-star' : 'airplane'} width={width} />
+        {lateNight && <ScenePass kind="saucer" width={width} />}
+        {seasonalCameos.map(kind => <ScenePass key={kind} kind={kind} width={width} />)}
+      </>}
       {dark?<>
         {lamps.map(([x,y],index)=><Glow key={`lamp-${index}`} x={x} y={y} index={index} playing={playing}/>)}
         {flies.map(([x,y],index)=><Glow key={`fly-${index}`} x={x} y={y} index={index} playing={playing} firefly/>)}
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
+      <NeighborhoodEffects weather={weatherKind} {...{leaves, dark, walkers, playing, width, height}} />
     </View>
-    <EncouragementSpot place="town" />
-  </FittedArtwork>;
+    {onOpen && <RoomDestinations destinations={landmarks.map(({ id, label, x, y }) => ({
+      label, open: () => onOpen(id),
+      area: { ...s.landmark, left: `${x}%`, top: `${y}%` },
+    }))} />}
+    <EncouragementSpot place="town" style={{ left: '73%' }} />
+  </FittedArtwork>
+  {onOpen && <Text style={s.hint}>{neighborhoodWeatherNames[weatherKind]} · Tap the mailbox or bridge to explore.</Text>}
+  {children}
+  {onOpen && onWeatherZip && <TownLife {...{residents, onOpen, weather, weatherKind, leaves, onWeatherZip}} zip={weatherZip} />}
+  </>;
 }
 const s=StyleSheet.create({
-  scene:{borderRadius:14,marginTop:8,backgroundColor:'#173C50'},
+  scene:{borderRadius:18,backgroundColor:'#173C50'},
+  landmark: { width: 48, height: 48, justifyContent: 'center', alignItems: 'center', padding: 0, transform: [{ translateX: -24 }, { translateY: -24 }] },
+  water: { position: 'absolute', left: '49.5%', top: '72%', width: '9%', height: '3.5%', borderRadius: 6, backgroundColor: '#C9F4FF' },
+  hint: { marginTop: 6, marginBottom: 12, fontSize: 13, color: '#34465E' },
+  skyPass: { position: 'absolute' },
+  airplane: { left: '32%', top: '16%' },
+  plane: { textShadowColor: '#26425F99', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2,
+    transform: [{ rotate: '30deg' }] },
+  'shooting-star': { left: '61%', top: '12%' },
+  star: { flexDirection: 'row', alignItems: 'center', transform: [{ rotate: '-24deg' }] },
+  starHead: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFF8D5' },
+  starTrail: { width: 10, height: 2, backgroundColor: '#E7F1FFBA' },
+  starTail: { width: 8, height: 1, borderRadius: 1, backgroundColor: '#B8D4FF55' },
+  santa: { left: '30%', top: '19%' },
+  witches: { left: '60%', top: '12%' },
+  cashper: { left: '36%', top: '60%' },
+  bunny: { left: '39%', bottom: '1%' },
+  turkey: { left: '42%', bottom: '5%' },
+  saucer: { left: '38%', top: '26%' },
+  saucerShape: { alignItems: 'center', transform: [{ rotate: '-10deg' }] },
+  saucerDome: { width: 9, height: 5, borderTopLeftRadius: 5, borderTopRightRadius: 5, backgroundColor: '#B1FFE9' },
+  saucerRim: { width: 22, height: 6, borderRadius: 7, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-evenly',
+    backgroundColor: '#C7B6FF', borderWidth: 1, borderColor: '#7D75BC' },
+  saucerLight: { width: 2, height: 2, borderRadius: 1, backgroundColor: '#FFF2A5' },
   glow:{position:'absolute',width:24,height:24,marginLeft:-12,marginTop:-12,alignItems:'center',justifyContent:'center'},
   halo:{position:'absolute',width:24,height:24,borderRadius:12,backgroundColor:'#FFCD5C33',shadowColor:'#FFD36C',shadowOpacity:0.9,shadowRadius:9,shadowOffset:{width:0,height:0}},
   flyHalo:{width:10,height:10,borderRadius:5,backgroundColor:'#C5FA6933',shadowColor:'#D4FF74',shadowRadius:5},

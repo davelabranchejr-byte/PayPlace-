@@ -147,13 +147,14 @@ export default function NeighborhoodLibrary({value, onChange, onNavigate, initia
   </View>;
 }
 
-export function LibraryReader({value, destination, onNavigate, onChange}) {
+export function LibraryReader({value, destination, onNavigate, onChange, showLibraryLink = true}) {
   const [selected, setSelected] = useState(null);
   const loan = normalizeLibrary(value).loans[emBook.id];
   const readingHere = readerFor(loan?.reader)?.room === destination;
+  if (!readingHere && !showLibraryLink) return null;
   return <View style={s.roomLibrary}>
     {readingHere && <ReadingCard book={emBook} loan={loan} onOpen={() => setSelected(emBook.id)} />}
-    <Button label="Visit Annie’s Neighborhood Library" onPress={() => onNavigate('Annie')} secondary />
+    {showLibraryLink && <Button label="Visit Annie’s Neighborhood Library" onPress={() => onNavigate('Annie')} secondary />}
     {selected && <LibraryBookDetails bookId={selected} value={value} onChange={onChange} onClose={() => setSelected(null)} backLabel="Back to reading" />}
   </View>;
 }

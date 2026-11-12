@@ -15,3 +15,40 @@ export function neighborhoodWelcomeTheme(date = new Date()) {
   if (month <= 7) return 'summer';
   return 'autumn';
 }
+
+// Gregorian Easter Sunday (Meeus/Jones/Butcher algorithm).
+function easterSunday(year) {
+  const golden = year % 19;
+  const century = Math.floor(year / 100);
+  const leapCenturies = Math.floor(century / 4);
+  const correction = Math.floor((century - Math.floor((century + 8) / 25) + 1) / 3);
+  const moon = (19 * golden + century - leapCenturies - correction + 15) % 30;
+  const weekday = (32 + 2 * (century % 4) + 2 * Math.floor((year % 100) / 4) - moon - year % 4) % 7;
+  const offset = Math.floor((golden + 11 * moon + 22 * weekday) / 451);
+  const date = moon + weekday - 7 * offset + 114;
+  return Date.UTC(year, Math.floor(date / 31) - 1, date % 31 + 1);
+}
+
+const millisecondsPerDay = 86400000;
+
+export function neighborhoodSeasonalCameos(date, dark = isNeighborhoodNight(date)) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  if (month === 11 && day >= 20 && day <= 25 && dark) return ['santa'];
+  if (month === 9 && day >= 25 && dark) return ['witches', 'cashper'];
+
+  // Compare calendar dates, so a daylight-saving change cannot shift a cameo window.
+  const today = Date.UTC(year, month, day);
+  if (month === 2 || month === 3) {
+    const fromEaster = (today - easterSunday(year)) / millisecondsPerDay;
+    if (fromEaster >= -7 && fromEaster <= 1) return ['bunny'];
+  }
+  if (month === 10 || (month === 11 && day === 1)) {
+    const firstWeekday = new Date(Date.UTC(year, 10, 1)).getUTCDay();
+    const thanksgiving = 22 + (4 - firstWeekday + 7) % 7;
+    const fromThanksgiving = (today - Date.UTC(year, 10, thanksgiving)) / millisecondsPerDay;
+    if (Math.abs(fromThanksgiving) <= 3) return ['turkey'];
+  }
+  return [];
+}

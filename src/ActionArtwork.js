@@ -12,6 +12,7 @@ export const ACTION_ARTWORK = Object.freeze({
   debt:require('../assets/characters/snapshot-debt-plan.png'),
   subscriptions:require('../assets/characters/bobbie-premium-clubhouse.png'),
   monthlyCalendar:require('../assets/characters/feature-monthly-calendar-billiam.png'),
+  editBudget:require('../assets/characters/header-budget-daddy-chapo.png'),
   budgetPayday:require('../assets/characters/snapshot-next-paycheck.png'),
   payoffGuide:require('../assets/characters/nav-debt-climb.png'),
   smallStep:require('../assets/characters/feature-one-small-step-westley.png'),

@@ -8,14 +8,17 @@ const React=require('react');
 const {create,act}=require('react-test-renderer');
 global.IS_REACT_ACT_ENVIRONMENT=true;
 const flatten=style=>Object.assign({},...(Array.isArray(style)?style.flat(Infinity):[style]).filter(Boolean));
-function harness(hour=12){
+function harness(hour=12, motionEnabled=false, date = new Date(2026,9,15,hour), seasonalCameos = () => []){
+  const animation={started:0,stopped:0};
   // Simulate the actual failure: natural source dimensions survive unless the
   // rendered Image explicitly overrides both width AND height.
   const Image=props=>React.createElement('Image',{...props,nativeBounds:flatten([{width:2048,height:1254},props.style])});
   const ui={Image,View:'View',TouchableOpacity:'TouchableOpacity',StyleSheet:{create:s=>s,absoluteFillObject:{position:'absolute'}},
     AppState:{currentState:'active',addEventListener:()=>({remove(){}})},
-    AccessibilityInfo:{isReduceMotionEnabled:async()=>true,addEventListener:()=>({remove(){}})},
-    Animated:{View:'AnimatedView',Image,Value:class{setValue(){} interpolate(){return 0;}}}};
+    AccessibilityInfo:{isReduceMotionEnabled:async()=>!motionEnabled,addEventListener:()=>({remove(){}})},
+    Easing:{linear:'linear',sin:'sin',inOut:fn=>fn},
+    Animated:{View:'AnimatedView',Image,Value:class{setValue(){} interpolate(){return 0;}},
+      add(){return 0;},modulo(){return {interpolate(){return 0;}};},delay(){},timing(){},sequence(){},loop(){return {start(){animation.started++;},stop(){animation.stopped++;}};}}};
   const cache=new Map();
   function load(name){
     const file=path.resolve(__dirname,'../src',name);
@@ -27,11 +30,13 @@ function harness(hour=12){
     if (dep === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (dep === './Encouragement') return { EncouragementSpot: () => null };
       if(dep==='react')return React;
+      if(dep==='@expo/vector-icons')return {Ionicons:'Ionicons'};
       if(dep==='react-native')return ui;
       if(dep==='./Privacy')return {Text:'Text'};
-      if(dep==='./useNeighborhoodClock')return {__esModule:true,default:()=>new Date(2026,9,15,hour)};
-      if(dep==='./neighborhood-time.mjs')return {neighborhoodWelcomeTheme:()=> 'halloween',isNeighborhoodNight:()=>hour>=18};
+      if(dep==='./useNeighborhoodClock')return {__esModule:true,default:()=>date};
+      if(dep==='./neighborhood-time.mjs')return {neighborhoodWelcomeTheme:()=> 'halloween',isNeighborhoodNight:()=>hour>=18||hour<6,neighborhoodSeasonalCameos:seasonalCameos};
       if(dep.endsWith('.png')||dep.endsWith('.jpeg')||dep.endsWith('.jpg'))return dep;
+      if(dep.endsWith('.mjs'))return require(path.resolve(path.dirname(file),dep));
       if(dep.startsWith('./'))return load(dep.slice(2)+'.js');
       throw new Error('Unexpected dependency '+dep);
     }},{filename:file});
@@ -39,7 +44,7 @@ function harness(hour=12){
   }
   return {Scene:load('PlaidBankScene.js').default,Mark:load('PlaidBankScene.js').BankBuildingMark,
     Welcome:load('SeasonalWelcome.js').default,Bank:load('BankWelcomeCard.js').default,
-    Panorama:load('LivingNeighborhood.js').default};
+    Panorama:load('LivingNeighborhood.js').default,animation};
 }
 for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${hour}:00 and after resize`,async()=>{
   const {Scene,Mark,Welcome,Bank,Panorama}=harness(hour);let renderer;
@@ -63,6 +68,9 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
         assert.equal(image.props.nativeBounds.position,'absolute','image cannot expand its container');
         assert.equal(image.props.resizeMode,'contain','all edges of the source remain visible');
         assert.equal(flatten(frame.props.style).overflow,'hidden');
+        if (id === 'neighborhood-panorama-artwork') {
+          assert.equal(image.props.source, `../assets/characters/neighborhood-panorama-${hour >= 18 ? 'night' : 'day'}.png`);
+        }
         if (id === 'bank-tab-artwork') {
           const badge = frame.findAllByType('Image').find(node => node.props.source === '../assets/branding/payplace-icon.png');
           assert.ok(badge, 'bank facade uses the locked PayPlace logo');
@@ -75,4 +83,56 @@ for(const hour of [12,23])test(`all new artwork fits measured phone frames at ${
     }
     const button=renderer.root.findByType('TouchableOpacity');assert.equal(button.props.accessibilityLabel,'Try Bobbie’s banking demo');
   }finally{await act(()=>renderer.unmount());}
+});
+
+test('the panorama pauses its day and night effects while a panel covers it or Quiet Mode reduces motion',async()=>{
+  for (const hour of [4,5,12,22,23]) {
+    const {Panorama,animation}=harness(hour,true);
+    let renderer;
+    await act(async()=>{renderer=create(React.createElement(Panorama));});
+    try {
+      const scene=renderer.root.findAllByType('View').find(node=>node.props.testID==='neighborhood-panorama-artwork');
+      await act(()=>scene.props.onLayout({nativeEvent:{layout:{width:335,height:335/3}}}));
+      const skies = () => renderer.root.findAllByType('AnimatedView').map(node=>node.props.testID)
+        .filter(id=>id==='neighborhood-airplane'||id==='neighborhood-shooting-star'||id==='neighborhood-saucer');
+      const expected = [hour >= 18 || hour < 6 ? 'neighborhood-shooting-star' : 'neighborhood-airplane'];
+      if (hour === 4 || hour === 23) expected.push('neighborhood-saucer');
+      assert.deepEqual(skies(),expected);
+      const before=animation.started;
+      assert.ok(before>1);
+      await act(()=>renderer.update(React.createElement(Panorama,{paused:true})));
+      assert.ok(animation.stopped>0);
+      assert.deepEqual(skies(),[]);
+      assert.equal(animation.started,before);
+      await act(()=>renderer.update(React.createElement(Panorama,{reduceAnimation:true})));
+      assert.equal(animation.started,before);
+      await act(()=>renderer.update(React.createElement(Panorama)));
+      assert.ok(animation.started>before);
+      assert.deepEqual(skies(),expected);
+    } finally { await act(()=>renderer.unmount()); }
+  }
+});
+
+test('each seasonal cameo uses its own fitted sprite and stops in Quiet Mode', async () => {
+  const { neighborhoodSeasonalCameos } = await import('../src/neighborhood-time.mjs');
+  for (const [month, day, hour, expected] of [
+    [3,5,12,['bunny']], [9,31,21,['witches','cashper']],
+    [10,26,12,['turkey']], [11,24,21,['santa']],
+  ]) {
+    const { Panorama } = harness(hour, true, new Date(2026, month, day, hour), neighborhoodSeasonalCameos);
+    let renderer;
+    await act(async () => { renderer = create(React.createElement(Panorama)); });
+    try {
+      const frame = renderer.root.findAllByType('View').find(node => node.props.testID === 'neighborhood-panorama-artwork');
+      await act(() => frame.props.onLayout({nativeEvent:{layout:{width:335,height:335/3}}}));
+      const findCameo = kind => renderer.root.findAllByType('AnimatedView').find(node => node.props.testID === `neighborhood-${kind}`);
+      for (const kind of expected) {
+        const image = findCameo(kind).findByType('Image');
+        assert.equal(image.props.source, `../assets/characters/cameo-${kind}.png`);
+        assert.equal(image.props.resizeMode, 'contain');
+      }
+      await act(() => renderer.update(React.createElement(Panorama, {reduceAnimation:true})));
+      for (const kind of expected) assert.equal(findCameo(kind), undefined);
+    } finally { await act(() => renderer.unmount()); }
+  }
 });

@@ -11,7 +11,7 @@ const isForeground = () => AppState.currentState === 'active' || Platform.OS ===
 
 function Button({ children, onPress, disabled, ...props }) { return <TouchableOpacity {...props} accessibilityRole="button" disabled={disabled} accessibilityState={{ disabled: !!disabled }} onPress={onPress} style={[s.button, disabled && { opacity: 0.5 }]}><Text style={s.buttonText}>{children}</Text></TouchableOpacity>; }
 
-export function EncouragementProvider({ children, communityEnabled = true }) {
+export function EncouragementProvider({ children, communityEnabled = true, onMilestone }) {
   const [note, setNote] = useState(null), [form, setForm] = useState(false), [text, setText] = useState(''), [alias, setAlias] = useState(''), [consent, setConsent] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
   const generation = useRef(0), sending = useRef(false), mounted = useRef(true);
   useEffect(() => { mounted.current = true; const subscription = AppState.addEventListener('change', state => { if (state !== 'active') { generation.current++; setNote(null); setForm(false); } }); return () => { mounted.current = false; generation.current++; subscription.remove(); }; }, []);
@@ -20,12 +20,17 @@ export function EncouragementProvider({ children, communityEnabled = true }) {
     setForm(false); setMessage('');
     if (!communityEnabled) { setNote(encouragementNote()); return; }
     setNote({ loading: true });
+    const showNote = notes => {
+      if (current !== generation.current || !mounted.current || !isForeground()) return;
+      setNote(encouragementNote(notes));
+      onMilestone?.('foundNote');
+    };
     let timer;
     try {
       // Always refresh. No persistent feed cache can resurrect a removed note.
       const result = await Promise.race([api('published'), new Promise(resolve => { timer = setTimeout(() => resolve(null), 1500); })]);
-      if (current === generation.current && mounted.current && isForeground()) setNote(encouragementNote(approvedPublicNotes(result)));
-    } catch { if (current === generation.current && mounted.current && isForeground()) setNote(encouragementNote()); }
+      showNote(approvedPublicNotes(result));
+    } catch { showNote(); }
     finally { clearTimeout(timer); }
   }
   async function submit() {
@@ -33,7 +38,9 @@ export function EncouragementProvider({ children, communityEnabled = true }) {
     sending.current = true; setBusy(true); setMessage('');
     try {
       const result = await api('submit', { text, alias: alias.trim() || 'A neighbor', consent });
-      if (mounted.current) { setText(''); setAlias(''); setConsent(false); setMessage(result.message); }
+      if (mounted.current) {
+        onMilestone?.('sentNote');
+        setText(''); setAlias(''); setConsent(false); setMessage(result.message); }
     } catch (error) { if (mounted.current) setMessage(error.message); }
     finally { sending.current = false; if (mounted.current) setBusy(false); }
   }
@@ -69,7 +76,7 @@ export function EncouragementSpot({ place = 'garden', style }) {
   const context = useContext(Context), site = ENCOURAGEMENT_PLACES[place] || ENCOURAGEMENT_PLACES.garden;
   const [lit, setLit] = useState(false);
   if (!context) return null;
-  return <TouchableOpacity artworkMode="hotspot" accessibilityRole="button" accessibilityLabel={site.label} accessibilityHint="Opens a handwritten note. No collecting or tasks." onPress={() => { setLit(true); context.discover(); }} onBlur={() => setLit(false)} style={[s.spot, { left: `${site.x}%`, top: `${site.y}%` }, style]}>
+  return <TouchableOpacity artworkMode="hotspot" accessibilityRole="button" accessibilityLabel={site.label} accessibilityHint="Opens a handwritten encouragement note." onPress={() => { setLit(true); context.discover(); }} onBlur={() => setLit(false)} style={[s.spot, { left: `${site.x}%`, top: `${site.y}%` }, style]}>
     <View pointerEvents="none" style={[s.stone, site.shape !== 'stone' && s.brick, (lit) && s.lit]} />
   </TouchableOpacity>;
 }
