@@ -26,7 +26,7 @@ export function MicropaymentsButton({ onPress, forBills = false }) {
     {forBills ? <ActionArtwork action="billMicropayment" size={108} /> :
       <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />}
     <View style={stacked ? s.stackedCaption : s.caption}>
-      <Text style={s.title}>Micropayments</Text>
+      <Text style={s.title} numberOfLines={1} adjustsFontSizeToFit>Micropayments</Text>
       <Text style={s.body}>Track small extra payments.</Text>
     </View>
   </TouchableOpacity>;
@@ -55,7 +55,7 @@ function Content({ finance, onRecord, onUndo }) {
     } catch (error) { saving.current = false; setMessage(error.message); setConfirming(false); }
   }
   return <View style={s.section}>
-    <Text accessibilityRole="header" style={s.title}>Micropayments</Text>
+    <Text accessibilityRole="header" style={s.title} numberOfLines={1} adjustsFontSizeToFit>Micropayments</Text>
     <Text style={s.body}>An extra dollar counts, too. Choose a bill or debt and record a small payment after you make it through your biller.</Text>
     <View style={s.notice}><Text style={s.body}>Manual tracking · PayPlace does not send money. Bank-connected sending is planned for a future update.</Text></View>
     <Text style={s.total}>Extra payments recorded: {money(micropaymentTotal(finance))}</Text>
