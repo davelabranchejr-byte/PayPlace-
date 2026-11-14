@@ -1,0 +1,68 @@
+name: Check PayPlace App Store access
+
+on:
+  push:
+    branches: [release/ios-75-store-prep]
+    paths: [.github/workflows/check-payplace-store-access.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  read-app-store:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE_BASE64 }}
+      ASC_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+      EXPO_ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      EXPO_ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      EXPO_APPLE_TEAM_TYPE: INDIVIDUAL
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Check Apple connection without changing any App Store fields
+        shell: bash
+        run: |
+          umask 077
+          diagnostic_dir=$(mktemp -d)
+          trap 'rm -rf "$diagnostic_dir"' EXIT
+          if [[ -n "$PROVISIONING_PROFILE" ]]; then
+            printf '%s' "$PROVISIONING_PROFILE" | base64 --decode > "$diagnostic_dir/profile.cms"
+            if openssl cms -verify -inform DER -noverify -in "$diagnostic_dir/profile.cms" -out "$diagnostic_dir/profile.plist" 2>/dev/null; then
+              EXPO_APPLE_TEAM_ID=$(python3 -c 'import plistlib,sys; print(plistlib.load(open(sys.argv[1],"rb"))["TeamIdentifier"][0])' "$diagnostic_dir/profile.plist")
+              export EXPO_APPLE_TEAM_ID
+            fi
+          fi
+          if [[ -n "$ASC_KEY_BASE64" && -n "$EXPO_ASC_KEY_ID" ]]; then
+            printf '%s' "$ASC_KEY_BASE64" | base64 --decode > "$diagnostic_dir/apple.p8"
+            export EXPO_ASC_API_KEY_PATH="$diagnostic_dir/apple.p8"
+            echo 'A separately configured Apple API key is available.'
+          else
+            echo 'Checking the Apple authorization already stored in Expo.'
+            unset EXPO_ASC_KEY_ID EXPO_ASC_ISSUER_ID
+          fi
+          npx --yes eas-cli@latest metadata:pull --profile production --non-interactive > "$diagnostic_dir/result.log" 2>&1 || true
+          if [[ -s store.config.json ]]; then
+            node -e 'const a=require("./store.config.json").apple??{}; const info=Object.values(a.info??{}); console.log(JSON.stringify({version:a.version??null, locales:Object.keys(a.info??{}), screenshotCounts:info.map(x=>Object.fromEntries(Object.entries(x.screenshots??{}).map(([k,v])=>[k,v.length]))), hasDescription:info.some(x=>Boolean(x.description)), hasReviewNotes:Boolean(a.review?.notes), hasReviewContact:Boolean(a.review?.email&&a.review?.phone), hasAgeRating:Boolean(a.advisory)}));'
+          fi
+          report() { if grep -Eiq "$1" "$diagnostic_dir/result.log"; then echo "$2"; fi; }
+          report 'Using App Store Connect API Key from EAS credentials service' 'Expo located its stored Apple API key.'
+          report 'No App Store Connect API Key found' 'The CLI found no API key for metadata.'
+          report 'Could not look up stored ASC API key' 'Expo could not return its stored key to the CLI.'
+          report 'Log in to your Apple Developer account|Apple ID:|Apple account credentials' 'The CLI asked for interactive Apple credentials.'
+          report 'Apple Team ID:|Apple Team Type:' 'The CLI asked for Apple team information.'
+          report 'Downloading App Store config' 'The CLI reached the Apple metadata download.'
+          report 'Store configuration download encountered' 'One or more of the metadata resources failed to download.'
+          report 'forbidden|status code 403|insufficient permission|not authorized' 'The API refused the requested permission.'
+          report '401|invalid.*signature|authentication credentials are missing or invalid' 'The API returned an authentication error.'
+          report 'not found|Failed to load app' 'The CLI reported a resource was missing.'
+          report 'Unexpected argument|Unknown command|Nonexistent flag' 'The published CLI rejected a command or option.'
+          report 'ENOTFOUND|ECONNRESET|ETIMEDOUT|fetch failed' 'The CLI reported a network failure.'
+          report 'Warning: Failed to load|Failed to load the app config|Failed to resolve plugin' 'The CLI reported a project configuration error.'
+          report 'Your store config is ready' 'The metadata read completed.'
+          test -s store.config.json
