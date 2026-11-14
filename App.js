@@ -55,6 +55,7 @@ import SeasonalWelcome, { NeighborhoodOpening } from "./src/SeasonalWelcome";
 import { neighborhoodWelcomeTheme } from "./src/neighborhood-time.mjs";
 import useNeighborhoodClock from "./src/useNeighborhoodClock";
 import FittedArtwork from "./src/FittedArtwork";
+import SafeToSpendArtwork from "./src/SafeToSpendArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import NavigationTiles from "./src/NavigationTiles";
 import ActionArtwork from "./src/ActionArtwork";
@@ -2635,8 +2636,7 @@ function MyFinancesScreen({
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
         <View style={styles.safeHeroImageFrame}>
-          <FittedArtwork source={require("./assets/characters/payplace-art-studio.png")} aspectRatio={3 / 2}
-            testID="home-safe-to-spend-artwork" accessible={false} />
+          <SafeToSpendArtwork placement="finances" testID="home-safe-to-spend-artwork" />
         </View>
       </View>
       <NavigationTiles testID="home-shortcuts" items={[
@@ -2759,8 +2759,7 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
         <Text style={styles.safeMapAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>{Math.max(Number(daysUntilPayday || 0), 1)} {Number(daysUntilPayday) > 1 ? "days" : "day"} to payday</Text>
       </View>
-      <FittedArtwork source={require("./assets/characters/money-mood-family-budget.jpg")} style={styles.safeMapArtwork}
-        resizeMode="cover" testID="map-safe-to-spend-artwork" accessible={false} />
+      <SafeToSpendArtwork placement="map" style={styles.safeMapArtwork} testID="map-safe-to-spend-artwork" />
     </TouchableOpacity>}
     {resident && <ScrollView style={{ backgroundColor: "#FFF8EA" }} contentContainerStyle={{ padding: 14 }}>
       <Text accessibilityRole="header" style={{ color: palette.ink, fontSize: 20, fontWeight: "800" }}>{resident.name} · {resident.job}</Text>
@@ -2948,9 +2947,9 @@ const importDemoBills = () => {
         <MicropaymentsButton forBills onPress={onMicropayments} />
       </ExpandableSection>
       <ExpandableSection title="Banking & subscriptions">
-        <NavigationTiles items={[
+        <NavigationTiles stackedArtworkRatio={3 / 2} items={[
           {title:'Banking Demo',source:require('./assets/characters/banking-demo-tile.jpg'),body:'Sample accounts',onPress:onBankingDemo},
-          {title:'Subscription Detective',body:'Premium',onPress:onSubscriptions},
+          {title:'Subscription Detective',source:require('./assets/characters/subscription-detective-banking-tile.jpg'),body:'Premium',onPress:onSubscriptions},
         ]} />
         <Text style={styles.bankingManualNote}>You can add subscriptions manually as bills in any plan.</Text>
         {onBankLinking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Plaid bank-linking availability"
@@ -3224,7 +3223,7 @@ const importDemoBills = () => {
           </View>
         ))
       )}
-      <EntrySheet visible={addingBill} title="Add a bill" onClose={() => setAddingBill(false)}>
+      <EntrySheet visible={addingBill} title="Add a bill" closeScene="bill" onClose={() => setAddingBill(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a bill</Text>
 
@@ -3712,7 +3711,7 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
           {payoffTools}
         </ExpandableSection>
       )}
-      <EntrySheet visible={addingDebt} title="Add a debt" onClose={() => setAddingDebt(false)}>
+      <EntrySheet visible={addingDebt} title="Add a debt" closeScene="debt" onClose={() => setAddingDebt(false)}>
       <View style={styles.formCard}>
         <Text style={styles.formTitle}>Add a debt</Text>
 
@@ -4498,7 +4497,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#097A73", borderColor: "#60CFCB" },
   safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
   safeMapCopy: { flex: 1, minWidth: 0, padding: 10, justifyContent: "center" },
-  safeMapArtwork: { width: "39%", minHeight: 90, flexShrink: 0 },
+  safeMapArtwork: { width: "45%", flexShrink: 0, alignSelf: "center" },
   safeHeroGlowOne: {
     position: "absolute",
     width: 200,
