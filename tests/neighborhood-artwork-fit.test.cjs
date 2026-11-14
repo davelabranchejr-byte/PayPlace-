@@ -27,7 +27,7 @@ function harness(hour=12, motionEnabled=false, date = new Date(2026,9,15,hour), 
     const module={exports:{}};cache.set(file,module);
     const code=babel.transformSync(fs.readFileSync(file,'utf8'),{configFile:false,babelrc:false,
       plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;
-    vm.runInNewContext(code,{module,exports:module.exports,setTimeout,clearTimeout,require:dep=>{
+    vm.runInNewContext(code,{module,exports:module.exports,setTimeout,clearTimeout,setInterval,clearInterval,require:dep=>{
     if (dep === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (dep === './Encouragement') return { EncouragementSpot: () => null };
       if(dep==='react')return React;
