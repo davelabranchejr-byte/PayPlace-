@@ -5,6 +5,7 @@ import { Text } from './Privacy';
 import Alert from './alert';
 export const PRIVACY_URL = 'https://payplace-dave.davelabranchejr.chatgpt.site/privacy';
 export const SUPPORT_URL = 'https://payplace-dave.davelabranchejr.chatgpt.site/support';
+export const SUPPORT_EMAIL = 'annieoaktree@payplace.app';
 export default function PrivacyLinks() {
   const open = url => Linking.openURL(url).catch(() => Alert.alert('Could not open this page', 'Please try again when you have an internet connection.'));
   return <View style={s.row}>

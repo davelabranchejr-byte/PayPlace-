@@ -9,6 +9,7 @@ import { bobbieReadingEm } from './LibraryArtwork';
 import { LibraryBookDetails } from './NeighborhoodLibrary';
 import { normalizeLibrary, LIBRARY_BOOKS } from './neighborhood-library.mjs';
 import InteractiveRoom from './InteractiveRoom';
+import { RoomVisitors } from './NeighborhoodWorld';
 
 const spaRoom = require('../assets/characters/em-interactive-spa.jpg');
 
@@ -88,6 +89,7 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
       ...(bobbieHasBook ? [{label:'Open the library book Bobbie borrowed',caption:'Borrowed Book',area:{left:'61%',top:'62%',width:'30%',height:'29%'},open:()=>setBookDetails(true)}] : []),
     ]}><EncouragementSpot place="spa" style={{ left: '48%', top: '91%' }} /></InteractiveRoom>
     <Text style={s.body}>Tap the grooming station, lounge, or scrapbook.</Text>
+    <RoomVisitors destination="Spa" />
     {bookOverlay}
   </ScrollView>;
   const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>

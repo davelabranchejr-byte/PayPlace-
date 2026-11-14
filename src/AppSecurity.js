@@ -92,7 +92,7 @@ export default function AppSecurity({ children }) {
     <SecurityLockScreen hidden={hidden} ready={ready} busy={busy} error={error} onUnlock={unlock} />
   );
   return (
-    <Context.Provider value={{ native, enabled, available, busy, authenticate, setAppLock, lock, touch }}>
+    <Context.Provider value={{ native, enabled, available, busy, obscured: native && (hidden || locked), authenticate, setAppLock, lock, touch }}>
       <View style={{ flex: 1 }} onTouchStart={touch} onAccessibilityTap={touch}>
         {ready && unlockedOnce ? <View style={{ flex: 1, opacity: native && (hidden || locked) ? 0 : 1 }} pointerEvents={native && (hidden || locked) ? 'none' : 'auto'} accessibilityElementsHidden={native && (hidden || locked)} importantForAccessibility={native && (hidden || locked) ? 'no-hide-descendants' : 'auto'}>{children}</View> : cover}
         {ready && unlockedOnce && <Modal visible={native && (hidden || locked)} animationType="none" onRequestClose={() => {}}>{cover}</Modal>}

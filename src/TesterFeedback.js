@@ -16,26 +16,27 @@ const body = [
 ].join("\n\n");
 const feedbackURL = `https://github.com/davelabranchejr-byte/PayPlace-/issues/new?title=${encodeURIComponent("PayPlace beta feedback")}&body=${encodeURIComponent(body)}`;
 
-export default function TesterFeedback() {
-  const [visible, setVisible] = useState(false);
+export default function TesterFeedback({ onClose }) {
+  const [visible, setVisible] = useState(!!onClose);
   const [error, setError] = useState("");
+  const close = onClose ?? (() => setVisible(false));
   async function openDraft() {
     setError("");
     try { await Linking.openURL(feedbackURL); }
     catch { setError("Could not open feedback. Try again, or use Send Beta Feedback in TestFlight."); }
   }
   return <>
-    <Pressable artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
+    {!onClose && <Pressable artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
       <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain" accessible={false}/>
       <Text style={s.entryText}>Help make the neighborhood better</Text>
       <Text accessible={false} style={s.chevron}>›</Text>
-    </Pressable>
-    <Modal visible={visible} animationType="slide" onRequestClose={() => setVisible(false)}>
+    </Pressable>}
+    <Modal visible={visible} animationType="slide" onRequestClose={close}>
       <SafeAreaView style={s.safe}>
         <ScrollView contentContainerStyle={s.content}>
           <Pressable accessibilityRole="button" accessibilityLabel="Close beta feedback"
-            onPress={() => setVisible(false)} style={s.close}>
+            onPress={close} style={s.close}>
             <Ionicons name="close" size={26} color="#173557" />
           </Pressable>
           <Text style={s.title} accessibilityRole="header">Your visit helps us grow</Text>

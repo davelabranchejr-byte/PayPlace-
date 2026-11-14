@@ -8,15 +8,18 @@ import QuestionGlass from './QuestionGlass';
 import EncouragementReview from './EncouragementReview';
 const defaultApi = createOwnerInboxApi({ sessionStore: ownerSessionStore });
 function Button({ label, onPress, disabled, selected }) { return <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled: !!disabled, selected: !!selected }} disabled={disabled} onPress={onPress} style={[s.button, selected && s.selected, disabled && { opacity: 0.5 }]}><Text style={s.buttonText}>{label}</Text></TouchableOpacity>; }
-export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessionStore }) {
+export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessionStore, daddy: startWithDaddy = false }) {
+  const [daddy, setDaddy] = useState(startWithDaddy);
   const [signedIn, setSignedIn] = useState(false), [checking, setChecking] = useState(true), [email, setEmail] = useState(''), [code, setCode] = useState(''), [challenge, setChallenge] = useState(null);
   const [filter, setFilter] = useState('new'), [questions, setQuestions] = useState([]), [counts, setCounts] = useState(null), [nextOffset, setNextOffset] = useState(null), [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [foreground, setForeground] = useState(AppState.currentState === 'active');
   const [showGlass, setShowGlass] = useState(false);
   const [showEncouragement, setShowEncouragement] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [reply, setReply] = useState('');
   const generation = useRef(0), mounted = useRef(true), pending = useRef(false), filterRef = useRef(filter);
   const [canResend, setCanResend] = useState(true);
   filterRef.current = filter;
-  function clearPrivateData() { generation.current++; setQuestions([]); setCounts(null); setNextOffset(null); }
+  function clearPrivateData() { generation.current++; setQuestions([]); setCounts(null); setNextOffset(null); setSelectedMessage(null); setReply(''); }
   function failed(error) { if (error.signIn) { setShowGlass(false); setShowEncouragement(false); clearPrivateData(); setSignedIn(false); setChecking(false); setBusy(false); } setMessage(error.message); }
   useEffect(() => {
     if (!challenge) { setCanResend(true); return; }
@@ -28,9 +31,13 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
     const current = ++generation.current;
     setBusy(true);
     try {
-      const result = await api(`questions?filter=${view}&offset=${offset}`);
+      const result = await api(daddy ? `daddy-messages?offset=${offset}` : `questions?filter=${view}&offset=${offset}`);
       if (!mounted.current || current !== generation.current || AppState.currentState !== 'active') return;
-      setQuestions(previous => offset ? [...previous, ...result.questions] : result.questions); setCounts(result.counts); setNextOffset(result.nextOffset); setSignedIn(true); setMessage('');
+      const items = daddy ? result.messages : result.questions;
+      if (!Array.isArray(items)) throw new Error('The inbox could not be loaded. Try again.');
+      setQuestions(previous => offset ? [...previous, ...items] : items);
+      setCounts(daddy ? { unread: result.unread } : result.counts);
+      setNextOffset(result.nextOffset); setSignedIn(true); setMessage(previous => previous === 'Email reply sent.' ? previous : '');
     } catch (error) { if (mounted.current && current === generation.current) failed(error); }
     finally { if (mounted.current && current === generation.current) { setBusy(false); setChecking(false); } }
   }
@@ -44,11 +51,11 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
     return () => { mounted.current = false; generation.current++; sub.remove(); };
   }, []);
   useEffect(() => {
-    if (!signedIn || !foreground) return;
+    if (!signedIn || !foreground || selectedMessage) return;
     load();
     const timer = setInterval(() => { if (!pending.current && AppState.currentState === 'active') load(); }, 30000);
     return () => clearInterval(timer);
-  }, [signedIn, foreground, filter]);
+  }, [signedIn, foreground, filter, selectedMessage, daddy]);
   async function sendCode() {
     if (pending.current) return; pending.current = true; setBusy(true); setMessage('');
     try { const result = await api('request-code', { email }, false); if (mounted.current) { setChallenge({ ...result, resendAt: Date.now() + result.resendAfter * 1000 }); setCode(''); setMessage('Check your owner email for an eight-character sign-in code.'); } }
@@ -81,27 +88,90 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
     try { await api('logout', {}); } catch (error) { if (mounted.current) setMessage(error.signIn ? '' : 'Signed out on this phone. The server could not be reached to revoke the session; it will expire automatically.'); }
     finally { await sessionStore.clear(); pending.current = false; if (mounted.current) { setBusy(false); setCode(''); setChallenge(null); } }
   }
+  function chooseInbox(showDaddy) {
+    if (daddy === showDaddy) return;
+    clearPrivateData();
+    setMessage('');
+    setDaddy(showDaddy);
+  }
+  async function openMessage(item) {
+    generation.current++;
+    setMessage('');
+    setSelectedMessage(item.id);
+    setReply(item.replyText ?? '');
+    if (daddy && !item.readAt) {
+      try { await api('daddy-read', { id: item.id }); }
+      catch (error) { if (mounted.current) failed(error); }
+    }
+  }
+  async function sendReply(id) {
+    if (pending.current || !reply.trim()) return;
+    pending.current = true; setBusy(true); setMessage('');
+    const current = generation.current;
+    try {
+      const receipt = await api(daddy ? 'daddy-reply' : 'cabaret-reply', { id, reply });
+      if (receipt.replied !== true) throw new Error('Email delivery could not be confirmed. Refresh before retrying.');
+      if (mounted.current && current === generation.current) {
+        setSelectedMessage(null); setReply(''); setMessage('Email reply sent.');
+      }
+    } catch (error) {
+      if (mounted.current && current === generation.current) failed(error);
+    } finally { pending.current = false; if (mounted.current && current === generation.current) setBusy(false); }
+  }
+  function replyActions(item) {
+    if (selectedMessage !== item.id) {
+      return <Button label={item.repliedAt ? 'View sent reply' : 'Open message to reply'} disabled={busy} onPress={() => openMessage(item)} />;
+    }
+    return <>
+      {item.repliedAt ? <Text selectable style={s.text}>{item.replyText}</Text> : <>
+        <Text style={s.label}>Reply by email</Text>
+        <TextInput accessibilityLabel="Reply to neighbor" multiline maxLength={2000} editable={!busy && !item.replyText}
+          value={reply} onChangeText={setReply} style={s.input} />
+        <Button label="Send email reply" disabled={busy || !reply.trim()} onPress={() => sendReply(item.id)} />
+      </>}
+      <Button label="Back to inbox messages" disabled={busy} onPress={() => { setSelectedMessage(null); setReply(''); }} />
+    </>;
+  }
   if (Platform.OS === 'web') return <ScrollView contentContainerStyle={s.content}><Text style={s.title}>Owner inbox</Text><Text style={s.text}>Open the private mailbag and sign in with the ChatGPT account that owns PayPlace.</Text><Button label="Open secure owner inbox" onPress={() => Linking.openURL(`${EMAIL_SERVICE_ORIGIN}/owner-inbox`)} /></ScrollView>;
   if (signedIn && showEncouragement) return <EncouragementReview api={api} onBack={() => setShowEncouragement(false)} onAuthError={failed} />;
   if (signedIn && showGlass) return <QuestionGlass api={api} count={counts?.glass} visible={foreground} onBack={() => setShowGlass(false)} onAuthError={failed} onDraw={() => load()} />;
   return <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-    <Text accessibilityRole="header" style={s.title}>Bobbie’s private mailbag</Text>
+    <Text accessibilityRole="header" style={s.title}>{daddy ? 'Daddy’s private inbox' : 'Bobbie’s private mailbag'}</Text>
+    {signedIn && foreground && <View style={s.actions}>
+      <Button label="Daddy’s messages" selected={daddy} disabled={busy} onPress={() => chooseInbox(true)} />
+      <Button label="Bobbie’s questions" selected={!daddy} disabled={busy} onPress={() => chooseInbox(false)} />
+    </View>}
     {checking ? <ActivityIndicator accessibilityLabel="Opening owner inbox" color="#FFE1A0" /> : !signedIn ? <>
-      <Text style={s.text}>Owner access only. Verify the owner email to review questions. Signing in here does not change your PayPlace profile or Annie letter preferences.</Text>
+      <Text style={s.text}>{daddy ? 'Owner access only. Verify your owner email to open messages.' : 'Owner access only. Verify the owner email to review questions. Signing in here does not change your PayPlace profile or Annie letter preferences.'}</Text>
       <Text style={s.label}>Owner email</Text><TextInput accessibilityLabel="Owner email" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} editable={!busy} value={email} onChangeText={setEmail} style={s.input} placeholder="Your owner email" placeholderTextColor="#686271" />
       <Button label={challenge ? 'Send a new owner code' : 'Send owner sign-in code'} disabled={busy || !email.trim() || !canResend} onPress={sendCode} />
       {challenge && <><Text style={s.label}>Security code</Text><TextInput accessibilityLabel="Owner security code" autoCapitalize="characters" autoCorrect={false} autoComplete="one-time-code" editable={!busy} value={code} onChangeText={setCode} maxLength={16} style={s.input} /><Button label="Unlock owner inbox" disabled={busy || !code.trim()} onPress={verify} /><Text style={s.note}>Codes expire after 10 minutes. A new code can be requested after one minute.</Text></>}
+    </> : daddy ? <>
+      <Text accessibilityRole="header" style={s.title}>{counts?.unread ?? 0} unread</Text>
+      <View style={s.actions}>
+        <Button label="Refresh inbox" disabled={busy} onPress={() => { setSelectedMessage(null); setReply(''); load(); }} />
+        <Button label="Sign out of owner inbox" disabled={busy} onPress={logout} />
+      </View>
+      {foreground && questions.map(item => (selectedMessage === null || item.id === selectedMessage) && <View key={item.id} style={s.card}>
+        <Text style={s.title}>{item.email}</Text>
+        <Text style={s.note}>{new Date(item.createdAt).toLocaleString()} · {item.repliedAt ? 'Replied' : item.readAt ? 'Read' : 'New'}</Text>
+        <Text selectable style={s.question}>{item.message}</Text>
+        {replyActions(item)}
+      </View>)}
+      {foreground && !busy && !questions.length && <Text style={s.text}>No messages yet.</Text>}
+      {selectedMessage === null && nextOffset !== null && <Button label="Load older messages" disabled={busy} onPress={() => load(filter, nextOffset)} />}
     </> : <>
       <Text accessibilityRole="header" accessibilityLiveRegion="polite" style={s.title}>{counts ? `${counts.unread} new · ${counts.total} total` : 'Loading questions…'}</Text>
-      <View style={s.actions}>{[['new', 'New'], ['all', 'All'], ['archived', 'Archived']].map(([value, label]) => <Button key={value} label={label} selected={filter === value} disabled={busy} onPress={() => setFilter(value)} />)}</View>
-      <View style={s.actions}><Button label="Refresh inbox" disabled={busy} onPress={() => load()} /><Button label="Sign out of owner inbox" disabled={busy} onPress={logout} /></View>
+      <View style={s.actions}>{[['new', 'New'], ['all', 'All'], ['archived', 'Archived']].map(([value, label]) => <Button key={value} label={label} selected={filter === value} disabled={busy || selectedMessage !== null} onPress={() => setFilter(value)} />)}</View>
+      <View style={s.actions}><Button label="Refresh inbox" disabled={busy} onPress={() => { setSelectedMessage(null); setReply(''); load(); }} /><Button label="Sign out of owner inbox" disabled={busy} onPress={logout} /></View>
       <Button label="Encouragement approvals" disabled={busy} onPress={() => setShowEncouragement(true)} />
       <Button label="Open Bobbie’s question glass" disabled={busy} onPress={() => setShowGlass(true)} />
       <Text style={s.note}>{counts?.glass ?? 0} approved slips in the glass. Approve questions below; only submissions with permission to feature can enter.</Text>
       <Text style={s.note}>Refreshes every 30 seconds while open. Shows questions from the last 90 days. Archiving does not publish anything or change permission.</Text>
-      {foreground && questions.map(q => <View key={q.id} style={s.card}>
+      {foreground && questions.map(q => (selectedMessage === null || selectedMessage === q.id) && <View key={q.id} style={s.card}>
         <Text accessibilityRole="header" style={s.title}>{q.stageName}</Text><Text style={s.note}>{q.topic} · {new Date(q.createdAt).toLocaleString()} · {q.status === 'new' ? 'Unread' : q.status === 'read' ? 'Read' : 'Archived'}</Text>
         <Text selectable style={s.question}>{q.question}</Text>
+        {q.replyEmail && <><Text selectable style={s.note}>{q.replyEmail}{q.repliedAt ? ' · Replied' : ''}</Text>{replyActions(q)}</>}
         <Text style={[s.permission, q.featureConsent && s.allowed]}>{q.featureConsent ? 'Permission to feature: YES — question and stage name may be featured.' : 'Permission to feature: NO — private review only.'}</Text>
         <Text style={s.note}>{q.showStatus === 'approved' ? 'In Bobbie’s glass' : q.showStatus === 'drawn' ? 'Already drawn — will not repeat' : 'Not in the glass'}</Text>
         {q.status !== 'archived' && q.showStatus !== 'drawn' && <Button label={q.showStatus === 'approved' ? 'Remove from glass' : 'Approve for Bobbie’s glass'} disabled={busy || !q.featureConsent} onPress={() => approve(q.id, q.showStatus !== 'approved')} />}
@@ -109,7 +179,7 @@ export default function OwnerInbox({ api = defaultApi, sessionStore = ownerSessi
         <View style={s.actions}>{q.status === 'archived' ? <Button label="Restore as unread" disabled={busy} onPress={() => update(q.id, 'new')} /> : <><Button label={q.status === 'new' ? 'Mark read' : 'Mark unread'} disabled={busy} onPress={() => update(q.id, q.status === 'new' ? 'read' : 'new')} /><Button label="Archive" disabled={busy} onPress={() => update(q.id, 'archived')} /></>}</View>
       </View>)}
       {foreground && !busy && !questions.length && <Text style={s.text}>{filter === 'new' ? 'You’re all caught up. New questions will appear here.' : 'No questions in this view.'}</Text>}
-      {nextOffset !== null && <Button label="Load older questions" disabled={busy} onPress={() => load(filter, nextOffset)} />}
+      {selectedMessage === null && nextOffset !== null && <Button label="Load older questions" disabled={busy} onPress={() => load(filter, nextOffset)} />}
     </>}
     {busy && !checking && <ActivityIndicator accessibilityLabel="Working on owner inbox" color="#FFE1A0" />}
     {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}

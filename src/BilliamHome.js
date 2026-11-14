@@ -4,6 +4,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import {Text} from './Privacy';
 import FittedArtwork from './FittedArtwork';
 import InteractiveRoom from './InteractiveRoom';
+import { RoomVisitors } from './NeighborhoodWorld';
 import EntrySheet from './EntrySheet';
 import BillScanner from './BillScanner';
 import BillDraftReview from './BillDraftReview';
@@ -80,6 +81,7 @@ export default function BilliamHome({finance,onAdd,onUpdate,onTemplates,onHouseh
         area: { left:`${x}%`, top:`${y}%`, width:`${width}%`, height:`${height}%` }, open: () => setTool(item.id) };
     })} />
     <Text style={s.body}>Tap a marked station for help with your bills.</Text>
+    <RoomVisitors destination="Billiam" />
     <EntrySheet visible={!!task} title={task?.title || 'Billiam'} onClose={()=>setTool(null)}>
       {task?.image && <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false} />}
       {tool==='scan'&&<BillScanner initialOpen bills={bills} onAdd={onAdd} onUpdate={onUpdate} history={history} templates={templates} onRecurring={recurring}/>}

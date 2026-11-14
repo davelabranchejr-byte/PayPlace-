@@ -5,14 +5,42 @@ import { Ionicons } from '@expo/vector-icons';
 import FittedArtwork from './FittedArtwork';
 import { RoomDestinations } from './InteractiveRoom';
 import { Text } from './Privacy';
-import { isNeighborhoodNight, neighborhoodSeasonalCameos } from './neighborhood-time.mjs';
+import ActionArtwork from './ActionArtwork';
+import CharacterArtwork from './CharacterArtwork';
+import { buildingArtwork } from './NeighborhoodNav';
+import { isNeighborhoodNight, neighborhoodSeasonalCameos, neighborhoodWelcomeTheme, neighborhoodWelcomeLocations } from './neighborhood-time.mjs';
 import useNeighborhoodClock from './useNeighborhoodClock';
 import useNeighborhoodWeather from './useNeighborhoodWeather';
-import { NeighborhoodEffects, TownLife } from './NeighborhoodWorld';
+import { NeighborhoodEffects, NeighborhoodWalkers, TownLife } from './NeighborhoodWorld';
 import { isNeighborhoodLeafSeason, neighborhoodResidents, neighborhoodWalkers, neighborhoodWeatherNames, seasonalNeighborhoodWeather } from './neighborhood-world.mjs';
 const day=require('../assets/characters/neighborhood-panorama-day.png');
 const night=require('../assets/characters/neighborhood-panorama-night.png');
 const butterfly=require('../assets/characters/monarch-butterfly.png');
+const decorations = {
+  spring: require('../assets/characters/seasonal/decor-spring.png'),
+  summer: require('../assets/characters/seasonal/decor-summer.png'),
+  autumn: require('../assets/characters/seasonal/decor-autumn.png'),
+  winter: require('../assets/characters/seasonal/decor-winter.png'),
+  easter: require('../assets/characters/seasonal/decor-easter.png'),
+  'independence-day': require('../assets/characters/seasonal/decor-independence-day.png'),
+  halloween: require('../assets/characters/seasonal/decor-halloween.png'),
+  'winter-holidays': require('../assets/characters/seasonal/decor-winter-holidays.png'),
+};
+const seasonDecor = { easter: 'spring', 'independence-day': 'summer', thanksgiving: 'autumn',
+  halloween: 'autumn', 'winter-holidays': 'winter', 'new-year': 'winter' };
+const holidayDecor = { 'new-year': 'winter-holidays' };
+
+function MapDecorations({ theme, dark }) {
+  const seasonal = seasonDecor[theme] ?? theme;
+  return <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants"
+    style={[StyleSheet.absoluteFillObject, { opacity: dark ? 0.84 : 1 }]}>
+    {[[6, 71], [39, 77], [64, 69], [88, 74]].map(([left, top]) =>
+      <Image key={left} source={decorations[seasonal]} resizeMode="contain" style={[s.decor, { left: `${left}%`, top: `${top}%` }]} />)}
+    {seasonDecor[theme] && [22, 53, 75].map(left =>
+      <Image key={left} source={decorations[holidayDecor[theme] ?? theme] ?? decorations[seasonal]}
+        resizeMode="contain" style={[s.decor, { left: `${left}%`, top: '60%' }]} />)}
+  </View>;
+}
 const lamps=[[3,32],[10.4,25],[30.6,24],[48.6,34],[65.2,31],[80.2,17],[95.4,36]];
 const flies=[[19,61],[28,72],[36,51],[44,77],[54,66],[61,55],[70,76],[80,61]];
 function Glow({x,y,index,playing,firefly=false}) {
@@ -155,11 +183,22 @@ const treehouses = [
   { id: 'Chapo', caption: 'Chapo’s Kitchen', x: 72, y: 61 },
   { id: 'Annie', caption: 'Annie’s House', x: 83, y: 43 },
   { id: 'Bobbie', caption: 'Bobbie’s Boutique', x: 89, y: 81 },
+  { id: 'Cabaret', caption: 'Bobbie’s Cabaret', x: 95, y: 61 },
+  { id: 'Daddy', caption: 'Daddy’s House', x: 41, y: 83, artwork: buildingArtwork('Daddy') },
+  { id: 'Spa', caption: 'Em’s Pet Spa', x: 66, y: 87, artwork: buildingArtwork('Spa') },
 ];
 
-export default function LivingNeighborhood({ reduceAnimation = false, paused = false, onOpen, weatherZip, onWeatherZip, showTreehouses = false, children }) {
+export function NeighborhoodTownLife({ weatherZip, weather, onWeatherZip, onOpen }) {
   const now = useNeighborhoodClock();
-  const weather = useNeighborhoodWeather(weatherZip);
+  return <TownLife residents={neighborhoodResidents(now)} zip={weatherZip} weather={weather}
+    weatherKind={weather?.kind || seasonalNeighborhoodWeather(now)} leaves={isNeighborhoodLeafSeason(now)}
+    onOpen={onOpen} onWeatherZip={onWeatherZip} />;
+}
+
+export default function LivingNeighborhood({ reduceAnimation = false, paused = false, onOpen, weatherZip, sharedWeather, showTreehouses = false, fullMap = false, mapOnly = false, onMeet, openingTheme }) {
+  const now = useNeighborhoodClock();
+  const localWeather = useNeighborhoodWeather(mapOnly ? undefined : weatherZip);
+  const weather = mapOnly ? sharedWeather : localWeather;
   const weatherKind = weather?.kind || seasonalNeighborhoodWeather(now);
   const leaves = isNeighborhoodLeafSeason(now);
   const residents = neighborhoodResidents(now);
@@ -167,6 +206,7 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
   const [active,setActive]=useState(AppState.currentState==='active');
   const scroll = useRef(null);
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const [offset, setOffset] = useState(0);
   const [{ width, height }, setBounds] = useState({ width: 0, height: 0 });
   useEffect(()=>{
@@ -177,28 +217,47 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
     return ()=>{mounted=false;motion.remove();app.remove();};
   },[]);
   const dark=isNeighborhoodNight(now);
+  const theme = neighborhoodWelcomeTheme(now);
   const hour = now.getHours();
   const lateNight = dark && (hour >= 23 || hour < 5);
   const seasonalCameos = neighborhoodSeasonalCameos(now, dark);
   const walkers = neighborhoodWalkers(residents, now);
   const playing=active&&!reduce&&!reduceAnimation&&!paused;
-  const sceneWidth = Math.max(viewportWidth, Math.min(viewportWidth * 1.85, 960));
-  const scrollEnd = sceneWidth - viewportWidth;
+  const fittedWidth = viewportHeight > 0 ? Math.min(viewportWidth, viewportHeight * 3) : viewportWidth;
+  const panWidth = Math.min(viewportWidth * (mapOnly ? 2.65 : 1.85), mapOnly ? 1150 : 960);
+  const sceneWidth = fullMap ? fittedWidth : Math.max(viewportWidth, panWidth);
+  const scrollEnd = Math.max(0, sceneWidth - viewportWidth);
+  useEffect(() => {
+    if (fullMap) { setOffset(0); scroll.current?.scrollTo({ x: 0, animated: false }); }
+  }, [fullMap]);
+  useEffect(() => {
+    if (!openingTheme || !scrollEnd || fullMap) return undefined;
+    const focus = neighborhoodWelcomeLocations[openingTheme] ?? 0.5;
+    const x = Math.max(0, Math.min(scrollEnd, sceneWidth * focus - viewportWidth / 2));
+    const frame = setTimeout(() => scroll.current?.scrollTo({ x, animated: false }), 0);
+    return () => clearTimeout(frame);
+  }, [openingTheme, scrollEnd, sceneWidth, viewportWidth, fullMap]);
   const shownOffset = Math.min(offset, scrollEnd);
   const move = direction => scroll.current?.scrollTo({
     x: Math.max(0, Math.min(scrollEnd, shownOffset + direction * viewportWidth * 0.55)),
     animated: !reduce && !reduceAnimation,
   });
-  const description = dark ? 'PayPlace at night with lanterns, fireflies and occasional shooting stars.' : 'PayPlace by day with butterflies and an occasional passing plane.';
+  const timeDescription = dark ? 'PayPlace at night with lanterns and fireflies.' : 'PayPlace by day with butterflies.';
+  const description = `${timeDescription} ${neighborhoodWeatherNames[weatherKind]}${weather?.label ? ` in ${weather.label}` : ''}.`;
   const destinations = showTreehouses ? [...landmarks, ...treehouses] : landmarks;
   return <>
-  <View style={s.viewport} onLayout={event => setViewportWidth(event.nativeEvent.layout.width)} testID="neighborhood-panorama-viewport">
+  <View style={[s.viewport, mapOnly && s.mapViewport]} onLayout={({ nativeEvent: { layout } }) => {
+    setViewportWidth(layout.width);
+    setViewportHeight(layout.height);
+  }} testID="neighborhood-panorama-viewport">
   <ScrollView ref={scroll} horizontal nestedScrollEnabled directionalLockEnabled showsHorizontalScrollIndicator={false}
+    scrollEnabled={!fullMap} contentContainerStyle={mapOnly ? s.mapCenter : undefined}
     accessibilityLabel={description} scrollEventThrottle={32} onScroll={event => setOffset(Math.max(0, event.nativeEvent.contentOffset.x))}
     testID="neighborhood-panorama-scroll">
   <FittedArtwork accessible={false} source={dark?night:day} style={[s.scene, sceneWidth > 0 && { width: sceneWidth }]} aspectRatio={3} testID="neighborhood-panorama-artwork" onLayout={({ nativeEvent: { layout } }) => setBounds(previous => previous.width === layout.width && previous.height === layout.height
       ? previous : { width: layout.width, height: layout.height })}
     accessibilityLabel={description}>
+    {mapOnly && <MapDecorations theme={theme} dark={dark} />}
     <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
       <Waterfall playing={playing} />
       {playing && width > 0 && <>
@@ -210,25 +269,26 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
         {lamps.map(([x,y],index)=><Glow key={`lamp-${index}`} x={x} y={y} index={index} playing={playing}/>)}
         {flies.map(([x,y],index)=><Glow key={`fly-${index}`} x={x} y={y} index={index} playing={playing} firefly/>)}
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
-      <NeighborhoodEffects weather={weatherKind} {...{leaves, dark, walkers, playing, width, height}} />
+      <NeighborhoodEffects weather={weatherKind} {...{leaves, dark, playing, width, height}} />
     </View>
-    {onOpen && <RoomDestinations destinations={destinations.map(({ id, label, caption, x, y }) => ({
-      label: label || `Visit ${caption} from the map`, caption, open: () => onOpen(id),
-      area: { ...s.landmark, left: `${x}%`, top: `${y}%` },
+    {onOpen && <RoomDestinations destinations={destinations.map(({ id, label, caption, artwork, x, y }) => ({
+      label: label || `Visit ${caption} from the map`, caption: fullMap ? undefined : caption, open: () => onOpen(id),
+      artwork: id === 'Cabaret' ? <ActionArtwork action="homeCabaret" size={fullMap ? 36 : 42} />
+        : artwork && <CharacterArtwork source={artwork} style={fullMap ? s.buildingFull : s.building} resizeMode="contain" />,
+      area: { ...(fullMap ? s.quietLandmark : s.landmark), ...(id === 'Cabaret' ? (fullMap ? s.cabaretFull : s.cabaret) : artwork && !fullMap ? s.buildingLandmark : null), left: `${x}%`, top: `${y}%` },
     }))} />}
     <EncouragementSpot place="town" style={{ left: '73%' }} />
+    <NeighborhoodWalkers {...{ walkers, playing, width, height, onMeet }} />
   </FittedArtwork>
   </ScrollView>
   </View>
-  <View style={s.mapControls}>
+  {!mapOnly && <View style={s.mapControls}>
     <Text style={s.hint}>{neighborhoodWeatherNames[weatherKind]}{scrollEnd > 1 ? ' · Swipe to explore' : ''}</Text>
     {scrollEnd > 1 && <View style={s.arrows}>
       <PanButton direction="left" disabled={shownOffset < 1} onPress={() => move(-1)} />
       <PanButton direction="right" disabled={shownOffset >= scrollEnd - 1} onPress={() => move(1)} />
     </View>}
-  </View>
-  {children}
-  {onOpen && onWeatherZip && <TownLife {...{ residents, onOpen, weather, weatherKind, leaves, onWeatherZip }} zip={weatherZip} />}
+  </View>}
   </>;
 }
 
@@ -241,13 +301,22 @@ function PanButton({ direction, disabled, onPress }) {
 
 const s=StyleSheet.create({
   viewport: { borderRadius: 18, overflow: 'hidden', backgroundColor: '#173C50' },
+  mapViewport: { flex: 1, borderRadius: 0 },
+  mapCenter: { flexGrow: 1, justifyContent: 'center', alignItems: 'center' },
   scene: { backgroundColor: '#173C50' },
+  decor: { position: 'absolute', width: '9%', height: '24%' },
   mapControls: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 5, marginBottom: 10 },
   arrows: { flexDirection: 'row', gap: 6 },
   arrow: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 14,
     backgroundColor: '#E9D4FF', borderWidth: 1, borderColor: '#9E75C1' },
   arrowDisabled: { opacity: 0.42 },
   landmark: { width: 110, height: 48, justifyContent: 'center', padding: 0, transform: [{ translateX: -55 }, { translateY: -24 }] },
+  quietLandmark: { width: 48, height: 48, transform: [{ translateX: -24 }, { translateY: -24 }] },
+  cabaret: { width: 104, height: 70, justifyContent: 'flex-end', transform: [{ translateX: -82 }, { translateY: -52 }] },
+  cabaretFull: { transform: [{ translateX: -30 }, { translateY: -30 }] },
+  buildingLandmark: { width: 96, height: 70, justifyContent: 'flex-end', transform: [{ translateX: -48 }, { translateY: -48 }] },
+  building: { width: 55, height: 48 },
+  buildingFull: { width: 45, height: 44 },
   water: { position: 'absolute', left: '49.5%', top: '72%', width: '9%', height: '3.5%', borderRadius: 6, backgroundColor: '#C9F4FF' },
   hint: { flex: 1, fontSize: 13, color: '#34465E' },
   skyPass: { position: 'absolute' },

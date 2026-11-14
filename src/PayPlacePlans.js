@@ -2,11 +2,12 @@ import React from 'react';
 import { Image, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 
-const plans = [
+export const plans = [
   {
     id: 'basic',
     name: 'Basic',
     price: '$0.99',
+    onboardingSummary: 'Manual budgeting, bills and savings',
     color: '#08796E',
     fill: '#65EBEF',
     heading: 'Start with Daddy',
@@ -26,6 +27,7 @@ const plans = [
     id: 'plus',
     name: 'Plus',
     price: '$4.99',
+    onboardingSummary: 'Debt payoff tools, micropayments and printable calendar',
     color: '#8C5900',
     fill: '#FFE455',
     heading: 'Build momentum with Taters',
@@ -44,6 +46,7 @@ const plans = [
     id: 'premium',
     name: 'Premium',
     price: '$19.99',
+    onboardingSummary: 'Bank sync and subscription tracking planned',
     color: '#6925A0',
     fill: '#DCABFF',
     heading: 'Queen Bobbie’s connected plan',

@@ -8,6 +8,14 @@ export function isNeighborhoodNight(date = new Date()) {
 }
 export function neighborhoodWelcomeTheme(date = new Date()) {
   const month = date.getMonth();
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const today = Date.UTC(year, month, day);
+  const thanksgiving = 22 + (4 - new Date(Date.UTC(year, 10, 1)).getUTCDay() + 7) % 7;
+  if ((month === 11 && day >= 30) || (month === 0 && day <= 2)) return 'new-year';
+  if (neighborhoodSeasonalCameos(date, false).includes('bunny')) return 'easter';
+  if (month === 6 && day <= 7) return 'independence-day';
+  if (today >= Date.UTC(year, 10, thanksgiving - 5) && today <= Date.UTC(year, 10, thanksgiving + 3)) return 'thanksgiving';
   if (month === 9) return 'halloween';
   if (month === 11) return 'winter-holidays';
   if (month <= 1) return 'winter';
@@ -15,6 +23,12 @@ export function neighborhoodWelcomeTheme(date = new Date()) {
   if (month <= 7) return 'summer';
   return 'autumn';
 }
+
+export const neighborhoodWelcomeLocations = {
+  spring: 0.54, summer: 0.22, autumn: 0.72, winter: 0.83,
+  halloween: 0.89, 'winter-holidays': 0.83, easter: 0.54,
+  'independence-day': 0.22, thanksgiving: 0.72, 'new-year': 0.54,
+};
 
 // Gregorian Easter Sunday (Meeus/Jones/Butcher algorithm).
 function easterSunday(year) {

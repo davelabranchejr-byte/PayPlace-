@@ -18,6 +18,7 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
   const [formOpen, setFormOpen] = useState(false);
   const [question, setQuestion] = useState('');
   const [stageName, setStageName] = useState('');
+  const [replyEmail, setReplyEmail] = useState('');
   const [topic, setTopic] = useState(QUESTION_TOPICS[0]);
   const [featureConsent, setFeatureConsent] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -27,14 +28,14 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
     if (pending.current) return;
     setMessage('');
     let payload;
-    try { payload = prepareQuestion({ question, stageName, topic, featureConsent }); }
+    try { payload = prepareQuestion({ question, stageName, topic, featureConsent, replyEmail }); }
     catch (error) { setMessage(error.message); return; }
     pending.current = true; setBusy(true);
     try {
       const result = await submitQuestion('questions', payload);
       if (result.accepted !== true || !result.id) throw new Error('Your question could not be confirmed. Please try again.');
-      setQuestion(''); setStageName(''); setFeatureConsent(false); setFormOpen(false);
-      setMessage(`Your question is in Bobbie’s private mailbag. Reference: ${result.id}. The team reviews submissions; an answer or episode appearance is not guaranteed.`);
+      setQuestion(''); setStageName(''); setReplyEmail(''); setFeatureConsent(false); setFormOpen(false);
+      setMessage(`Your question is in Bobbie’s private mailbag. Reference: ${result.id}. The PayPlace owner reviews each question privately.`);
     } catch (error) { setMessage(error.message || 'Could not send your question. Your draft is still here.'); }
     finally { pending.current = false; setBusy(false); }
   }
@@ -43,7 +44,7 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
     <SafeAreaView style={s.safe}><KeyboardAvoidingView style={s.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={s.header}><Text accessibilityRole="header" style={s.title}>{ownerInbox ? 'Owner inbox' : 'Bobbie’s Cabaret'}</Text><Button secondary label={watching || ownerInbox ? 'Back to Cabaret' : returnLabel} onPress={back} /></View>
       {visible && ownerInbox ? <OwnerInbox /> : visible && watching ? <CabaretVideo /> : <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <FittedArtwork source={artwork} aspectRatio={1312 / 1199} accessibilityLabel="Bobbie Darlending, a green-eyed tabby in a red wig and blue sequined gown, on a gold-lit cabaret stage." />
+        <FittedArtwork source={artwork} aspectRatio={1312 / 1199} style={s.artwork} accessibilityLabel="Bobbie Darlending, a green-eyed tabby in a red wig and blue sequined gown, on a gold-lit cabaret stage." />
         <Text style={s.eyebrow}>LIVE FROM THE PAYPLACE CLUBHOUSE</Text>
         <Text accessibilityRole="header" style={s.title}>The Bobbie Darlending Show</Text>
         <Text style={s.quote}>“Darling, bring your questions. I’ve already brought the drama.”</Text>
@@ -54,7 +55,7 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
         {!!message && <Text accessibilityLiveRegion="polite" style={s.notice}>{message}</Text>}
         {formOpen && <View style={s.form}>
           <Text accessibilityRole="header" style={s.title}>A note for Bobbie</Text>
-          <Text style={s.body}>Leave your real name out if you like. Questions go to the PayPlace team for review, rather than an instant chat.</Text>
+          <Text style={s.body}>Leave your real name out if you like. Your question goes to the PayPlace owner.</Text>
           <Text style={s.label}>Stage name (optional)</Text>
           <TextInput accessibilityLabel="Stage name (optional)" editable={!busy} style={s.input} value={stageName} onChangeText={setStageName} maxLength={40} placeholder="Anonymous neighbor" placeholderTextColor="#686271" />
           <Text style={s.label}>What’s on your mind?</Text>
@@ -62,11 +63,14 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
           <Text style={s.label}>Your question</Text>
           <TextInput accessibilityLabel="Your question" editable={!busy} style={[s.input, s.question]} multiline textAlignVertical="top" maxLength={1500} value={question} onChangeText={setQuestion} placeholder="Dear Bobbie…" placeholderTextColor="#686271" />
           <Text style={s.note}>{question.length}/1,500 characters. Please leave out account numbers, passwords, addresses and private details about other people.</Text>
-          <View style={s.consent}><Switch accessibilityLabel="Allow my question and stage name to be featured" disabled={busy} value={featureConsent} onValueChange={setFeatureConsent} /><Text style={[s.body, { flex: 1 }]}>The team may feature my question and stage name in a public show or PayPlace social post, edited for length and privacy.</Text></View>
-          <Text style={s.note}>Optional and off by default. Submitting shares only this form with the PayPlace team. Your profile and budget are not attached. Anonymous means no name or email is requested; the hosting service may keep technical request logs.</Text>
+          <Text style={s.label}>Reply email (optional)</Text>
+          <TextInput accessibilityLabel="Reply email (optional)" editable={!busy} style={s.input} value={replyEmail} onChangeText={setReplyEmail} maxLength={254} keyboardType="email-address" autoComplete="email" autoCapitalize="none" autoCorrect={false} placeholder="you@example.com" placeholderTextColor="#686271" />
+          <Text style={s.note}>Leave an email if you’d like a private reply. Only the PayPlace owner can see it.</Text>
+          <View style={s.consent}><Switch accessibilityLabel="Allow my question and stage name to be featured" disabled={busy} value={featureConsent} onValueChange={setFeatureConsent} /><Text style={[s.body, { flex: 1 }]}>The PayPlace owner may feature my question and stage name in a public show or PayPlace social post, edited for length and privacy.</Text></View>
+          <Text style={s.note}>Permission is optional and off by default. To ask anonymously, leave both the stage name and reply email blank.</Text>
           <Button label={busy ? 'Sending your question…' : 'Send to Bobbie’s mailbag'} disabled={busy} onPress={send} />
         </View>}
-        <Text style={s.note}>Comedy and general money education. Submissions are reviewed by the team before any public use.</Text>
+        <Text style={s.note}>Comedy and general money education. The PayPlace owner reviews questions before any public use.</Text>
         <Button secondary label="Owner inbox" onPress={() => setOwnerInbox(true)} />
         <Text style={s.note}>Private mailbag access for the PayPlace owner.</Text>
       </ScrollView>}
@@ -75,6 +79,7 @@ export default function BobbieCabaret({ visible, onClose, returnLabel = 'Back to
 }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: '#190B22' }, content: { padding: 18, gap: 14, paddingBottom: 40, maxWidth: 650, width: '100%', alignSelf: 'center' },
+  artwork: { maxWidth: 420, alignSelf: 'center', borderRadius: 20 },
   header: { padding: 14, gap: 8, borderBottomWidth: 1, borderColor: '#69406D' }, title: { color: '#FFE1A0', fontSize: 25, fontWeight: '800' },
   eyebrow: { color: '#FFE1A0', fontSize: 11, fontWeight: '800', letterSpacing: 1.2 }, body: { color: '#FFF2F9', fontSize: 15, lineHeight: 22 },
   quote: { color: '#FFBDE2', fontSize: 20, fontStyle: 'italic', lineHeight: 28 }, note: { color: '#D6C4DD', fontSize: 13, lineHeight: 19 },

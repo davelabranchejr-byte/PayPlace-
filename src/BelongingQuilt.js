@@ -14,6 +14,7 @@ const artwork = (crop, label) => ({ source: approvedQuilt, width: 851, height: 1
 const acorn = artwork([258, 249, 335, 337], "An embroidered golden acorn on a padded cream quilt square with floral patchwork and hand stitching");
 const quiltRoom = artwork([83, 1069, 690, 327], "Annie's warm room with the colorful Belonging Quilt hanging on a wooden rail");
 const patches = {
+  acorn: [artwork([264, 254, 323, 323], acorn.label), "Your first acorn square"],
   firstBill: [require("../assets/characters/quilt-first-bill.png"), "Saved your first bill"],
   paidBill: [require("../assets/characters/quilt-paid-bill.png"), "Recorded your first bill payment"],
   foundNote: [require("../assets/characters/quilt-found-note.png"), "Found your first hidden note"],
@@ -29,6 +30,46 @@ const patches = {
   joinedFacebook: [require("../assets/characters/quilt-joined-facebook.png"), "Joined the Facebook group"],
   invitedFriend: [require("../assets/characters/quilt-invited-friend.png"), "Invited a friend"],
 };
+
+const patchesPerRow = 3;
+
+function quiltRows(earned) {
+  const ids = ["acorn", ...earned];
+  const rows = [];
+  for (let i = 0; i < ids.length; i += patchesPerRow) rows.push(ids.slice(i, i + patchesPerRow));
+  return rows;
+}
+
+function QuiltPatchArtwork({ id }) {
+  return <CharacterArtwork source={patches[id][0]} style={s.patchArt} resizeMode="contain" accessible={false} />;
+}
+
+const chairRows = [
+  { left: "7.5%", top: "53.6%", width: "13.8%", transform: [{ rotate: "7deg" }] },
+  { left: "9.1%", top: "58.1%", width: "13.8%", transform: [{ rotate: "9deg" }] },
+  { left: "10.9%", top: "62.7%", width: "13.8%", transform: [{ rotate: "10deg" }] },
+  { left: "12.7%", top: "67.3%", width: "15%", transform: [{ rotate: "6deg" }] },
+  { left: "14.6%", top: "72.2%", width: "15%", transform: [{ rotate: "4deg" }] },
+];
+
+const chairScene = 1024;
+const chairUpholstery = [20, 519, 310, 329];
+const chairPercent = pixels => `${pixels / chairScene * 100}%`;
+
+export function ChairQuilt({ finance }) {
+  return <View testID="chair-quilt" pointerEvents="none" accessibilityElementsHidden
+    importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
+    <Image source={require("../assets/characters/annie-chair-upholstery.png")} resizeMode="stretch"
+      accessible={false} style={s.chairUpholstery} />
+    {quiltRows(quiltMilestones(finance)).map((ids, index) =>
+      <View key={ids[0]} style={[s.patchRow, s.chairRow, chairRows[index]]}>
+        {ids.map(id => <View key={id} testID={`chair-quilt-square-${id}`} style={s.patch}>
+          <QuiltPatchArtwork id={id} />
+        </View>)}
+      </View>
+    )}
+  </View>;
+}
 
 export function AcornSquare() {
   return <View style={s.firstSquare}>
@@ -79,20 +120,16 @@ export function QuiltDetail({ onBack, finance, onMilestone, backLabel = "Back to
       <Text style={s.title} accessibilityRole="header">You have a place here.</Text>
       <Text accessibilityRole="header" style={s.title}>Your quilt · {earned.length + 1} {earned.length ? 'squares' : 'square'}</Text>
       <Text style={s.body}>See how big your quilt can grow as you take small steps and share kindness.</Text>
-      <View style={s.patchwork}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Your first acorn square"
-          accessibilityState={{ selected: selected === "acorn" }} style={s.patch} onPress={() => setSelected("acorn")}>
-          <CharacterArtwork source={acorn} style={s.patchArt} resizeMode="contain" />
-        </Pressable>
-        {earned.map(id => {
-          const [source, label] = patches[id];
-          return <Pressable key={id} style={s.patch} testID={`quilt-square-${id}`} onPress={() => setSelected(id)}
-            accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected: selected === id }}>
-            <Image source={source} style={s.patchArt} resizeMode="contain" accessible={false} />
-          </Pressable>;
-        })}
+      <View style={s.patchwork} testID="belonging-quilt-patchwork">
+        {quiltRows(earned).map(ids => <View key={ids[0]} style={s.patchRow}>
+          {ids.map(id => <Pressable key={id} style={[s.patch, s.stitchedEdge]} testID={`quilt-square-${id}`}
+            onPress={() => setSelected(id)} accessibilityRole="button"
+            accessibilityLabel={patches[id][1]} accessibilityState={{ selected: selected === id }}>
+            <QuiltPatchArtwork id={id} />
+          </Pressable>)}
+        </View>)}
       </View>
-      <Text style={s.patchLabel} accessibilityLiveRegion="polite">{earned.includes(selected) ? patches[selected][1] : "Your first acorn square"}</Text>
+      <Text style={s.patchLabel} accessibilityLiveRegion="polite">{patches[earned.includes(selected) ? selected : "acorn"][1]}</Text>
       <Text style={s.promise}>“Belonging isn't something you earn. It's something you're given.”</Text>
       <Text style={s.signature}>Welcome home. Love, Annie.</Text>
       {community.length > 0 && <View style={s.community}>
@@ -135,9 +172,16 @@ const s = StyleSheet.create({
   community: { marginTop: 20, gap: 4 },
   communityRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4 },
   communityButton: { minHeight: 48, justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: "#F3E3FF" },
-  patchwork: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", gap: 4, marginTop: 14, padding: 6, borderRadius: 12, backgroundColor: "#E4CCA7" },
-  patch: { width: "31%", maxWidth: 160, borderRadius: 4, overflow: "hidden", backgroundColor: "#FFF9EB" },
-  patchArt: { width: "100%", aspectRatio: 1 },
+  patchwork: { width: "100%", maxWidth: 480, alignSelf: "center", marginTop: 14 },
+  patchRow: { flexDirection: "row", width: "100%" },
+  chairUpholstery: {
+    position: "absolute", left: chairPercent(chairUpholstery[0]), top: chairPercent(chairUpholstery[1]),
+    width: chairPercent(chairUpholstery[2]), height: chairPercent(chairUpholstery[3]),
+  },
+  chairRow: { position: "absolute" },
+  patch: { width: "33.333%", aspectRatio: 1, overflow: "hidden", backgroundColor: "#E4CCA7" },
+  stitchedEdge: { borderWidth: 1, borderColor: "#9B7751", borderRadius: 2 },
+  patchArt: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },
   patchLabel: { color: "#173557", fontSize: 14, fontWeight: "800", textAlign: "center", padding: 7 },
 
 });

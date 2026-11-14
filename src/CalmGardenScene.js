@@ -2,6 +2,7 @@ import { EncouragementSpot, EncouragementScene } from "./Encouragement";
 import React, { useEffect, useState } from "react";
 import { AppState, Image, StyleSheet, View } from "react-native";
 import CaptionedArtwork from "./CaptionedArtwork";
+import FittedArtwork from "./FittedArtwork";
 import { Text } from "./Privacy";
 
 const sunset = require("../assets/characters/annie-backyard-sunset.png");
@@ -21,7 +22,7 @@ function BackyardScene({ children }) {
   }, []);
   return (
     <View style={s.scene}>
-      <Image source={isNight ? night : sunset} style={[StyleSheet.absoluteFillObject, s.artwork]} resizeMode="cover"
+      <FittedArtwork source={isNight ? night : sunset} style={StyleSheet.absoluteFillObject} testID="calm-garden-backyard-artwork"
         accessibilityLabel={isNight
           ? "Annie's fenced backyard at night, with glowing string lights and fireflies among the flowers"
           : "Annie's fenced backyard at sunset, with birds and butterflies among the flowers"} />
@@ -139,7 +140,6 @@ export default function CalmGardenScene({ pearl, children }) {
 }
 
 const s = StyleSheet.create({
-  artwork: { width: "100%", height: "100%" },
   scene: { width: "100%", height: "100%", overflow: "hidden", backgroundColor: "#183A35" },
   storyArt: { width: "100%", aspectRatio: 1, backgroundColor: "#183A35" },
   quoteCaption: { backgroundColor: "rgba(15, 43, 39, 0.94)" },

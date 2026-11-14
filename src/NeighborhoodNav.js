@@ -31,9 +31,9 @@ export function buildingArtwork(id) {
 
 // Navigation depicts its destination; no reused money-tool or Facebook scenes.
 export const tabArtwork = {
-  Home: buildingArtwork('Home'),
+  Home: require('../assets/characters/nav-neighborhood-homes.png'),
+  Finances: buildingArtwork('Home'),
   Budget: buildingArtwork('Budget'),
-  Neighborhood: require('../assets/characters/nav-neighborhood-homes.png'),
 };
 export default function NeighborhoodNav({ current, switchTab }) {
   const { width, fontScale } = useWindowDimensions();
@@ -42,7 +42,7 @@ export default function NeighborhoodNav({ current, switchTab }) {
     {PRIMARY_DESTINATIONS.map(place => {
       const selected = place.id === primaryDestination(current);
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
-        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Neighborhood'?1.5:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab]}>
+        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Finances'?1.25:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab]}>
         {place.id === 'Bills' ? <BankBuildingMark style={[s.artwork, wrap && s.compactArt]} /> :
           <CharacterArtwork source={tabArtwork[place.id]} style={[s.artwork, wrap && s.compactArt]} resizeMode="contain" accessible={false} />}
         <Text adjustsFontSizeToFit={!wrap} minimumFontScale={0.85} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap ? 'Bills &\nBanking' : place.label}</Text>

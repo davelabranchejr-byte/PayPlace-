@@ -7,6 +7,13 @@ export function prepareQuestion(input) {
   if (stageName.length > 40 || /[\u0000-\u001f\u007f]/.test(stageName)) throw new Error('Keep your stage name to 40 characters, without line breaks.');
   if (!QUESTION_TOPICS.includes(input.topic)) throw new Error('Choose a question topic.');
   if (typeof input.featureConsent !== 'boolean') throw new Error('Choose whether your question may be featured.');
-  // An explicit allowlist prevents profile, budget, email or bank data being added.
-  return { question, stageName: stageName || 'Anonymous neighbor', topic: input.topic, featureConsent: input.featureConsent, consentVersion: 'bobbie-show-v1' };
+  const replyEmail = typeof input.replyEmail === 'string' ? input.replyEmail.trim().toLowerCase() : '';
+  if ((input.replyEmail != null && typeof input.replyEmail !== 'string') ||
+      (replyEmail && (replyEmail.length > 254 || !/^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/.test(replyEmail)))) {
+    throw new Error('Enter a valid reply email, or leave it blank.');
+  }
+  return {
+    question, stageName: stageName || 'Anonymous neighbor', topic: input.topic, featureConsent: input.featureConsent,
+    consentVersion: 'bobbie-show-v1', ...(replyEmail ? { replyEmail } : {}),
+  };
 }

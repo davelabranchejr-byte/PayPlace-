@@ -1,16 +1,29 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { EncouragementSpot } from './Encouragement';
 import React, { useState } from 'react';
-import { Modal, SafeAreaView, ScrollView, StyleSheet, Text } from 'react-native';
-import FamilyWall, { CharacterStory, FAMILY_STORIES } from './FamilyWall';
-import { QuiltDetail } from './BelongingQuilt';
+import { Image, Modal, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import FamilyWall, { AnnieRoomPortraits, CharacterStory, FAMILY_STORIES } from './FamilyWall';
+import { ChairQuilt, QuiltDetail } from './BelongingQuilt';
 import BobbieSmartMirror from './BobbieSmartMirror';
 import { SmallSteps } from './NeighborCare';
 import { neighborhoodLabel } from './neighborhood-destinations.mjs';
 import NeighborhoodLibrary, { LibraryReader } from './NeighborhoodLibrary';
 import InteractiveRoom from './InteractiveRoom';
+import { RoomVisitors } from './NeighborhoodWorld';
+import FacebookNeighborhood from './FacebookNeighborhood';
+import TesterFeedback from './TesterFeedback';
+import DaddyMail from './DaddyMail';
 
 const rooms = {
+  Daddy: {
+    image: require('../assets/characters/daddy-neighborhood-feedback.png'),
+    aspectRatio: 3 / 2,
+    spots: [
+      ['Open Daddy’s laptop to email him', 'email', 3, 66, 24, 32],
+      ['Open Daddy’s budget notebook', 'Budget', 27, 61, 26, 23],
+      ['Open Daddy’s suggestion box', 'feedback', 53, 59, 24, 34],
+    ],
+  },
   Annie: {
     image: require('../assets/characters/annie-interactive-house.jpg'),
     hint: 'Tap the books, family portraits, quilt, or mailbox.',
@@ -66,19 +79,25 @@ const spotCaptions = {
   library: 'Library', family: 'Family Wall', quilt: 'Quilt', Billiam: 'Mailbox', mirror: 'Smart Mirror',
   story: 'My Story', Calm: 'Calm Garden', Bills: 'Review Bills', Spa: 'Pet Spa', steps: 'Small Steps',
   Calendar: 'Extra Payday', Budget: 'Budget',
+  email: 'Email Daddy', feedback: 'Beta Feedback',
 };
 
 export default function NeighborRoom({ destination, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
+  const [feedback, setFeedback] = useState(false);
+  const [mailOpen, setMailOpen] = useState(false);
   const [panel, setPanel] = useState(null);
   const title = neighborhoodLabel(destination);
   const neighbor = FAMILY_STORIES.find(person => person.id === destination.toLowerCase());
   const room = rooms[destination];
   const showRoom = !panel || panel === 'mirror';
+  const isDaddy = destination === 'Daddy';
 
   function open(target) {
-    if (target === 'quilt') setQuilt(true);
+    if (target === 'email') setMailOpen(true);
+    else if (target === 'feedback') setFeedback(true);
+    else if (target === 'quilt') setQuilt(true);
     else if (target === 'story') setStory(neighbor);
     else if (['library', 'family', 'steps', 'mirror'].includes(target)) setPanel(target);
     else onNavigate(target);
@@ -89,13 +108,19 @@ export default function NeighborRoom({ destination, finance, onHome, onNavigate,
     {showRoom ? <>
       <Text accessibilityRole="header" style={s.title}>{title}</Text>
       {destination === 'Bobbie' && <Text style={s.body}>High maintenance, not high and mighty.</Text>}
-      <InteractiveRoom source={room.image} testID="neighbor-room-artwork" destinations={room.spots.map(([label, target, x, y, width, height]) => ({
+      <InteractiveRoom source={room.image} aspectRatio={room.aspectRatio} testID="neighbor-room-artwork"
+        artwork={isDaddy ? <View pointerEvents="none" accessible={false} style={s.laptopFrame}>
+          <Image source={require('../assets/characters/daddy-workshop-laptop.png')} style={s.laptop} resizeMode="contain" accessible={false} />
+        </View> : destination === 'Annie' && <><AnnieRoomPortraits /><ChairQuilt finance={finance} /></>}
+        destinations={room.spots.map(([label, target, x, y, width, height]) => ({
         label, caption: spotCaptions[target],
         area: { left: `${x}%`, top: `${y}%`, width: `${width}%`, height: `${height}%` }, open: () => open(target),
       }))}>
         <EncouragementSpot place="room" style={{ left: '49%', top: '91%' }} />
       </InteractiveRoom>
-      <Text style={s.body}>{room.hint}</Text>
+      {room.hint && <Text style={s.body}>{room.hint}</Text>}
+      {isDaddy && <FacebookNeighborhood />}
+      <RoomVisitors destination={destination} />
       {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} showLibraryLink={false} />}
     </> : <>
       <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Back to ${title}`} style={s.back} onPress={() => setPanel(null)}><Text style={s.backText}>‹ {title}</Text></TouchableOpacity>
@@ -108,10 +133,14 @@ export default function NeighborRoom({ destination, finance, onHome, onNavigate,
     <Modal visible={!!story || quilt} onRequestClose={() => { setStory(null); setQuilt(false); }} animationType="slide">
       <SafeAreaView style={s.screen}>{quilt ? <QuiltDetail finance={finance} onMilestone={onQuiltMilestone} backLabel="Back to Annie’s House" onBack={() => setQuilt(false)} /> : story && <CharacterStory person={story} backLabel={`Back to ${title}`} onBack={() => setStory(null)} />}</SafeAreaView>
     </Modal>
+    {feedback && <TesterFeedback onClose={() => setFeedback(false)} />}
+    {mailOpen && <DaddyMail onClose={() => setMailOpen(false)} />}
   </ScrollView>;
 }
 
 const s = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#FFF8F2' }, content: { padding: 18, paddingBottom: 28, gap: 12 },
   back: { minHeight: 48, justifyContent: 'center' }, backText: { color: '#6550AF', fontWeight: '800', fontSize: 15 },
   title: { color: '#173557', fontWeight: '900', fontSize: 28 }, body: { color: '#34465E', fontSize: 16, lineHeight: 24 },
+  laptopFrame: { position: 'absolute', left: '3%', top: '69%', width: '23%', height: '27%' },
+  laptop: { width: '100%', height: '100%' },
 });

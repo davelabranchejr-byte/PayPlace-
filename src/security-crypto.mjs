@@ -14,7 +14,7 @@ import { validateQuiltMilestones } from './quilt-milestones.mjs';
 
 export const BACKUP_ITERATIONS = 600000;
 export const MAX_BACKUP_BYTES = 2 * 1024 * 1024;
-const profileFields = ['name', 'email', 'goal', 'moneyFeeling', 'challenge', 'payFrequency', 'connectBank', 'notes', 'arrivalReason'];
+const profileFields = ['name', 'email', 'goal', 'moneyFeeling', 'challenge', 'payFrequency', 'connectBank', 'notes', 'arrivalReason', 'planPreference'];
 const aad = utf8ToBytes('PayPlace encrypted vault v1');
 const backupAAD = utf8ToBytes('PayPlace password backup v1');
 

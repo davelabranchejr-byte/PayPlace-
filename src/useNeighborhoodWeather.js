@@ -9,7 +9,6 @@ export default function useNeighborhoodWeather(zip) {
   const [result, setResult] = useState(() => lastWeather?.zip === zip ? lastWeather : null);
   useEffect(() => {
     if (!isWeatherZip(zip)) {
-      lastWeather = undefined;
       setResult(null);
       return;
     }

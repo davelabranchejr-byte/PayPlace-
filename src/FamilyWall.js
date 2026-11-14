@@ -13,6 +13,23 @@ const storyPortraits = Object.fromEntries(Object.entries(FAMILY_PORTRAITS).map((
   id, { source: familyWallArtwork, ...FAMILY_WALL_SIZE, crop: detail.crop, label: detail.label },
 ]));
 
+const roomFrames = {
+  daddy: { left: "75.9%", top: "22.1%", width: "8.5%", height: "11.4%", borderRadius: "50%", transform: [{ rotate: "4deg" }] },
+  bobbie: { left: "67.2%", top: "27.1%", width: "6%", height: "8.5%", borderRadius: "50%", transform: [{ rotate: "4deg" }] },
+  tate: { left: "72.2%", top: "21.1%", width: "3.1%", height: "4.1%", borderRadius: 2, transform: [{ rotate: "-4deg" }] },
+  chapo: { left: "85.7%", top: "16.1%", width: "4.3%", height: "6%", borderRadius: 2, transform: [{ rotate: "-8deg" }] },
+  westley: { left: "89%", top: "24.4%", width: "6.8%", height: "6.5%", borderRadius: "50%", transform: [{ rotate: "3deg" }] },
+};
+
+export function AnnieRoomPortraits() {
+  return <View testID="annie-room-portraits" pointerEvents="none" accessibilityElementsHidden
+    importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
+    {Object.entries(roomFrames).map(([id, frame]) =>
+      <CharacterArtwork key={id} source={storyPortraits[id]} style={[s.roomPortrait, frame]} resizeMode="cover" />
+    )}
+  </View>;
+}
+
 // Backgrounds adapted from PAYPLACE_CHARACTER_BIBLE.md, preserving the approved canon.
 export const FAMILY_STORIES = [
   { id: "daddy", name: "Daddy", role: "The one who brought everyone home", promise: "No one is left behind.", paragraphs: [
@@ -111,7 +128,7 @@ export function CharacterStory({ person, onBack, backLabel = "Back to the family
         </View>;
       })}
     </View>
-    <TouchableOpacity style={s.done} onPress={onBack} accessibilityRole="button"><Text style={s.doneText}>Back to the family wall</Text></TouchableOpacity>
+    <TouchableOpacity style={s.done} onPress={onBack} accessibilityRole="button"><Text style={s.doneText}>{backLabel}</Text></TouchableOpacity>
   </ScrollView>
     <Modal visible={!!enlarged} animationType="fade" onRequestClose={() => setEnlarged(null)}>
       <SafeAreaView style={s.viewer}>
@@ -140,6 +157,7 @@ const s = StyleSheet.create({
   gallery: { position: "relative", flexShrink: 0, backgroundColor: "#7D4527" },
   // Native Image otherwise keeps the asset's intrinsic dimensions despite its absolute edges.
   galleryImage: { width: "100%", height: "100%" },
+  roomPortrait: { position: "absolute", backgroundColor: "#593821" },
   portraitTarget: { position: "absolute", borderRadius: 12, borderWidth: 3, borderColor: "transparent" },
   portraitPressed: { backgroundColor: "rgba(255, 239, 166, 0.18)", borderColor: "#FFE89B" },
   screen: { flex: 1, backgroundColor: "#F8F3E8" },
