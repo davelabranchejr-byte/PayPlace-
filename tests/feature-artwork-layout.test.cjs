@@ -40,14 +40,14 @@ test('all four original card images stay within measured phone frames and keep t
     assert.equal(frames.length,4);
     for(const screenWidth of [320,393,430]){
       const cardWidth=(screenWidth-40-12)/2;
-      const width=cardWidth-22,height=Math.min(width/1.5,112);
+      const width=cardWidth-2,height=width/1.5;
       for(const frame of frames)await act(()=>frame.props.onLayout({nativeEvent:{layout:{width,height,x:0,y:0}}}));
       const images=renderer.root.findAllByType('Image');
       assert.equal(images.length,4);assert.equal(new Set(images.map(i=>i.props.source)).size,4,'each card retains its own original scene');
       for(const image of images){
         assert.equal(image.props.nativeBounds.width,width);
         assert.equal(image.props.nativeBounds.height,height,'native source height must be overridden explicitly');
-        assert.equal(image.props.resizeMode,'contain','the full illustration stays visible');
+        assert.equal(image.props.resizeMode,'cover','the illustration fills the tile');
         assert.equal(image.props.nativeBounds.left,0);assert.equal(image.props.nativeBounds.top,0);
       }
       for(const frame of frames)assert.equal(flatten(frame.props.style).overflow,'hidden');
@@ -65,11 +65,16 @@ test('feature-screen artwork uses the same bounded sizing and remains compact on
     for(const panel of ['payday','history','firstWin','quiet']){
       await act(()=>renderer.update(render(panel)));
       const frame=renderer.root.findAllByType('View').find(v=>v.props.testID===`feature-hero-${panel}`);
+      if(panel==='payday'||panel==='firstWin'){
+        assert.equal(frame,undefined,'the shortcut scene is shown only on its tile');
+        continue;
+      }
       assert.equal(flatten(frame.props.style).maxHeight,220);
       await act(()=>frame.props.onLayout({nativeEvent:{layout:{width:353,height:220,x:0,y:0}}}));
       const image=renderer.root.findByType('Image');
       assert.equal(image.props.nativeBounds.width,353);assert.equal(image.props.nativeBounds.height,220);
       assert.equal(image.props.resizeMode,'contain');
+      assert.notEqual(image.props.source,components.essentialsArtwork[panel]);
     }
   }finally{await act(()=>renderer.unmount());}
 });

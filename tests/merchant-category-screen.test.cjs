@@ -35,7 +35,11 @@ test('actual sheet corrects a purchase, remembers the rule, shows selected state
   const f = await fixture(); const r = f.renderer;
   try {
     await act(() => button(r, 'Change category for Costco, Shopping, Sample checking, $130.00').props.onPress());
-    assert.equal(r.root.findAllByType('FittedArtwork').length, 4);
+    assert.equal(r.root.findAllByType('FittedArtwork').length, 8);
+    for (const category of ['Water', 'Electricity', 'HOA Fees', 'Gas Bill']) {
+      await act(() => button(r, `Choose ${category}`).props.onPress());
+      assert.equal(button(r, `Choose ${category}`).props.accessibilityState.selected, true);
+    }
     await act(() => button(r, 'Choose Groceries').props.onPress());
     assert.equal(button(r, 'Choose Groceries').props.accessibilityState.selected, true);
     await act(() => button(r, 'Remember across my accounts').props.onPress());
@@ -54,15 +58,16 @@ test('failed persistence retains the draft and choices; a retry saves exactly on
   const f = await fixture(); const r = f.renderer;
   try {
     await act(() => button(r, 'Change category for Costco, Shopping, Sample checking, $130.00').props.onPress());
-    await act(() => button(r, 'Choose Clothing').props.onPress());
+    await act(() => button(r, 'Choose Gas Bill').props.onPress());
     f.setFail(true);
     await act(async () => button(r, 'Save my choice').props.onPress());
     assert.match(texts(r), /Could not save/);
-    assert.equal(button(r, 'Choose Clothing').props.accessibilityState.selected, true);
+    assert.equal(button(r, 'Choose Gas Bill').props.accessibilityState.selected, true);
     assert.equal(f.state.overrides.length, 0);
     f.setFail(false);
     await act(async () => button(r, 'Save my choice').props.onPress());
     assert.equal(f.state.overrides.length, 1);
+    assert.equal(f.state.overrides[0].category, 'Gas Bill');
     assert.equal(button(r, 'Save my choice'), undefined);
   } finally { await act(() => r.unmount()); }
 });

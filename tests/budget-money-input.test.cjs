@@ -28,8 +28,10 @@ vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosu
     if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (name === './Encouragement') return { EncouragementSpot: () => null };
   if (name === 'react') return React;
-  if (name === 'react-native') return { View:'View', TouchableOpacity:'TouchableOpacity', StyleSheet:{create:value=>value} };
+  if (name === 'react-native') return { Image:'Image', View:'View', TouchableOpacity:'TouchableOpacity', StyleSheet:{create:value=>value} };
   if (name === './Privacy') return { Text:'Text' };
+  if (name === './ActionArtwork') return { ACTION_ARTWORK: {} };
+  if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };
   throw new Error(name);
 }});
 const sandbox = {

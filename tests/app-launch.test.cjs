@@ -393,11 +393,26 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(map.props.showTreehouses, true);
     assert.equal(map.props.mapOnly, true);
     assert.equal(button('Open Home'), undefined, 'the map opens without the tab bar');
+    const skipWelcome = button('Skip welcome and explore Home');
+    if (skipWelcome) await act(() => skipWelcome.props.onPress());
+    const rotationCue = () => renderer.root.findAllByType('Pressable')
+      .find(node => node.props.testID === 'map-rotation-cue');
+    assert.ok(rotationCue(), 'portrait has a dedicated full-map cue');
+    assert.ok(rotationCue().findAllByType('AnimatedView')
+      .some(node => node.props.testID === 'map-rotation-firefly' && node.props.style.at(-1).opacity === 0.95),
+      'the arrow is still visible with Reduce Motion');
+    await act(() => rotationCue().props.onPress());
+    assert.equal(map.props.fullMap, true);
+    assert.equal(rotationCue(), undefined);
+    await act(() => button('Explore the map by swiping').props.onPress());
+    assert.equal(map.props.fullMap, false);
+    assert.ok(rotationCue());
     const shortcut = renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel?.startsWith('Safe to Spend,'));
     const artwork = shortcut.find(node => node.type === 'View' && node.props.testID === 'map-safe-to-spend-artwork');
     await act(() => artwork.props.onLayout({ nativeEvent: { layout: { width: 128, height: 128 / 1.5 } } }));
     const shortcutImage = shortcut.findByType('Image');
-    assert.equal(shortcutImage.props.resizeMode, 'contain');
+    assert.equal(shortcutImage.props.resizeMode, 'cover');
+    assert.equal(shortcutImage.props.source, harness.artworkId('assets/characters/money-mood-family-budget.jpg'));
     assert.equal(shortcutImage.props.style.width, 128);
     assert.equal(shortcutImage.props.style.height, 128 / 1.5);
     await act(() => shortcut.props.onPress());
@@ -716,6 +731,10 @@ test('plan tabs keep primary navigation visible and open working tools without p
     await press('Open neighborhood menu');
     const directory = nodes('ScrollView', node => node.props.testID === 'neighborhood-destinations')[0];
     assert.equal(directory.props.horizontal, true);
+    const cabaret = button('Open Bobbie’s Cabaret Show');
+    const cabaretArt = cabaret.find(node => node.type?.name === 'FittedArtwork');
+    assert.equal(cabaretArt.props.source, harness.artworkId('assets/characters/home-cabaret-bobbie.png'));
+    assert.equal(cabaretArt.props.resizeMode, 'cover');
     assert.ok(button('Open Chapo’s Kitchen').findAllByType('Text').every(node => node.props.numberOfLines === undefined));
     await press('Open Chapo’s Kitchen');
     assert.equal(button('Open Home').props.accessibilityState.selected, true);
@@ -734,7 +753,9 @@ test('plan tabs keep primary navigation visible and open working tools without p
       ['Basic', 'plan-basic-daddy.png'], ['Plus', 'plan-plus-tate.png'],
       ['Premium', 'plan-premium-queen-bobbie.png'],
     ]) {
-      assert.equal(button(tier).findByType('Image').props.source, harness.artworkId(`assets/characters/${artwork}`));
+      const image = button(tier).findByType('Image');
+      assert.equal(image.props.source, harness.artworkId(`assets/characters/${artwork}`));
+      assert.ok(image.props.style.some(style => style.width === '100%'));
     }
     assert.match(texts(), /Start wherever you are. No shame./);
     assert.ok(button('Try free Banking Demo from Plans'));
@@ -907,17 +928,26 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.deepEqual(button('How My Finances works').findAllByType('Image').map(image => image.props.source), [
       harness.artworkId('assets/characters/feature-how-home-works-daddy.png'), approvedLogo,
     ]);
-    for (const [label, file] of [
-      ['Open Review my bills', 'home-bills-westley.png'],
-      ['Open Payoff methods', 'home-payoff-methods-westley.png'],
+    for (const [title, file] of [
+      ['Review my bills', 'finances-bills-westley.jpg'],
+      ['One small step', 'finances-step-tate.jpg'],
+      ['Payoff methods', 'finances-payoff-bobbie.jpg'],
+      ['Budget', 'finances-budget-chapo.jpg'],
     ]) {
       const expected = harness.artworkId(`assets/characters/${file}`);
-      assert.equal(button(label).findByType('Image').props.source, expected);
+      const tile = renderer.root.find(node => node.type === 'View' && node.props.testID === 'home-shortcuts')
+        .find(node => node.type === 'TouchableOpacity' && node.props.accessibilityLabel === `Open ${title}`);
+      const frame = tile.find(node => node.type === 'View' && typeof node.props.onLayout === 'function');
+      await act(() => frame.props.onLayout({ nativeEvent: { layout: { width: 164, height: 164 } } }));
+      assert.equal(tile.findByType('Image').props.source, expected);
+      assert.equal(tile.findByType('Image').props.style.width, 164);
       assert.equal(renderer.root.findAllByType('Image').filter(image => image.props.source === expected).length, 1);
     }
     await press('Open Home');
-    const cabaret = button('Visit Bobbie’s Cabaret from the map');
-    assert.equal(cabaret.findByType('Image').props.source, harness.artworkId('assets/characters/home-cabaret-bobbie.png'));
+    for (const label of ['Bobbie’s Cabaret', 'Daddy’s House', 'Em’s Pet Spa']) {
+      const destination = button(`Visit ${label} from the map`);
+      assert.equal(destination.findAllByType('Image').length, 0, 'the landmark is painted into the panorama');
+    }
     await press('Visit Bobbie’s Cabaret from the map');
     assert.ok(button('Watch the Show — Meowgarita & Money'));
     await press('Back to the neighborhood');
@@ -937,6 +967,18 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.ok(renderer.root.find(node => node.type?.name === 'BillRow' && node.props.bill.id === 'rent'));
     assert.equal(button('Open My debt plan'), undefined);
     assert.equal(button('Open Banking Demo'), undefined);
+    for (const [label, file] of [
+      ['Add a bill', 'bills-add-billiam.jpg'],
+      ['Open Monthly payment calendar', 'bills-calendar-billiam.jpg'],
+    ]) {
+      const tile = button(label);
+      const frame = tile.find(node => node.type === 'View' && typeof node.props.onLayout === 'function');
+      await act(() => frame.props.onLayout({ nativeEvent: { layout: { width: 164, height: 164 } } }));
+      const image = tile.findByType('Image');
+      assert.equal(image.props.source, harness.artworkId(`assets/characters/${file}`));
+      assert.equal(image.props.style.width, 164);
+      assert.equal(image.props.style.height, 164);
+    }
     await press('Open Monthly payment calendar');
     const calendar = renderer.root.find(node => node.type?.name === 'MonthlyPaymentCalendar');
     assert.equal(calendar.props.canPrint, true);
@@ -955,10 +997,29 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(harness.finance().groomingAppointments[0].time, '10:30');
     await pressCalendar('Close monthly calendar');
     const micropaymentShortcut = () => button('Micropayments: small extra payments');
+    const measureArt = async (tile, width = 280) => {
+      const frame = tile.find(node => node.type === 'View' && typeof node.props.onLayout === 'function');
+      await act(() => frame.props.onLayout({ nativeEvent: { layout: { width, height: width / 1.5 } } }));
+      const image = tile.findByType('Image');
+      assert.equal(image.props.style.width, width);
+      assert.equal(image.props.resizeMode, 'cover');
+      return image.props.source;
+    };
     assert.equal(micropaymentShortcut(), undefined);
     await press('Bill tools, debt & payments');
-    const billMicro = harness.artworkId('assets/characters/feature-micropayments-billiam.png');
-    assert.ok(micropaymentShortcut().findAllByType('Image').some(image => image.props.source === billMicro));
+    const billMicro = harness.artworkId('assets/characters/bills-micropayments-billiam.jpg');
+    assert.equal(await measureArt(micropaymentShortcut()), billMicro);
+    for (const [label, file] of [
+      ['Open Billiam’s bill tools', 'billiam-canonical.png'],
+      ['Open My debt plan', 'snapshot-debt-plan.png'],
+      ['Open Undo & payment history', 'feature-payment-history.png'],
+    ]) assert.equal(await measureArt(button(label), 164), harness.artworkId(`assets/characters/${file}`));
+    await press('Banking & subscriptions');
+    for (const [label, file] of [
+      ['Open Banking Demo', 'banking-demo-tile.jpg'],
+      ['Open Subscription Detective', 'subscription-detective-bobbie-tile.jpg'],
+    ]) assert.equal(await measureArt(button(label), 164), harness.artworkId(`assets/characters/${file}`));
+    await press('Banking & subscriptions');
     assert.equal(input('Bill name'), undefined);
     await press('Add a bill');
     const methodNodes = renderer.root.findAll(node => node.type === 'TouchableOpacity' || node.type?.name === 'BilliamShortcut');
@@ -966,8 +1027,8 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     const manualIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'submitBill');
     const westleyIndex = methodNodes.findIndex(node => node.type === 'TouchableOpacity' && node.props.onPress?.name === 'importDemoBills');
     assert.ok(manualIndex < scanIndex && scanIndex < westleyIndex, 'Tate, Billiam, then Westley');
-    const sampleArt = button('Try sample bill review').findByType('Image');
-    assert.equal(sampleArt.props.style.height, 76, 'sample Westley fits inside the labeled shortcut');
+    assert.equal(await measureArt(button('Try sample bill review')),
+      harness.artworkId('assets/characters/sample-bills-westley-mailman.png'));
     await act(() => input('Bill name').props.onChangeText('Internet draft'));
     await press('Close add a bill');
     assert.equal(input('Bill name'), undefined);
@@ -986,7 +1047,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     const debtHelp = harness.artworkId('assets/characters/feature-how-debt-works.png');
     assert.equal(button('How Debt works').findByType('Image').props.source, debtHelp);
     const debtMicro = harness.artworkId('assets/characters/feature-micropayments-westley.png');
-    assert.ok(micropaymentShortcut().findAllByType('Image').some(image => image.props.source === debtMicro));
+    assert.equal(await measureArt(micropaymentShortcut()), debtMicro);
     assert.notEqual(debtMicro,billMicro);
     assert.equal(renderer.root.find(node => node.type?.name === 'DebtBuddyScene').findAllByType('Image').length, 0);
 
@@ -998,11 +1059,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     const strategy = method => renderer.root.findAllByType('TouchableOpacity')
       .find(node => node.props.testID === `payoff-method-${method}`);
     for (const [method, artwork] of Object.entries(artworkByMethod)) {
-      const images = strategy(method).findAllByType('Image');
-      assert.equal(images.length, 1, `${method} uses one original scene`);
-      assert.equal(images[0].props.source, harness.artworkId(`assets/characters/${artwork}`));
-      assert.equal(images[0].props.resizeMode, 'contain');
-      assert.ok(images[0].props.style.at(-1).width > 150, 'the approved art gets the larger part of the card');
+      assert.equal(await measureArt(strategy(method)), harness.artworkId(`assets/characters/${artwork}`));
       await act(() => strategy(method).props.onPress());
       assert.equal(strategy(method).props.accessibilityState.selected, true);
       assert.equal(harness.finance().payoffMode, method);
@@ -1033,7 +1090,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
       'Open Em’s Pet Spa', 'Open Calm Garden', 'Open Annie’s House', 'Open Bobbie’s Boutique',
       'Open Westley’s Den', 'Open Tate’s Hangout', 'Open Chapo’s Kitchen', 'Open Daddy’s House',
     ]);
-    const art = tiles.map(tile => tile.find(node => node.type?.name === 'CharacterArtwork').props.source);
+    const art = tiles.map(tile => tile.find(node => ['CharacterArtwork', 'FittedArtwork'].includes(node.type?.name)).props.source);
     assert.equal(new Set(art.map(source => JSON.stringify(source))).size, tiles.length);
     assert.equal(button('Visit the mascots'), undefined);
     assert.equal(button('Join the Neighborhood on Facebook'), undefined);

@@ -6,8 +6,12 @@ async function fixture({fontScale=1}={}){
   const flatten=s=>Array.isArray(s)?Object.assign({},...s.map(flatten)):s||{};
   const NativePressable=({children,...props})=>React.createElement('Pressable',props,typeof children==='function'?children({pressed:false}):children);
   const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,useWindowDimensions:()=>({width:375,height:812,fontScale}),StyleSheet:{flatten,create:value=>value}};
-  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./brand')return {payplaceLogo:'approved-payplace-icon'};if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name==='./PayPlaceBadge')return load('PayPlaceBadge.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
+  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./brand')return {payplaceLogo:'approved-payplace-icon'};if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name==='./FittedArtwork')return load('FittedArtwork.js');if(name==='./PayPlaceBadge')return load('PayPlaceBadge.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
   return {...load('MascotTouchable.js'),FeatureLinks:load('FeatureLinks.js').default,Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
+}
+async function measureFeature(button, width = 320) {
+  const frame = button.find(node => node.type === 'View' && typeof node.props.onLayout === 'function');
+  await act(() => frame.props.onLayout({ nativeEvent: { layout: { width, height: width / 1.5 } } }));
 }
 test('unillustrated commands keep their behavior without picking art from labels', async () => {
   const f = await fixture();
@@ -76,10 +80,11 @@ test('feature shortcuts display large unchanged artwork and open the same destin
   try{
     const buttons=renderer.root.findAllByType('TouchableOpacity');assert.equal(buttons.length,3);
     for(let i=0;i<buttons.length;i++){
+      await measureFeature(buttons[i]);
       const images=buttons[i].findAllByType('Image');assert.equal(images.length,1,'no duplicate action image is added');
       assert.equal(images[0].props.source,f.art[items[i].artworkAction]);
-      assert.equal(images[0].props.style.width,128);assert.equal(images[0].props.style.height,128);
-      assert.equal(images[0].props.resizeMode,'contain');
+      assert.equal(images[0].props.style.width,320);assert.equal(images[0].props.style.height,320 / 1.5);
+      assert.equal(images[0].props.resizeMode,'cover');
       await act(()=>buttons[i].props.onPress());
     }
     assert.deepEqual(opened,items.map(item=>item.title));
@@ -106,11 +111,11 @@ test('different feature destinations use distinct relevant original scenes inste
     ['Billiam’s bill tools','billiam-canonical.png'],
     ['I am overwhelmed','overwhelmed-westley-cozy.jpg'],
     ['Quiet Mode','feature-quiet-mode.png'],
-    ['Visit Annie again','annie-front-door-mailbox.png'],
+    ['Visit Annie again','lock-annie-fort-knox-family.png'],
     ['Banking Demo','feature-plaid-banking-entry.png'],
     ['My debt plan','snapshot-debt-plan.png'],
     ['Undo & payment history','feature-payment-history.png'],
-    ['Subscription Detective','bobbie-premium-clubhouse.png'],
+    ['Subscription Detective','subscription-detective-bobbie-tile.jpg'],
     ['Extra Paycheck Calendar','snapshot-extra-check.png'],
     ['Savings Goals','savings-goals-button-chapo.png'],
   ];
@@ -118,9 +123,9 @@ test('different feature destinations use distinct relevant original scenes inste
   try{
     const sources=[];
     for(const [index,button] of renderer.root.findAllByType('TouchableOpacity').entries()){
+      await measureFeature(button);
       const images=button.findAllByType('Image');
-      assert.equal(images.length,cases[index][0]==='One small step'?2:1);
-      if (images.length === 2) assert.equal(images[1].props.source,'approved-payplace-icon');
+      assert.equal(images.length,1);
       const source=images[0].props.source;sources.push(source);
       assert.equal(source,`../assets/characters/${cases[index][1]}`);
       await act(()=>button.props.onPress());
@@ -157,33 +162,18 @@ test('brightened neutral buttons retain readable ink and selected state colors',
   }finally{await act(()=>renderer.unmount());}
 });
 
-test('feature banners reserve label space and stack for narrow phone frames',async()=>{
-  const f=await fixture();let renderer,taps=0;
+test('feature banners fill the measured width and keep labels below the artwork',async()=>{
+  const f=await fixture({fontScale:1.6});let renderer,taps=0;
   await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:[{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress:()=>taps++}]})));
   try{
-    for(const [width,direction,size] of [[280,'column',128],[335,'row',96],[390,'row',128]]){
-      const button=renderer.root.findByType('TouchableOpacity');
-      await act(()=>button.props.onLayout({nativeEvent:{layout:{width,height:180}}}));
-      assert.equal(f.flatten(button.props.style).flexDirection,direction);
-      assert.equal(button.findByType('Image').props.style.width,size);
-      const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
-      assert.equal(label.props.numberOfLines,direction==='row'?1:undefined);
-      assert.equal(label.props.adjustsFontSizeToFit,direction==='row');
-      assert.equal(button.findByType('Image').props.resizeMode,'contain');
-    }
-    await act(()=>renderer.root.findByType('TouchableOpacity').props.onPress());assert.equal(taps,1);
-  }finally{await act(()=>renderer.unmount());}
-});
-
-test('larger system text gets a full-width caption without line limits',async()=>{
-  const f=await fixture({fontScale:1.6});let renderer;
-  await act(()=>renderer=create(React.createElement(f.FeatureLinks,{items:[{title:'Neighborhood',body:'The family, Calm Garden and Em’s Pet Spa.',onPress(){}}]})));
-  try{
     const button=renderer.root.findByType('TouchableOpacity');
-    await act(()=>button.props.onLayout({nativeEvent:{layout:{width:390,height:210}}}));
-    assert.equal(f.flatten(button.props.style).flexDirection,'column');
-    const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
-    assert.equal(label.props.numberOfLines,undefined);assert.equal(label.props.adjustsFontSizeToFit,false);
-    assert.equal(button.findByType('Image').props.style.width,128);
+    for(const width of [280,335,390]){
+      await measureFeature(button,width);
+      assert.equal(button.findByType('Image').props.style.width,width);
+      assert.equal(button.findByType('Image').props.resizeMode,'cover');
+      const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
+      assert.equal(label.props.numberOfLines,undefined);
+    }
+    await act(()=>button.props.onPress());assert.equal(taps,1);
   }finally{await act(()=>renderer.unmount());}
 });
