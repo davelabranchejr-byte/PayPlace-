@@ -65,13 +65,15 @@ We request data needed for the described features. No configured feature sends y
 
 ## Bobbie’s Cabaret question mailbag
 
-The Bobbie Darlending Show accepts optional write-in questions. Sending a question shares its text, selected topic, optional stage name, show-feature permission, consent version and submission time with the PayPlace team in a private hosted review queue. No email, verified contact, budget, balance, bank information or profile is automatically attached. Avoid including private information in your question. Leaving the stage name blank records “Anonymous neighbor”; this does not remove technical logs maintained by the hosting provider.
+The PayPlace owner can review your question, selected topic, optional stage name and show permission in a private inbox. If you enter a reply email, the owner can respond through Resend. The inbox records the reply address and text. The owner receives an email alert with the submission reference. PayPlace attaches only details from the form and the submission time. Leave the stage name and reply email blank to submit anonymously.
 
-Permission to feature your question and stage name publicly in the show or PayPlace social posts is separate, optional and off by default. The team reviews submissions before public use; submitting does not guarantee a reply or appearance. Requests to feature a question do not publish it automatically.
+Permission to feature your question and stage name publicly in the show or PayPlace social posts is optional and off by default. The owner reviews each question before any public use. Reply addresses and private replies stay out of the show.
 
-There is no public question directory or read endpoint. Review records older than 90 days are removed when the mailbag next receives a submission. Short-lived, hourly hashed network identifiers limit spam and are cleaned up on subsequent submissions after two hours. Hosting logs may have separate retention. For a question removal request, contact annieoaktree@payplace.app and include your submission reference. Already published episodes or social posts may require separate edits or removal.
+Review records older than 90 days are removed when the mailbag next receives a submission. Short-lived, hourly hashed network identifiers limit spam and are cleaned up on subsequent submissions after two hours. Hosting logs and email copies have separate retention. Email-confirmed deletion removes questions tied to that reply address. You can also request removal by emailing annieoaktree@payplace.app with your submission reference. Already published episodes or social posts may require separate edits or removal.
 
 ## Support and feedback
+
+Daddy’s laptop accepts an optional private message and the reply email you enter. PayPlace stores the message and reply email for the verified owner to review. The owner can send a reply through Resend to that address. PayPlace does not automatically include your profile, budget or bank information. Messages are available in the inbox for up to 90 days and older records are removed on a subsequent submission. Email copies have their own retention. Email-confirmed deletion removes inbox entries tied to that reply address.
 
 [PayPlace Support](https://payplace-dave.davelabranchejr.chatgpt.site/support) explains private help. TestFlight feedback goes to the developer through Apple. Optional GitHub issue drafts are public: use fictional examples and avoid private financial/contact details in text and screenshots. You can email the privacy address above for private questions.
 
