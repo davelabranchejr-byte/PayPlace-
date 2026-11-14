@@ -7,10 +7,11 @@ import FittedArtwork from './FittedArtwork';
 import { Text } from './Privacy';
 import { featureArtworkForTitle } from './action-artwork.mjs';
 
-export default function NavigationTiles({ items, testID, horizontal = false }) {
+export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false }) {
   const { width, fontScale } = useWindowDimensions();
   const singleColumn = !horizontal && (width < 340 || fontScale > 1.2);
-  const tileWidth = fontScale > 1.2 ? Math.min(230, width * 0.72) : Math.min(172, Math.max(132, width * 0.4));
+  const featured = largeArtwork && !horizontal;
+  const tileWidth = largeArtwork && horizontal ? Math.min(250, width * 0.61) : fontScale > 1.2 ? Math.min(230, width * 0.72) : Math.min(172, Math.max(132, width * 0.4));
   const tiles = items.map(({ title, body, source, artworkAction, colors, accessibilityLabel, onPress }) => {
       const action = artworkAction || featureArtworkForTitle(title);
       const { fill, border } = colors || actionColors(action);
@@ -22,7 +23,8 @@ export default function NavigationTiles({ items, testID, horizontal = false }) {
         onPress={onPress} style={[s.tile, { backgroundColor: fill, borderColor: border }, singleColumn && s.wideTile,
           artwork && s.illustratedTile,
           artwork && singleColumn && s.illustratedRow,
-          horizontal && [s.railTile, { width: tileWidth }]]}>
+          horizontal && [s.railTile, { width: tileWidth }],
+          featured && s.featuredTile]}>
         {artwork?.crop
           ? <CharacterArtwork source={artwork} style={[s.atlas, { aspectRatio: artwork.crop[2] / artwork.crop[3] }]} accessible={false} />
           : artwork && <FittedArtwork source={artwork} aspectRatio={ratio} resizeMode="cover" accessible={false} />}
@@ -34,7 +36,7 @@ export default function NavigationTiles({ items, testID, horizontal = false }) {
   });
   if (horizontal) return <ScrollView testID={testID} horizontal nestedScrollEnabled directionalLockEnabled
     contentContainerStyle={s.rail}>{tiles}</ScrollView>;
-  return <View testID={testID} style={[s.grid, singleColumn && s.singleColumn]}>{tiles}</View>;
+  return <View testID={testID} style={[s.grid, singleColumn && s.singleColumn, featured && s.featuredGrid]}>{tiles}</View>;
 }
 
 const s = StyleSheet.create({
@@ -46,6 +48,8 @@ const s = StyleSheet.create({
   illustratedTile: { padding: 0, gap: 0, alignItems: 'stretch', justifyContent: 'flex-start', overflow: 'hidden' },
   illustratedRow: { flexDirection: 'column' },
   illustratedCopy: { paddingHorizontal: 7, paddingVertical: 8, minHeight: 48 },
+  featuredGrid: { justifyContent: 'center', alignItems: 'center' },
+  featuredTile: { flexBasis: 'auto', flexGrow: 0, width: '100%', maxWidth: 306, alignSelf: 'center' },
   rail: { gap: 8, paddingBottom: 10 },
   railTile: { flexBasis: 'auto', flexGrow: 0, maxWidth: '100%', alignSelf: 'stretch', justifyContent: 'flex-start' },
   atlas: { width: '100%', flexShrink: 0 },

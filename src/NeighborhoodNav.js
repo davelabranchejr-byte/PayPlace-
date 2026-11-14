@@ -34,18 +34,19 @@ const tabArtwork = {
   Finances: require('../assets/characters/neighborhood-navigation-mascots.png'),
   Budget: buildingArtwork('Budget'),
 };
-export default function NeighborhoodNav({ current, switchTab }) {
+export default function NeighborhoodNav({ current, switchTab, artworkFirst = false }) {
   const { width, fontScale } = useWindowDimensions();
   const wrap = width < 340 || fontScale > 1.2;
-  return <View style={s.wrap}><View accessibilityRole="tablist" style={[s.strip, wrap && s.wrapStrip]}>
+  const artworkStyle = [s.artwork, wrap && s.compactArt, artworkFirst && s.largeArt];
+  return <View style={artworkFirst ? s.menu : s.wrap}><View accessibilityRole="tablist" style={[s.strip, (wrap || artworkFirst) && s.wrapStrip, artworkFirst && s.menuStrip]}>
     {PRIMARY_DESTINATIONS.map(place => {
       const selected = place.id === primaryDestination(current);
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
-        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Finances'?1.25:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab]}>
-        {place.id === 'Bills' ? <BankBuildingMark style={[s.artwork, wrap && s.compactArt]} /> :
-          <CharacterArtwork source={tabArtwork[place.id]} style={[s.artwork, wrap && s.compactArt]}
-            resizeMode={!wrap && place.id !== 'Finances' ? 'cover' : 'contain'} accessible={false} />}
-        <Text adjustsFontSizeToFit={!wrap} minimumFontScale={0.85} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap ? 'Bills &\nBanking' : place.label}</Text>
+        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Finances'?1.25:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab, artworkFirst && s.menuTab]}>
+        {place.id === 'Bills' ? <BankBuildingMark style={artworkStyle} /> :
+          <CharacterArtwork source={tabArtwork[place.id]} style={artworkStyle}
+            resizeMode={!artworkFirst && !wrap && place.id !== 'Finances' ? 'cover' : 'contain'} accessible={false} />}
+        <Text adjustsFontSizeToFit={!wrap && !artworkFirst} minimumFontScale={0.85} style={[s.label, artworkFirst && s.menuLabel, {color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap && !artworkFirst ? 'Bills &\nBanking' : place.label}</Text>
         <View accessible={false} style={[s.selectedMark,{backgroundColor:selected?place.color:'transparent'}]} />
       </TouchableOpacity>;
     })}
@@ -55,5 +56,8 @@ const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
   strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},tab:{flex:1,minHeight:74,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingBottom:4,alignItems:'center',justifyContent:'flex-start',overflow:'hidden'},
   wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:58},compactArt:{height:32},
+  menu:{marginBottom:8},menuStrip:{paddingHorizontal:0,gap:8},
+  menuTab:{flexBasis:'46%',flexGrow:1},largeArt:{height:96},
+  menuLabel:{fontSize:16,lineHeight:21,paddingHorizontal:5,paddingVertical:4},
   artwork:{width:'100%',height:46},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingHorizontal:2,paddingTop:1,lineHeight:17,flexGrow:1},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });
