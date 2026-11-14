@@ -5,9 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import FittedArtwork from './FittedArtwork';
 import { RoomDestinations } from './InteractiveRoom';
 import { Text } from './Privacy';
-import ActionArtwork from './ActionArtwork';
-import CharacterArtwork from './CharacterArtwork';
-import { buildingArtwork } from './NeighborhoodNav';
 import { isNeighborhoodNight, neighborhoodSeasonalCameos, neighborhoodWelcomeTheme, neighborhoodWelcomeLocations } from './neighborhood-time.mjs';
 import useNeighborhoodClock from './useNeighborhoodClock';
 import useNeighborhoodWeather from './useNeighborhoodWeather';
@@ -34,11 +31,11 @@ function MapDecorations({ theme, dark }) {
   const seasonal = seasonDecor[theme] ?? theme;
   return <View pointerEvents="none" accessible={false} importantForAccessibility="no-hide-descendants"
     style={[StyleSheet.absoluteFillObject, { opacity: dark ? 0.84 : 1 }]}>
-    {[[6, 71], [39, 77], [64, 69], [88, 74]].map(([left, top]) =>
+    {[[3, 75], [30, 79], [50, 81], [89, 77]].map(([left, top]) =>
       <Image key={left} source={decorations[seasonal]} resizeMode="contain" style={[s.decor, { left: `${left}%`, top: `${top}%` }]} />)}
-    {seasonDecor[theme] && [22, 53, 75].map(left =>
+    {seasonDecor[theme] && [13, 45, 87].map(left =>
       <Image key={left} source={decorations[holidayDecor[theme] ?? theme] ?? decorations[seasonal]}
-        resizeMode="contain" style={[s.decor, { left: `${left}%`, top: '60%' }]} />)}
+        resizeMode="contain" style={[s.decor, { left: `${left}%`, top: '75%' }]} />)}
   </View>;
 }
 const lamps=[[3,32],[10.4,25],[30.6,24],[48.6,34],[65.2,31],[80.2,17],[95.4,36]];
@@ -182,10 +179,10 @@ const treehouses = [
   { id: 'Tate', caption: 'Tate’s Hangout', x: 22, y: 40 },
   { id: 'Chapo', caption: 'Chapo’s Kitchen', x: 72, y: 61 },
   { id: 'Annie', caption: 'Annie’s House', x: 83, y: 43 },
-  { id: 'Bobbie', caption: 'Bobbie’s Boutique', x: 89, y: 81 },
-  { id: 'Cabaret', caption: 'Bobbie’s Cabaret', x: 95, y: 61 },
-  { id: 'Daddy', caption: 'Daddy’s House', x: 41, y: 83, artwork: buildingArtwork('Daddy') },
-  { id: 'Spa', caption: 'Em’s Pet Spa', x: 66, y: 87, artwork: buildingArtwork('Spa') },
+  { id: 'Bobbie', caption: 'Bobbie’s Boutique', x: 93, y: 78 },
+  { id: 'Cabaret', caption: 'Bobbie’s Cabaret', x: 80.5, y: 77, captionY: 91 },
+  { id: 'Daddy', caption: 'Daddy’s House', x: 39, y: 73, captionY: 88 },
+  { id: 'Spa', caption: 'Em’s Pet Spa', x: 65, y: 79, captionY: 93 },
 ];
 
 export function NeighborhoodTownLife({ weatherZip, weather, onWeatherZip, onOpen }) {
@@ -271,11 +268,11 @@ export default function LivingNeighborhood({ reduceAnimation = false, paused = f
       </>:[0,1].map(index=><Butterfly key={index} index={index} width={width} playing={playing}/>)}
       <NeighborhoodEffects weather={weatherKind} {...{leaves, dark, playing, width, height}} />
     </View>
-    {onOpen && <RoomDestinations destinations={destinations.map(({ id, label, caption, artwork, x, y }) => ({
+    {onOpen && <RoomDestinations destinations={destinations.map(({ id, label, caption, x, y, captionY }) => ({
       label: label || `Visit ${caption} from the map`, caption: fullMap ? undefined : caption, open: () => onOpen(id),
-      artwork: id === 'Cabaret' ? <ActionArtwork action="homeCabaret" size={fullMap ? 36 : 42} />
-        : artwork && <CharacterArtwork source={artwork} style={fullMap ? s.buildingFull : s.building} resizeMode="contain" />,
-      area: { ...(fullMap ? s.quietLandmark : s.landmark), ...(id === 'Cabaret' ? (fullMap ? s.cabaretFull : s.cabaret) : artwork && !fullMap ? s.buildingLandmark : null), left: `${x}%`, top: `${y}%` },
+      area: { ...(fullMap ? s.quietLandmark : captionY ? s.paintedLandmark : s.landmark),
+        left: `${x}%`, top: fullMap || !captionY ? `${y}%` : `${y - 11}%`,
+        ...(!fullMap && captionY && { height: `${captionY - y + 11}%` }) },
     }))} />}
     <EncouragementSpot place="town" style={{ left: '73%' }} />
     <NeighborhoodWalkers {...{ walkers, playing, width, height, onMeet }} />
@@ -311,12 +308,8 @@ const s=StyleSheet.create({
     backgroundColor: '#E9D4FF', borderWidth: 1, borderColor: '#9E75C1' },
   arrowDisabled: { opacity: 0.42 },
   landmark: { width: 110, height: 48, justifyContent: 'center', padding: 0, transform: [{ translateX: -55 }, { translateY: -24 }] },
+  paintedLandmark: { width: 110, transform: [{ translateX: -55 }] },
   quietLandmark: { width: 48, height: 48, transform: [{ translateX: -24 }, { translateY: -24 }] },
-  cabaret: { width: 104, height: 70, justifyContent: 'flex-end', transform: [{ translateX: -82 }, { translateY: -52 }] },
-  cabaretFull: { transform: [{ translateX: -30 }, { translateY: -30 }] },
-  buildingLandmark: { width: 96, height: 70, justifyContent: 'flex-end', transform: [{ translateX: -48 }, { translateY: -48 }] },
-  building: { width: 55, height: 48 },
-  buildingFull: { width: 45, height: 44 },
   water: { position: 'absolute', left: '49.5%', top: '72%', width: '9%', height: '3.5%', borderRadius: 6, backgroundColor: '#C9F4FF' },
   hint: { flex: 1, fontSize: 13, color: '#34465E' },
   skyPass: { position: 'absolute' },

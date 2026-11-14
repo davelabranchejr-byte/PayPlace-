@@ -1,7 +1,8 @@
 import { MascotPressable as Pressable } from './MascotTouchable';
 import React, { useState } from "react";
-import { Image, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from "./Privacy";
+import FittedArtwork from "./FittedArtwork";
 import { Ionicons } from "@expo/vector-icons";
 
 // Only release/platform details go into the draft. Never include the saved plan.
@@ -28,9 +29,9 @@ export default function TesterFeedback({ onClose }) {
   return <>
     {!onClose && <Pressable artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
-      <Image source={require('../assets/characters/daddy-neighborhood-feedback.png')} style={s.daddyArtwork} resizeMode="contain" accessible={false}/>
-      <Text style={s.entryText}>Help make the neighborhood better</Text>
-      <Text accessible={false} style={s.chevron}>›</Text>
+      <FittedArtwork source={require('../assets/characters/neighborhood-tabby.png')} aspectRatio={3 / 2} resizeMode="cover" accessible={false}/>
+      <View style={s.caption}><Text style={s.entryText}>Help make the neighborhood better</Text>
+        <Text accessible={false} style={s.chevron}>›</Text></View>
     </Pressable>}
     <Modal visible={visible} animationType="slide" onRequestClose={close}>
       <SafeAreaView style={s.safe}>
@@ -61,9 +62,9 @@ export default function TesterFeedback({ onClose }) {
 }
 
 const s = StyleSheet.create({
-  entry: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 8, minHeight: 164, padding: 12, marginTop: 18, borderRadius: 28, backgroundColor: "#DCABFF", borderWidth: 3, borderColor: "#9F3DE5" },
+  entry: { overflow: "hidden", marginTop: 18, borderRadius: 28, backgroundColor: "#DCABFF", borderWidth: 3, borderColor: "#9F3DE5" },
   entryText: { flexGrow: 1, flexShrink: 1, flexBasis: 88, color: "#071A3A", fontSize: 22, lineHeight: 28, fontWeight: "900" },
-  daddyArtwork: { width: 128, height: 128, borderRadius: 18 },
+  caption: { flexDirection: "row", alignItems: "center", gap: 8, padding: 12 },
   chevron: { color: "#FFFFFF", backgroundColor: "#8734CF", borderColor: "#FFFFFF", borderWidth: 2, borderRadius: 20, width: 32, height: 40, textAlign: "center", fontSize: 28, lineHeight: 37, fontWeight: "900" },
   safe: { flex: 1, backgroundColor: "#FFF8EA" },
   content: { padding: 20, paddingBottom: 40, width: "100%", maxWidth: 720, alignSelf: "center" },

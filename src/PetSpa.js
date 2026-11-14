@@ -1,10 +1,11 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, AppState, Image, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AccessibilityInfo, Animated, AppState, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SPA_VISITS, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
 import PayPlaceBrand from './PayPlaceBrand';
 import ContainedIllustration from './ContainedIllustration';
+import FittedArtwork from './FittedArtwork';
 import { bobbieReadingEm } from './LibraryArtwork';
 import { LibraryBookDetails } from './NeighborhoodLibrary';
 import { normalizeLibrary, LIBRARY_BOOKS } from './neighborhood-library.mjs';
@@ -99,8 +100,8 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
   if(panel === 'scrapbook') return <ScrollView style={s.screen} contentContainerStyle={s.content}>
     {roomBack}
     <Text accessibilityRole="header" style={s.title}>Em’s scrapbook</Text><Text style={s.body}>Favorite visits stay here, ready to open again.</Text>
-    {SPA_VISITS.map(item=><TouchableOpacity key={item.id} artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={()=>openVisit(item.id)} style={[s.card,{flexDirection:'row',alignItems:'center'}]}>
-      <Image source={item.current?currentVisitArtwork[0]:pastArtwork[0]} style={{width:96,height:96}} resizeMode="contain" accessible={false}/><View style={{flex:1}}><Text style={s.sceneTitle}>{item.title}</Text><Text style={s.hint}>{item.current?'CURRENT STAY':'PAST VISIT'}</Text><Text style={s.body}>{item.description}</Text></View>
+    {SPA_VISITS.map(item=><TouchableOpacity key={item.id} artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={()=>openVisit(item.id)} style={[s.card,s.visitCard]}>
+      <FittedArtwork source={item.current?currentVisitArtwork[0]:pastArtwork[0]} aspectRatio={3 / 2} resizeMode="cover" accessible={false}/><View style={{padding:12}}><Text style={s.sceneTitle}>{item.title}</Text><Text style={s.hint}>{item.current?'CURRENT STAY':'PAST VISIT'}</Text><Text style={s.body}>{item.description}</Text></View>
     </TouchableOpacity>)}
     <TouchableOpacity accessibilityRole="button" style={s.action} onPress={()=>openVisit('slumber-party')}><Text style={s.actionText}>Back to the current stay</Text></TouchableOpacity>
   </ScrollView>;
@@ -132,6 +133,7 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#FFF8F2' }, content: { padding: 18, gap: 12, paddingBottom: 26 },
   back: { minHeight: 48, justifyContent: 'center' }, backText: { color: '#6651AB', fontWeight: '800', fontSize: 15 },
   title: { color: '#173557', fontSize: 30, fontWeight: '900' },
+  visitCard: { padding: 0, gap: 0, overflow: 'hidden' },
   body: { color: '#34465E', fontSize: 15, lineHeight: 23 }, card: { backgroundColor: '#FFFFFF', padding: 12, borderRadius: 24, gap: 12, borderWidth: 1, borderColor: '#F7CDE0' },
   sceneTitle: { color: '#173557', fontSize: 21, fontWeight: '900' }, action: { backgroundColor: '#A52167', padding: 15, minHeight: 48, borderRadius: 15 }, actionText: { color: '#FFFFFF', fontSize: 15, fontWeight: '800', textAlign: 'center' },
   reply: { backgroundColor: '#FFF0F6', color: '#812653', padding: 14, borderRadius: 14, fontSize: 16, lineHeight: 24 },

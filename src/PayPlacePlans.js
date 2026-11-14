@@ -95,9 +95,9 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
         {plans.map(plan => (
           <TouchableOpacity key={plan.id} testID={`plan-${plan.id}`} accessibilityRole="tab" accessibilityLabel={plan.name}
             accessibilityState={{ selected: plan.id === selectedId }} onPress={() => onSelectPlan(plan.id)}
-            style={[styles.tab, wrapTabs && styles.wideTab, { backgroundColor: plan.fill, borderColor: plan.color }]}>
-            <Image source={plan.artwork} resizeMode="contain" accessible={false}
-              style={[styles.tabArtwork, wrapTabs && styles.smallTabArtwork]} />
+            artworkMode="integrated" style={[styles.tab, wrapTabs && styles.wideTab, { backgroundColor: plan.fill, borderColor: plan.color }]}>
+            <Image source={plan.artwork} resizeMode={wrapTabs || width > 416 ? "contain" : "cover"} accessible={false}
+              style={[styles.tabArtwork, { height: wrapTabs ? 62 : Math.min((width - 56) / 3, 120) }]} />
             <Text style={styles.tabLabel}>{plan.name}</Text>
           </TouchableOpacity>
         ))}
@@ -134,11 +134,10 @@ const styles = StyleSheet.create({
   title: { color: '#071A3A', fontSize: 24, fontWeight: '900', marginBottom: 8 },
   tabs: { flexDirection: 'row', gap: 6, marginBottom: 10 },
   wrapTabs: { flexWrap: 'wrap' },
-  tab: { flex: 1, minHeight: 48, minWidth: 0, alignItems: 'center', justifyContent: 'center', padding: 6, borderRadius: 16, borderWidth: 2 },
-  wideTab: { flexBasis: '44%', flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
-  tabArtwork: { width: 76, height: 76, flexShrink: 0 },
-  smallTabArtwork: { width: 42, height: 42 },
-  tabLabel: { color: '#071A3A', fontSize: 15, fontWeight: '900', textAlign: 'center' },
+  tab: { flex: 1, minHeight: 48, minWidth: 0, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderRadius: 16, borderWidth: 2 },
+  wideTab: { flexBasis: '44%' },
+  tabArtwork: { width: '100%', flexShrink: 0 },
+  tabLabel: { color: '#071A3A', fontSize: 15, fontWeight: '900', textAlign: 'center', paddingHorizontal: 4, paddingVertical: 6 },
   details: { flex: 1 },
   content: { gap: 10, paddingBottom: 18 },
   summary: { borderRadius: 20, borderWidth: 2, padding: 14, gap: 4 },

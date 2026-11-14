@@ -10,7 +10,7 @@ export const ACTION_ARTWORK = Object.freeze({
   scrapbook:require('../assets/actions/scrapbook.jpg'),
   banking:require('../assets/characters/feature-plaid-banking-entry.png'),
   debt:require('../assets/characters/snapshot-debt-plan.png'),
-  subscriptions:require('../assets/characters/bobbie-premium-clubhouse.png'),
+  subscriptions:require('../assets/characters/subscription-detective-bobbie-tile.jpg'),
   monthlyCalendar:require('../assets/characters/feature-monthly-calendar-billiam.png'),
   editBudget:require('../assets/characters/header-budget-daddy-chapo.png'),
   budgetPayday:require('../assets/characters/snapshot-next-paycheck.png'),
@@ -29,7 +29,7 @@ export const ACTION_ARTWORK = Object.freeze({
   neighborhood:require('../assets/characters/neighborhood-tabby.png'),
   mailbox:require('../assets/characters/billiam-mailbox.png'),
   billTools:require('../assets/characters/billiam-canonical.png'),
-  welcome:require('../assets/characters/annie-front-door-mailbox.png'),
+  welcome:require('../assets/characters/lock-annie-fort-knox-family.png'),
   annieCare:require('../assets/characters/feature-annie-care.png'),
   anniePoster:require('../assets/characters/feature-annie-porch-poster.png'),
 });

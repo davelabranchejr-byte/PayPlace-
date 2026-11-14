@@ -1,12 +1,12 @@
 import React, { useRef, useState } from 'react';
-import { Modal, ScrollView, View, StyleSheet, useWindowDimensions } from 'react-native';
+import { Modal, ScrollView, View, StyleSheet } from 'react-native';
 import { Text, TextInput } from './Privacy';
-import ContainedIllustration from './ContainedIllustration';
-import ActionArtwork from './ActionArtwork';
+import FittedArtwork from './FittedArtwork';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { micropaymentTargets, micropaymentTotal, canUndoMicropayment } from './micropayments.mjs';
 
 const westleyArtwork = require('../assets/characters/feature-micropayments-westley.png');
+const billiamArtwork = require('../assets/characters/bills-micropayments-billiam.jpg');
 const money = cents => `$${(cents / 100).toFixed(2)}`;
 function Button({ title, onPress, selected, disabled, testID }) {
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel={title}
@@ -17,16 +17,12 @@ function Button({ title, onPress, selected, disabled, testID }) {
 }
 
 export function MicropaymentsButton({ onPress, forBills = false }) {
-  const [width, setWidth] = useState(0);
-  const { fontScale } = useWindowDimensions();
-  const stacked = width < 320 || fontScale > 1.2;
   return <TouchableOpacity artworkMode="integrated" testID="open-micropayments" accessibilityRole="button"
-    accessibilityLabel="Micropayments: small extra payments" onPress={onPress} onLayout={event => setWidth(event.nativeEvent.layout.width)}
-    style={[s.entry, !stacked && s.entryRow]}>
-    {forBills ? <ActionArtwork action="billMicropayment" size={108} /> :
-      <ContainedIllustration source={westleyArtwork} aspectRatio={1} accessible={false} style={s.thumbnail} />}
-    <View style={stacked ? s.stackedCaption : s.caption}>
-      <Text style={s.title} numberOfLines={1} adjustsFontSizeToFit>Micropayments</Text>
+    accessibilityLabel="Micropayments: small extra payments" onPress={onPress} style={s.entry}>
+    <FittedArtwork source={forBills ? billiamArtwork : westleyArtwork} aspectRatio={3 / 2}
+      resizeMode="cover" testID="micropayments-shortcut-artwork" accessible={false} />
+    <View style={s.caption}>
+      <Text style={s.title}>Micropayments</Text>
       <Text style={s.body}>Track small extra payments.</Text>
     </View>
   </TouchableOpacity>;
@@ -105,11 +101,8 @@ export default function Micropayments({ visible, onClose, finance, onRecord, onU
 }
 const s = StyleSheet.create({
   page: { padding: 20, paddingTop: 55, paddingBottom: 48, gap: 16, backgroundColor: '#F1FDFF' },
-  section: { gap: 14 }, entry: { padding: 18, borderRadius: 22, backgroundColor: '#FFE455', borderColor: '#E1AC00', gap: 12, marginTop: 12, alignItems: 'center' },
-  entryRow: { flexDirection: 'row' },
-  thumbnail: { width: 108, borderRadius: 14 },
-  caption: { flex: 1, minWidth: 0, gap: 4 },
-  stackedCaption: { width: '100%', gap: 4 },
+  section: { gap: 14 }, entry: { borderRadius: 22, borderWidth: 2, backgroundColor: '#FFE455', borderColor: '#E1AC00', marginTop: 12, overflow: 'hidden' },
+  caption: { padding: 14, gap: 4 },
   title: { fontSize: 25, fontWeight: '900', color: '#101344' }, heading: { fontSize: 18, fontWeight: '800', color: '#101344' },
   body: { fontSize: 16, lineHeight: 24, color: '#263651' }, note: { fontSize: 14, lineHeight: 21, color: '#43546B' },
   total: { fontSize: 22, fontWeight: '900', color: '#5E278E' }, notice: { backgroundColor: '#FFF1AC', padding: 14, borderRadius: 16 },

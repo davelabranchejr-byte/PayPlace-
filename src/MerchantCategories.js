@@ -3,7 +3,7 @@ import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import FittedArtwork from './FittedArtwork';
-import { CATEGORY_CHOICES, categoryAction, categoryAmountCents, categoryState, purchaseCategory } from './merchant-categories.mjs';
+import { CATEGORY_CHOICES, UTILITY_CATEGORIES, categoryAction, categoryAmountCents, categoryState, purchaseCategory } from './merchant-categories.mjs';
 
 const art = {
   Shopping: require('../assets/categories/bobbie-shopping.jpg'),
@@ -16,6 +16,10 @@ const art = {
   Pets: require('../assets/categories/pets.jpg'),
   Entertainment: require('../assets/categories/entertainment.png'),
   Other: require('../assets/categories/other.jpg'),
+  Water: require('../assets/categories/water.jpg'),
+  Electricity: require('../assets/categories/electricity.jpg'),
+  'HOA Fees': require('../assets/categories/hoa-fees.jpg'),
+  'Gas Bill': require('../assets/categories/gas-bill.jpg'),
 };
 const colors = ['#7842D2', '#FF8479', '#14C8BD', '#FFE34F'];
 const ink = '#132547';
@@ -32,21 +36,25 @@ function Button({ title, onPress, selected, disabled, color = '#7842D2', label, 
 function CategoryTiles({ selected, onSelect, customCategories = [] }) {
   const [expanded, setExpanded] = useState(false);
   const choices = [...CATEGORY_CHOICES, ...customCategories.filter(c => !CATEGORY_CHOICES.includes(c))];
-  return <><View style={s.tiles}>
-    {choices.filter((category, i) => i < 4 || expanded || category === selected).map(category => { const index = choices.indexOf(category); return <TouchableOpacity artworkMode="integrated"
+  const tile = category => { const index = choices.indexOf(category); return <TouchableOpacity artworkMode="integrated"
       key={category} accessibilityRole="button" accessibilityLabel={`Choose ${category}`} accessibilityState={{ selected: category === selected }}
       onPress={() => onSelect(category)} style={[s.tile, { backgroundColor: colors[index % colors.length] }, selected === category && s.selected]}>
       {Object.hasOwn(art, category) && <FittedArtwork source={art[category]} aspectRatio={1} accessible={false} />}
       <Text style={[s.tileText, { color: index % 4 === 0 ? 'white' : ink }]}>{category === selected ? '✓ ' : ''}{category}</Text>
-    </TouchableOpacity>; })}
-  </View><Button title={expanded ? 'Fewer categories' : 'Choose another category'} color="#FFE34F" onPress={() => setExpanded(!expanded)}/></>;
+    </TouchableOpacity>; };
+  return <>
+    <View style={s.tiles}>{choices.filter((category, i) => !UTILITY_CATEGORIES.includes(category) && (i < 4 || expanded || category === selected)).map(tile)}</View>
+    <Button title={expanded ? 'Fewer categories' : 'Choose another category'} color="#FFE34F" onPress={() => setExpanded(!expanded)}/>
+    <Text accessibilityRole="header" style={s.heading}>Home bills</Text>
+    <View style={s.tiles}>{UTILITY_CATEGORIES.map(tile)}</View>
+  </>;
 }
 const budgetCategoryArtwork = require('../assets/characters/feature-purchase-categories-daddy.png');
 const bankingCategoryArtwork = require('../assets/characters/feature-purchase-categories-bobbie.png');
 export function CategoryEntry({ onOpen, inBanking = false, compact = false }) {
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories"
     onPress={onOpen} style={[s.entry, compact && s.entryCompact]}>
-    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} style={[s.entryArtwork, compact && s.entryArtCompact]} />
+    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={compact ? 3 / 2 : 1} resizeMode="cover" accessible={false} />
     <View style={s.entryCopy}>
       <Text style={s.title}>{compact ? 'Purchases & categories' : 'Your purchases. Your categories.'}</Text>
       {!compact && <>
@@ -177,10 +185,10 @@ const s = StyleSheet.create({
   card: { padding: 16, borderRadius: 22, backgroundColor: 'white', gap: 12, borderWidth: 1, borderColor: '#DCE9F0' },
   button: { minHeight: 48, borderRadius: 16, padding: 14, borderWidth: 3, borderColor: 'transparent', justifyContent: 'center' }, buttonText: { fontSize: 16, fontWeight: '800', textAlign: 'center', flexShrink: 1 }, selected: { borderColor: ink },
   input: { backgroundColor: 'white', color: ink, borderWidth: 1, borderColor: '#8797AB', minHeight: 50, padding: 12, borderRadius: 12, fontSize: 17 },
-  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, tile: { flexBasis: '48%', flexGrow: 0, minWidth: 120, padding: 4, borderRadius: 24, borderWidth: 3, borderColor: 'rgba(255,255,255,.9)', overflow: 'hidden', justifyContent: 'center', minHeight: 60 }, tileText: { fontSize: 18, lineHeight: 24, fontWeight: '900', textAlign: 'center', padding: 8, minHeight: 48 },
+  tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, tile: { flexBasis: '48%', flexGrow: 0, minWidth: 120, borderRadius: 24, borderWidth: 3, borderColor: 'rgba(255,255,255,.9)', overflow: 'hidden', justifyContent: 'flex-start', minHeight: 60 }, tileText: { fontSize: 18, lineHeight: 24, fontWeight: '900', textAlign: 'center', padding: 8, minHeight: 48 },
   footer: { padding: 16, paddingBottom: 34, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#DCE9F0' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, check: { minHeight: 48, paddingVertical: 10, justifyContent: 'center' }, error: { color: '#92273B', fontSize: 16, lineHeight: 24 }, notice: { padding: 16, borderRadius: 18, backgroundColor: '#DFFCF7', gap: 12 }, split: { gap: 8, borderBottomWidth: 1, borderBottomColor: '#DCE9F0', paddingBottom: 12 },
-  entry: { padding: 16, backgroundColor: '#EEE7FF', borderRadius: 24, gap: 10, borderWidth: 2, borderColor: '#B799EC', flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center' },
-  entryCompact: { padding: 8, marginBottom: 12 }, entryArtCompact: { width: 64 },
-  entryArtwork: { width: 128 }, entryCopy: { flexGrow: 1, flexShrink: 1, flexBasis: 120, minWidth: 0 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
+  entry: { backgroundColor: '#EEE7FF', borderRadius: 24, borderWidth: 2, borderColor: '#B799EC', overflow: 'hidden' },
+  entryCompact: { marginBottom: 12 },
+  entryCopy: { padding: 12 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
 });

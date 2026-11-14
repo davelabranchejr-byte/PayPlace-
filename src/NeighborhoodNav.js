@@ -29,10 +29,9 @@ export function buildingArtwork(id) {
     crop: [(place.tile % 5) * cellWidth, Math.floor(place.tile / 5) * cellHeight, cellWidth, cellHeight], label: place.label };
 }
 
-// Navigation depicts its destination; no reused money-tool or Facebook scenes.
-export const tabArtwork = {
+const tabArtwork = {
   Home: require('../assets/characters/nav-neighborhood-homes.png'),
-  Finances: buildingArtwork('Home'),
+  Finances: require('../assets/characters/neighborhood-navigation-mascots.png'),
   Budget: buildingArtwork('Budget'),
 };
 export default function NeighborhoodNav({ current, switchTab }) {
@@ -44,7 +43,8 @@ export default function NeighborhoodNav({ current, switchTab }) {
       return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
         onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Finances'?1.25:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab]}>
         {place.id === 'Bills' ? <BankBuildingMark style={[s.artwork, wrap && s.compactArt]} /> :
-          <CharacterArtwork source={tabArtwork[place.id]} style={[s.artwork, wrap && s.compactArt]} resizeMode="contain" accessible={false} />}
+          <CharacterArtwork source={tabArtwork[place.id]} style={[s.artwork, wrap && s.compactArt]}
+            resizeMode={!wrap && place.id !== 'Finances' ? 'cover' : 'contain'} accessible={false} />}
         <Text adjustsFontSizeToFit={!wrap} minimumFontScale={0.85} style={[s.label,{color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap ? 'Bills &\nBanking' : place.label}</Text>
         <View accessible={false} style={[s.selectedMark,{backgroundColor:selected?place.color:'transparent'}]} />
       </TouchableOpacity>;
@@ -53,7 +53,7 @@ export default function NeighborhoodNav({ current, switchTab }) {
 }
 const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},tab:{flex:1,minHeight:74,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingVertical:4,paddingHorizontal:3,alignItems:'center',justifyContent:'center'},
-  wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:58,paddingVertical:3},compactArt:{height:28},
-  artwork:{width:'100%',maxWidth:64,height:36},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingTop:1,lineHeight:17},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
+  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},tab:{flex:1,minHeight:74,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingBottom:4,alignItems:'center',justifyContent:'flex-start',overflow:'hidden'},
+  wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:58},compactArt:{height:32},
+  artwork:{width:'100%',height:46},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingHorizontal:2,paddingTop:1,lineHeight:17,flexGrow:1},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
 });

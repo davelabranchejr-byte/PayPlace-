@@ -76,7 +76,7 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
     {open === undefined && <TouchableOpacity artworkMode="integrated" testID="bobbie-smart-mirror" accessibilityRole="button"
       accessibilityLabel="Visit Bobbie's house and smart mirror" activeOpacity={0.92}
       onPress={() => setVisible(true)} style={s.visitCard}>
-      <Image source={room} resizeMode="contain" style={s.thumbnail} accessibilityLabel="Bobbie in her gold smart mirror room, with blonde curls, yellow plaid and white boots" />
+      <ContainedIllustration source={room} accessible={false} />
       <View style={s.visitCopy}>
         <Text style={[s.eyebrow, { color: "#F6C3DA" }]}>BOBBIE’S HOUSE</Text>
         <Text style={s.visitTitle}>A little reflection.</Text>
@@ -201,9 +201,8 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
 
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#FFF7F3" },
-  visitCard: { flexDirection: "row", backgroundColor: "#31203E", borderRadius: 24, borderWidth: 2, borderColor: "#D8AD64", overflow: "hidden", marginTop: 14, marginBottom: 12 },
-  thumbnail: { width: 108, height: 144, backgroundColor: "#EDD0BC" },
-  visitCopy: { flex: 1, minWidth: 0, padding: 14, justifyContent: "center" },
+  visitCard: { backgroundColor: "#31203E", borderRadius: 24, borderWidth: 2, borderColor: "#D8AD64", overflow: "hidden", marginTop: 14, marginBottom: 12 },
+  visitCopy: { padding: 14 },
   eyebrow: { color: "#985B22", fontSize: 10, fontWeight: "800", letterSpacing: 1.1 },
   visitTitle: { color: "#FFFFFF", fontSize: 21, fontWeight: "800", marginTop: 5 },
   visitBody: { color: "#F8E5EF", fontSize: 13, lineHeight: 19, marginTop: 5 },

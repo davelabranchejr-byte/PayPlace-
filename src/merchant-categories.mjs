@@ -1,6 +1,7 @@
 // User choices are kept separately from imported categories. A bank refresh can
 // update its own fields without replacing an exception or remembered preference.
-export const CATEGORY_CHOICES = Object.freeze(['Shopping', 'Clothing', 'Groceries', 'Household', 'Dining', 'Transportation', 'Health', 'Pets', 'Entertainment', 'Other']);
+export const UTILITY_CATEGORIES = Object.freeze(['Water', 'Electricity', 'HOA Fees', 'Gas Bill']);
+export const CATEGORY_CHOICES = Object.freeze(['Shopping', 'Clothing', 'Groceries', 'Household', 'Dining', 'Transportation', 'Health', 'Pets', 'Entertainment', 'Other', ...UTILITY_CATEGORIES]);
 export const DEFAULT_CATEGORY_ACCOUNT = Object.freeze({ id: 'manual-main', name: 'My everyday account' });
 const label = (value, max = 80) => typeof value === 'string' && value.trim().length > 0 && value.trim().length <= max;
 export function merchantNameKey(name) {
