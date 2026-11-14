@@ -27,9 +27,7 @@ jobs:
           npm ci
           npx expo prebuild --platform ios --no-install
           (cd ios && pod install)
-          curl -fsSL https://get.maestro.mobile.dev -o "$RUNNER_TEMP/install-maestro.sh"
-          MAESTRO_VERSION=2.0.10 bash "$RUNNER_TEMP/install-maestro.sh"
-          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
+          brew install mobile-dev-inc/tap/maestro
       - name: Compile unchanged production source for the iPhone simulator
         run: |
           if ! xcodebuild -workspace ios/PayPlace.xcworkspace -scheme PayPlace -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/payplace-simulator" CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/payplace-simulator.log" 2>&1; then
@@ -42,7 +40,7 @@ jobs:
           import { readFileSync, writeFileSync } from 'node:fs';
           const script = 'scripts/capture-ios-screenshots.mjs';
           const source = readFileSync(script, 'utf8');
-          const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'").replace("'test', '--format'", "'test', '--debug-output', 'ios-artifacts/debug', '--format'");
+          const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'");
           writeFileSync(script, updated);
           NODE
           cat > maestro/store-screenshots.yml <<'FLOW'
@@ -76,11 +74,28 @@ jobs:
           - assertVisible: 'Sample calendar.*fictional data'
           - takeScreenshot: 05-payment-calendar
           FLOW
-          node scripts/capture-ios-screenshots.mjs "$RUNNER_TEMP/payplace-simulator/Build/Products/Release-iphonesimulator/PayPlace.app"
+          simulator_app="$RUNNER_TEMP/payplace-simulator/Build/Products/Release-iphonesimulator/PayPlace.app"
+          cat > "$RUNNER_TEMP/payplace-simulator.entitlements" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+          <key>application-identifier</key><string>SIMULATOR0.com.davelabranchejr.payplace</string>
+          <key>keychain-access-groups</key><array><string>SIMULATOR0.com.davelabranchejr.payplace</string></array>
+          </dict></plist>
+          PLIST
+          codesign --force --sign - --entitlements "$RUNNER_TEMP/payplace-simulator.entitlements" "$simulator_app"
+          codesign --verify "$simulator_app"
+          node scripts/capture-ios-screenshots.mjs "$simulator_app"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: payplace-75-iphone-screenshots
-          path: ios-artifacts/
+          path: |
+            ios-artifacts/**/0*.png
+            0*.png
+            ios-artifacts/device.json
+            ios-artifacts/result.json
+            ios-artifacts/report.xml
+            ios-artifacts/failure.png
           if-no-files-found: ignore
           retention-days: 7
