@@ -76,10 +76,16 @@ test('quilt uses approved stitched acorn art and opens/returns from its detailed
   const chairSquares = squares('chair-quilt-square-');
   assert.deepEqual(chairSquares.map(node => node.props.testID.replace('chair-', '')),
     ['quilt-square-acorn', 'quilt-square-firstBill', 'quilt-square-foundNote', 'quilt-square-savingsGoal']);
-  const chairArtwork = chairSquares.map(node => node.findByType('CharacterArtwork').props.source);
+  for (const node of chairSquares) {
+    const {left,top,width,height} = node.props.style;
+    assert.equal(node.props.resizeMode, 'stretch');
+    assert.ok(parseFloat(left) >= 7 && parseFloat(left) + parseFloat(width) <= 30);
+    assert.ok(parseFloat(top) >= 50 && parseFloat(top) + parseFloat(height) <= 81);
+  }
+  const chairIds = chairSquares.map(node => node.props.testID.replace('chair-', ''));
   await act(() => r.update(React.createElement(QuiltDetail, { finance })));
   const quiltSquares = squares('quilt-square-');
-  assert.deepEqual(quiltSquares.map(node => node.findByType('CharacterArtwork').props.source), chairArtwork);
+  assert.deepEqual(quiltSquares.map(node => node.props.testID), chairIds);
   for (const node of quiltSquares) {
     assert.equal(flatten(node.props.style).aspectRatio, 1);
     assert.equal(flatten(node.findByType('CharacterArtwork').props.style).height, '100%');

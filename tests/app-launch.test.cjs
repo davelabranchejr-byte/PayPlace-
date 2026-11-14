@@ -479,6 +479,20 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.ok(button('Back to Neighborhood'),'character visits keep a clear return path');
     const spaScreen = renderer.root.find(node => node.type?.name === 'PetSpa');
     assert.equal(spaScreen.findAllByType('ScrollView').filter(view => view.props.horizontal).length, 0);
+    await act(() => button('Pick up Westley and Tate').props.onPress());
+    assert.ok(renderer.root.findAllByType('Text').some(node => node.props.children === 'A surprise for Daddy'));
+    const giftArt = harness.artworkId('assets/characters/em-wild-turkeys-painting.jpg');
+    assert.equal(renderer.root.find(node => node.type?.name === 'ContainedIllustration').props.source, giftArt);
+    await act(() => button('Give Daddy the Wild Turkeys').props.onPress());
+    assert.ok(renderer.root.findAllByType('Text').some(node => String(node.props.children).includes('Let’s hang it next to your paw-print garden')));
+    await act(() => button('See it on Annie’s family wall').props.onPress());
+    assert.ok(button('Enlarge Westley and Tate’s paw-print garden with Em'));
+    await act(() => button('Enlarge Westley and Tate’s Wild Turkeys').props.onPress());
+    const fullGift = renderer.root.findByType('Modal').findAllByType('Image').find(node => node.props.testID === 'wild-turkeys-full');
+    assert.equal(fullGift.props.source, giftArt);
+    assert.equal(fullGift.props.resizeMode, 'contain');
+    await act(() => button('Close picture and return to the family wall').props.onPress());
+    await openDestination('Spa','Em’s Pet Spa');
     await act(()=>button('Open current spa stay').props.onPress());
     for (let scene = 0; scene < 5; scene++) {
       assertIllustrationFits(renderer.root.find(node => node.type?.name === 'ContainedIllustration'));
