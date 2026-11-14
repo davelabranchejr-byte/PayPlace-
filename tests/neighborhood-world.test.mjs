@@ -12,6 +12,13 @@ test('neighbors change jobs or destinations as the town clock advances', () => {
   assert.equal(find(22, 'em').destination, 'Spa');
   assert.equal(find(7, 'billiam', 14).path, undefined, 'weekend rounds start later');
   assert.equal(find(11, 'annie').path, undefined, 'the oak stays rooted');
+  assert.equal(find(18, 'bobbie').destination, 'Cabaret');
+  const morning = new Date(2026, 10, 16, 8);
+  const morningResidents = neighborhoodResidents(morning);
+  assert.ok(morningResidents.find(resident => resident.id === 'westley').companions.includes('Tate'));
+  assert.ok(neighborhoodWalkers(morningResidents, morning).some(resident => resident.id === 'tate'));
+  const grooming = neighborhoodResidents(new Date(2026, 10, 16, 14));
+  assert.ok(grooming.find(resident => resident.id === 'em').companions.includes('Bobbie'));
   const date = new Date(2026, 10, 16, 11);
   const onFoot = neighborhoodWalkers(neighborhoodResidents(date), date);
   assert.ok(onFoot.length > 0 && onFoot.length <= 3 && onFoot.every(resident => resident.path));

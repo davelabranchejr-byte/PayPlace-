@@ -17,14 +17,15 @@ test.before(async () => {
     plugins: [[require('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]],
   }).code;
   const sandbox = { React, useState: React.useState, useEffect: React.useEffect,
-    ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
+    ...Object.fromEntries(['View', 'Text', 'TextInput', 'Image', 'ScrollView', 'TouchableOpacity',
       'SafeAreaView', 'KeyboardAvoidingView', 'PayPlaceBrand', 'CharacterArtwork', 'ActionArtwork',
       'ConstructionNotice', 'EmailVerification', 'PrivacyLinks', 'Ionicons', 'AcornSquare'].map(name => [name, name])),
-    styles: {}, palette: {}, portraits: { westley: 'Westley portrait', bobbie: 'Bobbie portrait', chapo: 'Chapo portrait', tate: 'Tate portrait' }, greatAnnieHero: {}, require: file => file, imageSource: value => value,
+    styles: {}, palette: {}, portraits: { westley: 'Westley portrait', bobbie: 'Bobbie portrait', chapo: 'Chapo portrait', tate: 'Tate portrait', daddy: 'Daddy portrait' }, greatAnnieHero: {}, require: file => file, imageSource: value => value,
+    payPlacePlans: [{ id: 'plus', name: 'Plus', price: '$4.99', onboardingSummary: 'Debt payoff and micropayments', artwork: 'Tate' }],
     Platform: { OS: 'ios' }, Alert: { alert: () => {} }, ...progress, ...contact, module: { exports: {} } };
   vm.runInNewContext(code + '\nmodule.exports = { OnboardingFlow, ONBOARDING_STEPS };', sandbox);
   flow = sandbox.module.exports;
-  const illustrations = flow.ONBOARDING_STEPS.map(step => step.artworkAction || step.image);
+  const illustrations = flow.ONBOARDING_STEPS.map(step => step.artworkAction || step.image).filter(Boolean);
   assert.equal(new Set(illustrations).size, illustrations.length, 'onboarding questions each have their own illustration');
 
 });

@@ -18,10 +18,13 @@ test('daylight follows seasonal local-clock hours', () => {
 test('welcome artwork covers all months and ends holiday themes promptly', () => {
   const expected=['winter','winter','spring','spring','spring','summer','summer','summer','autumn','halloween','autumn','winter-holidays'];
   expected.forEach((theme,month) => assert.equal(neighborhoodWelcomeTheme(new Date(2026,month,15)),theme));
+  assert.equal(neighborhoodWelcomeTheme(new Date(2026,3,5)), 'easter');
+  assert.equal(neighborhoodWelcomeTheme(new Date(2026,6,4)), 'independence-day');
+  assert.equal(neighborhoodWelcomeTheme(new Date(2026,10,26)), 'thanksgiving');
   assert.equal(neighborhoodWelcomeTheme(new Date(2026,9,31,23,59)), 'halloween');
   assert.equal(neighborhoodWelcomeTheme(new Date(2026,10,1,0,0)), 'autumn');
-  assert.equal(neighborhoodWelcomeTheme(new Date(2026,11,31,23,59)), 'winter-holidays');
-  assert.equal(neighborhoodWelcomeTheme(new Date(2027,0,1,0,0)), 'winter');
+  assert.equal(neighborhoodWelcomeTheme(new Date(2026,11,31,23,59)), 'new-year');
+  assert.equal(neighborhoodWelcomeTheme(new Date(2027,0,1,0,0)), 'new-year');
 });
 
 test('seasonal cameos follow local holiday windows, movable dates, and darkness', () => {

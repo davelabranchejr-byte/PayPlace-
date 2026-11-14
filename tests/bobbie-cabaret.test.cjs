@@ -37,6 +37,10 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
     await act(async()=>button('Send to Bobbie’s mailbag').props.onPress());
     assert.equal(calls.length,0);
     await act(()=>field('Your question').props.onChangeText('How can I save a little money each week?'));
+    await act(()=>field('Reply email (optional)').props.onChangeText('bad email'));
+    await act(async()=>button('Send to Bobbie’s mailbag').props.onPress());
+    assert.equal(calls.length,0);
+    await act(()=>field('Reply email (optional)').props.onChangeText(' Neighbor@Example.com '));
     await act(()=>button('Owner inbox').props.onPress());
     assert.equal(renderer.root.findAllByType('OwnerInbox').length,1);
     await act(()=>button('Back to Cabaret').props.onPress());
@@ -50,6 +54,8 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
     await act(async()=>button('Send to Bobbie’s mailbag').props.onPress());
     assert.equal(field('Your question').props.value,'How can I save a little money each week?');
     assert.match(JSON.stringify(renderer.toJSON()),/Offline, please retry/);
+    assert.equal(calls[0].payload.replyEmail,'neighbor@example.com');
+    assert.equal(field('Reply email (optional)').props.value,' Neighbor@Example.com ');
     assert.equal(calls[0].payload.featureConsent,false); assert.equal(calls[0].payload.stageName,'Anonymous neighbor');
     fail=false; let request;
     await act(()=>{request=button('Send to Bobbie’s mailbag').props.onPress();});
@@ -59,6 +65,7 @@ test('cabaret retains failed questions, blocks duplicate taps, and clears only a
     assert.match(JSON.stringify(renderer.toJSON()),/private mailbag/);
     await act(()=>button('Ask Bobbie').props.onPress());
     assert.equal(field('Your question').props.value,'');
+    assert.equal(field('Reply email (optional)').props.value,'');
   } finally { await act(()=>renderer.unmount()); }
 });
 

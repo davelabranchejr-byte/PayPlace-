@@ -10,12 +10,14 @@ test('owner inbox verifies a code, shows consent, manages questions, clears priv
   const sandbox = { exports: {}, console, Date, setInterval: fn => { const id = ++timerId; timers.set(id, fn); return id; }, clearInterval: id => timers.delete(id), setTimeout: () => ++timerId, clearTimeout() {}, require: name => name === './MascotTouchable' ? { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' } : name === 'react' ? React : name === 'react-native' ? ui : name.endsWith('/QuestionGlass') ? 'QuestionGlass' : name.endsWith('owner-inbox-api.mjs') ? { createOwnerInboxApi: () => () => {} } : name.endsWith('owner-session') ? { ownerSessionStore: {} } : { EMAIL_SERVICE_ORIGIN: 'https://payplace.example' } };
   vm.runInNewContext(code, sandbox);
   let signedIn = false, saved = null, status = 'new', renderer;
-  const calls = [], question = { id: 'receipt-1', stageName: 'Chapo', question: 'Where are my snacks?', featureConsent: false, createdAt: Date.now(), topic: 'Spending & saving' };
+  const calls = [], question = { id: 'receipt-1', stageName: 'Chapo', question: 'Where are my snacks?', featureConsent: false, replyEmail: 'neighbor@example.com', createdAt: Date.now(), topic: 'Spending & saving' };
   const api = async (route, data, authenticated = true) => {
     calls.push({ route, data, authenticated });
     if (route === 'request-code') return { challengeId: 'challenge', expiresAt: Date.now() + 600000, resendAfter: 60 };
     if (route === 'verify') { signedIn = true; return { sessionToken: 'a'.repeat(64), expiresAt: Date.now() + 600000 }; }
     if (!signedIn) { const error = new Error('Verify your owner email.'); error.signIn = true; throw error; }
+    if (route.startsWith('daddy-messages')) return { messages: [{ id: 'daddy-1', email: 'daddy-neighbor@example.com', message: 'Hello, Daddy!' }], unread: 1, nextOffset: null };
+    if (route === 'cabaret-reply') { question.replyText = data.reply; question.repliedAt = Date.now(); return { replied: true }; }
     if (route === 'question-status') { status = data.status; return { id: data.id, status }; }
     if (route === 'logout') { signedIn = false; return { signedOut: true }; }
     return { counts: { unread: status === 'new' ? 1 : 0, total: 1, archived: status === 'archived' ? 1 : 0 }, questions: [ { ...question, status } ], nextOffset: null };
@@ -34,10 +36,22 @@ test('owner inbox verifies a code, shows consent, manages questions, clears priv
     await act(async () => button('Unlock owner inbox').props.onPress());
     assert.equal(button('Approve for Bobbie’s glass').props.disabled, true);
     assert.ok(saved); assert.match(JSON.stringify(renderer.toJSON()), /1 new/); assert.match(JSON.stringify(renderer.toJSON()), /Permission to feature: NO/);
+    await act(async () => button('Daddy’s messages').props.onPress());
+    assert.match(JSON.stringify(renderer.toJSON()), /Hello, Daddy!/);
+    assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Where are my snacks/);
+    await act(async () => button('Bobbie’s questions').props.onPress());
+    assert.match(JSON.stringify(renderer.toJSON()), /Where are my snacks/);
+    await act(() => button('Open message to reply').props.onPress());
+    await act(() => field('Reply to neighbor').props.onChangeText('Under the chair, darling.'));
+    await act(async () => button('Send email reply').props.onPress());
+    assert.ok(calls.some(call => call.route === 'cabaret-reply' && call.data.id === question.id && call.data.reply === 'Under the chair, darling.'));
+    await act(() => button('View sent reply').props.onPress());
+    assert.match(JSON.stringify(renderer.toJSON()), /Under the chair, darling/);
+    await act(async () => button('Back to inbox messages').props.onPress());
     await act(async () => button('Mark read').props.onPress());
     assert.equal(status, 'read'); assert.match(JSON.stringify(renderer.toJSON()), /0 new/); assert.match(JSON.stringify(renderer.toJSON()), /Permission to feature: NO/);
     await act(() => { ui.AppState.currentState = 'background'; for (const fn of listeners) fn('background'); });
-    assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Where are my snacks/);
+    assert.doesNotMatch(JSON.stringify(renderer.toJSON()), /Where are my snacks|neighbor@example.com|Under the chair/);
     await act(async () => { ui.AppState.currentState = 'active'; for (const fn of listeners) fn('active'); });
     assert.match(JSON.stringify(renderer.toJSON()), /Where are my snacks/);
     await act(async () => button('Sign out of owner inbox').props.onPress());

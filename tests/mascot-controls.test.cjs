@@ -38,9 +38,9 @@ test('painted hotspots and already illustrated controls retain their exact artwo
 });
 test('navigation has four visible destinations and every nested billing route returns to Bills & Banking',async()=>{
   const {PRIMARY_DESTINATIONS,primaryDestination}=await import('../src/neighborhood-destinations.mjs');
-  assert.deepEqual(PRIMARY_DESTINATIONS.map(p=>p.id),['Home','Budget','Bills','Neighborhood']);
+  assert.deepEqual(PRIMARY_DESTINATIONS.map(p=>p.id),['Home','Finances','Budget','Bills']);
   for(const id of ['Bills','Billiam','BankingDemo','Debt'])assert.equal(primaryDestination(id),'Bills');
-  for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Neighborhood');
+  for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Home');
 });
 test('action banners adapt between wide rows and narrow tiles without changing artwork or behavior',async()=>{
   const f=await fixture();let renderer,layouts=0,taps=0;

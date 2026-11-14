@@ -48,7 +48,7 @@ test('gallery fits full artwork at phone and tablet widths; all six frame target
   } finally { await act(()=>renderer.unmount()); }
 });
 test('quilt uses approved stitched acorn art and opens/returns from its detailed view',async()=>{
-  const {BelongingQuilt,QuiltDetail,AcornSquare}=load('BelongingQuilt.js',{...await import('../src/quilt-milestones.mjs'), FACEBOOK_NEIGHBORHOOD_URL:'https://www.facebook.com/example'},['BelongingQuilt','QuiltDetail','AcornSquare']);
+  const {BelongingQuilt,QuiltDetail,AcornSquare,ChairQuilt}=load('BelongingQuilt.js',{...await import('../src/quilt-milestones.mjs'), FACEBOOK_NEIGHBORHOOD_URL:'https://www.facebook.com/example'},['BelongingQuilt','QuiltDetail','AcornSquare','ChairQuilt']);
   let opened=0,back=0,r;
   const claimed=[];
   await act(()=>{r=create(React.createElement(BelongingQuilt,{onOpen:()=>opened++}));});
@@ -63,13 +63,27 @@ test('quilt uses approved stitched acorn art and opens/returns from its detailed
   assert.deepEqual(claimed,['joinedFacebook','invitedFriend']);
   const artwork=r.root.findAllByType('CharacterArtwork');
   assert.ok(artwork.some(n=>n.props.source.label.includes('embroidered golden acorn')));
-  for(const n of artwork) {
+  for(const n of artwork.filter(node => node.props.source.crop)) {
     const a=n.props.source,[x,y,w,h]=a.crop;
     assert.ok(x>=0&&y>=0&&x+w<=a.width&&y+h<=a.height);
   }
   await act(()=>r.root.findByProps({testID:'quilt-back'}).props.onPress()); assert.equal(back,1);
   await act(()=>r.update(React.createElement(AcornSquare)));
   assert.equal(r.root.findByType('CharacterArtwork').props.source.crop.length,4);
+  const finance = { quiltMilestones: ['firstBill', 'foundNote', 'savingsGoal'] };
+  const squares = prefix => r.root.findAll(node => typeof node.type === 'string' && node.props.testID?.startsWith(prefix));
+  await act(() => r.update(React.createElement(ChairQuilt, { finance })));
+  const chairSquares = squares('chair-quilt-square-');
+  assert.deepEqual(chairSquares.map(node => node.props.testID.replace('chair-', '')),
+    ['quilt-square-acorn', 'quilt-square-firstBill', 'quilt-square-foundNote', 'quilt-square-savingsGoal']);
+  const chairArtwork = chairSquares.map(node => node.findByType('CharacterArtwork').props.source);
+  await act(() => r.update(React.createElement(QuiltDetail, { finance })));
+  const quiltSquares = squares('quilt-square-');
+  assert.deepEqual(quiltSquares.map(node => node.findByType('CharacterArtwork').props.source), chairArtwork);
+  for (const node of quiltSquares) {
+    assert.equal(flatten(node.props.style).aspectRatio, 1);
+    assert.equal(flatten(node.findByType('CharacterArtwork').props.style).height, '100%');
+  }
   await act(()=>r.unmount());
 });
 

@@ -18,7 +18,8 @@ function harness(hour=12, motionEnabled=false, date = new Date(2026,9,15,hour), 
     AccessibilityInfo:{isReduceMotionEnabled:async()=>!motionEnabled,addEventListener:()=>({remove(){}})},
     Easing:{linear:'linear',sin:'sin',inOut:fn=>fn},
     Animated:{View:'AnimatedView',Image,Value:class{setValue(){} interpolate(){return 0;}},
-      add(){return 0;},modulo(){return {interpolate(){return 0;}};},delay(){},timing(){},sequence(){},loop(){return {start(){animation.started++;},stop(){animation.stopped++;}};}}};
+      add(){return 0;},modulo(){return {interpolate(){return 0;}};},delay(){},
+      timing(){return {start(){},stop(){}};},sequence(){},loop(){return {start(){animation.started++;},stop(){animation.stopped++;}};}}};
   const cache=new Map();
   function load(name){
     const file=path.resolve(__dirname,'../src',name);
@@ -26,7 +27,7 @@ function harness(hour=12, motionEnabled=false, date = new Date(2026,9,15,hour), 
     const module={exports:{}};cache.set(file,module);
     const code=babel.transformSync(fs.readFileSync(file,'utf8'),{configFile:false,babelrc:false,
       plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;
-    vm.runInNewContext(code,{module,exports:module.exports,require:dep=>{
+    vm.runInNewContext(code,{module,exports:module.exports,setTimeout,clearTimeout,require:dep=>{
     if (dep === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (dep === './Encouragement') return { EncouragementSpot: () => null };
       if(dep==='react')return React;
@@ -108,6 +109,22 @@ test('the neighborhood can pan by swipe or by its left and right controls', asyn
     await act(() => arrow('left').props.onPress());
     assert.deepEqual({...calls[1]}, {x:96,animated:false});
   } finally { if (renderer) await act(() => renderer.unmount()); }
+});
+
+test('full-map mode fits the whole panorama inside the landscape viewport', async () => {
+  const { Panorama } = harness();
+  let renderer;
+  await act(() => { renderer = create(React.createElement(Panorama, { fullMap: true, mapOnly: true })); });
+  try {
+    const viewport = renderer.root.findByProps({ testID: 'neighborhood-panorama-viewport' });
+    const frame = renderer.root.findAllByType('View').find(node => node.props.testID === 'neighborhood-panorama-artwork');
+    for (const [width, height, expected] of [[820, 340, 820], [930, 260, 780], [390, 785, 390]]) {
+      await act(() => viewport.props.onLayout({ nativeEvent: { layout: { width, height } } }));
+      assert.equal(flatten(frame.props.style).width, expected);
+      assert.equal(flatten(frame.props.style).aspectRatio, 3);
+      assert.equal(renderer.root.findByType('ScrollView').props.scrollEnabled, false);
+    }
+  } finally { await act(() => renderer.unmount()); }
 });
 
 test('the panorama pauses its day and night effects while a panel covers it or Quiet Mode reduces motion',async()=>{
