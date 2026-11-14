@@ -59,6 +59,8 @@ import SafeToSpendArtwork from "./src/SafeToSpendArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import NavigationTiles from "./src/NavigationTiles";
 import ActionArtwork from "./src/ActionArtwork";
+import IllustratedButton from "./src/IllustratedButton";
+import { payplaceColors } from "./src/brand";
 import ExpandableSection from "./src/ExpandableSection";
 import EntrySheet from "./src/EntrySheet";
 import BilliamHome, { BilliamShortcut } from "./src/BilliamHome";
@@ -846,20 +848,20 @@ function getNeighborhoodDay() {
 const palette = {
   bg: "#F6FBFF",
   card: "#FFFFFF",
-  ink: "#071A3A",
+  ink: payplaceColors.ink,
   navy: "#111B2A",
   muted: "#697386",
   mint: "#23E0C6",
   mintBright: "#5FFFD7",
   mintDark: "#10BFAE",
-  teal: "#11B8A7",
+  teal: payplaceColors.turquoise,
   aqua: "#DFFCF7",
-  purple: "#8435CB",
+  purple: payplaceColors.purple,
   lavender: "#EAC5FF",
-  coral: "#FF6464",
+  coral: payplaceColors.coral,
   coralDark: "#EF4444",
   blush: "#FFF0F0",
-  gold: "#FFE344",
+  gold: payplaceColors.yellow,
   goldDark: "#E8A900",
   blue: "#21B7E8",
   border: "#DDEAF4",
@@ -1261,8 +1263,8 @@ function PayPlaceApp() {
       return;
     }
     Alert.alert(
-      "Subscription Detective · Paid Premium",
-      "Subscription tracking is a paid PayPlace Premium feature. You can try it with sample data in Bobbie’s banking demo. In regular PayPlace, add your subscriptions as bills with their amounts and due dates.",
+      "Pardon our dust · Subscription Detective",
+      "Automatic subscription tracking is in development. Try Subscription Detective with fictional transactions in Bobbie’s banking demo. You can add your subscriptions as bills in PayPlace.",
       [{ text: "Close", style: "cancel" }, { text: "Open my bills", onPress: () => setTab("Bills") }]
     );
   }
@@ -1544,11 +1546,18 @@ function PayPlaceApp() {
   function toggleManualMode() {
     Alert.alert(
       "Manual Mode",
-      "You are driving for now. PayPlace can help you plan, but it will not move money or pay bills in this prototype."
+      "Enter your balances and bills manually to plan ahead. Make payments with your bank or biller, then record them in PayPlace."
     );
   }
 
   function showPlaidPlan() {
+    if (Platform.OS === "ios") {
+      Alert.alert("Pardon our dust · Bank linking", "Bank linking is in development. Enter your balances and bills manually, or explore Banking Demo with fictional accounts.", [
+        { text: "Close", style: "cancel" },
+        { text: "Open Banking Demo", onPress: openBankingDemo },
+      ]);
+      return;
+    }
     setBankConnectionsVisible(true);
   }
 
@@ -1774,13 +1783,13 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     setTab("Home");
   }
 
-  async function finishOnboarding(answers) {
+  async function finishOnboarding(answers, { localOnly = false } = {}) {
     if (dataDeletion.current) return;
-    if (!hasVerifiedContact(answers)) {
+    if (!localOnly && !hasVerifiedContact(answers)) {
       Alert.alert("Confirm your place", "Enter the security code sent to your email before continuing.");
       return;
     }
-    const completedAnswers = completedProfile(answers);
+    const completedAnswers = completedProfile(answers, undefined, { localOnly });
     onboardingFinalizing.current = true;
     try {
       const chosenStrategy = !onboardingComplete && !revisitingAnnie && STRATEGY_ORDER.includes(answers.onboardingPayoffMethod);
@@ -2035,8 +2044,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
         {!onTownMap && recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ flex: 1, color: palette.ink }}>Deleted {recentDeleted[0].collection === "bills" ? "bill" : "debt"}. You can bring it back.</Text>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
-          <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
+          <IllustratedButton artwork={require("./assets/characters/deletion-art-undo.jpg")} label="Undo" accessibilityLabel="Undo last deletion"
+            onPress={() => undoDeletion(recentDeleted[0].key)} style={styles.deletionShortcut} labelStyle={styles.compactArtLabel} />
+          <IllustratedButton artwork={require("./assets/characters/deletion-art-all.jpg")} label="All" accessibilityLabel="View recently deleted entries"
+            onPress={() => setSecurityVisible(true)} style={styles.deletionShortcut} labelStyle={styles.compactArtLabel} />
         </View>}
         {!onTownMap && <NeighborhoodNav current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />}
         {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
@@ -2128,7 +2139,7 @@ const ONBOARDING_STEPS = [
     mascot: "Bobbie",
     role: "Confidence Queen",
     question: "Would bank linking help you later?",
-    helper: "Plaid bank linking and subscription tracking are paid Premium features. You can enter balances, bills and subscriptions manually with regular PayPlace.",
+    helper: "Bank linking and automatic subscription tracking are in development. Enter your balances, bills and subscriptions manually in the free app.",
     image: require("./assets/characters/onboarding-bank-linking-bobbie.png"),
     type: "choice",
     options: ["I’m interested", "Maybe later", "I prefer manual mode"],
@@ -2167,11 +2178,11 @@ const ONBOARDING_STEPS = [
   {
     key: "planPreference",
     question: "Which PayPlace plan interests you?",
-    helper: "Beta access is free. The monthly prices below are proposed. Your choice is saved for later.",
+    helper: "PayPlace is free. Your choice determines which tab you see first when you open Plans.",
     type: "choice",
     optional: true,
     options: [
-      ...payPlacePlans.map(plan => ({ id: plan.id, title: plan.name, detail: `${plan.price}/month · ${plan.onboardingSummary}` })),
+      ...payPlacePlans.map(plan => ({ id: plan.id, title: plan.name, detail: plan.onboardingSummary })),
       { id: "later", title: "Decide later" },
     ],
     accent: palette.purple,
@@ -2260,6 +2271,9 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1, alignItems: "center", justifyContent: "center", padding: 20 }}>
           <EmailVerification answers={answers} onDraftChange={draft => setAnswers(current => ({ ...current, ...draft }))} onVerified={onComplete} />
+          <TouchableOpacity accessibilityRole="button" style={styles.onboardingBackButton} onPress={() => onComplete(answers, { localOnly: true }).catch(() => {})}>
+            <Text style={styles.onboardingBackText}>Continue without email</Text>
+          </TouchableOpacity>
           {exitButton}
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to your quilt" style={styles.onboardingBackButton} onPress={() => setWelcomeStage("quilt")}>
             <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back</Text>
@@ -2291,6 +2305,9 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
               <Text style={styles.quiltGiftButtonText}>Enter the neighborhood</Text>
               <Ionicons name="home" size={20} color="white" />
             </TouchableOpacity>
+            {!hasVerifiedContact(answers) && <TouchableOpacity accessibilityRole="button" style={styles.onboardingBackButton} onPress={() => onComplete(answers, { localOnly: true }).catch(() => {})}>
+              <Text style={styles.onboardingBackText}>Continue without email</Text>
+            </TouchableOpacity>}
             <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to your answers" style={styles.onboardingBackButton} onPress={() => { setStepIndex(ONBOARDING_STEPS.length - 1); setWelcomeStage("questions"); }}>
               <Ionicons name="arrow-back" size={20} color={palette.ink} /><Text style={styles.onboardingBackText}>Back</Text>
             </TouchableOpacity>
@@ -2389,7 +2406,9 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
 }
 
 function Header({ onSecurity, onHelp, onPlans, tab }) {
-  const helpArt = tab === "Finances" ? "homeGuide" : tab === "Debt" ? "debtHelp" : null;
+  const helpArtwork = tab === "Finances" ? require("./assets/characters/feature-how-home-works-daddy.png")
+    : tab === "Debt" ? require("./assets/characters/feature-how-debt-works.png")
+      : require("./assets/characters/header-art-help.jpg");
   return (
     <View style={styles.header}>
       <View style={styles.headerTopRow}>
@@ -2401,21 +2420,16 @@ function Header({ onSecurity, onHelp, onPlans, tab }) {
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 5 }}>
-        {onHelp && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
-          accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp} style={styles.headerHelp}>
-          {helpArt ? <ActionArtwork action={helpArt} size={30} />
-            : <Ionicons name="help-circle-outline" size={20} color={palette.purple} />}
-          <Text style={styles.headerHelpText}>Help</Text>
-        </TouchableOpacity>}
-        {onPlans && <TouchableOpacity testID="open-plans" accessibilityRole="button" accessibilityLabel="Open PayPlace plans" onPress={onPlans}
-          style={styles.headerPlans}>
-          <Text style={{color:palette.ink,fontWeight:"900"}}>Plans</Text>
-        </TouchableOpacity>}
-        {onSecurity && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open security and backup settings" hitSlop={8} onPress={onSecurity}
-          style={{width:48,minHeight:48,alignItems:"center",justifyContent:"center",marginLeft:8}}>
-          <Ionicons name="shield-checkmark-outline" size={22} color={palette.purple} />
-        </TouchableOpacity>}
+      <View style={styles.headerActions}>
+        {onHelp && <IllustratedButton artwork={helpArtwork} label="Help"
+          accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp}
+          style={styles.headerHelp} labelStyle={styles.compactArtLabel} />}
+        {onPlans && <IllustratedButton artwork={require("./assets/characters/header-art-plans.jpg")} label="Plans"
+          testID="open-plans" accessibilityLabel="Open PayPlace plans" onPress={onPlans}
+          style={styles.headerPlans} labelStyle={styles.compactArtLabel} />}
+        {onSecurity && <IllustratedButton artwork={require("./assets/characters/header-art-security.jpg")} label="Security"
+          accessibilityLabel="Open security and backup settings" onPress={onSecurity}
+          style={styles.headerSecurity} labelStyle={styles.compactArtLabel} />}
       </View>
     </View>
   );
@@ -2537,7 +2551,7 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
           style={[styles.heroHotspot, styles.calmHotspot]}
           onPress={() => switchTab("Calm")}
         />
-        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open the Subscription Detective Clubhouse, Premium feature"
+        <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open the Subscription Detective Clubhouse in Banking Demo"
           style={[styles.heroHotspot, { left: "78%", top: "33%", width: "17%", height: "23%", minWidth: 48, minHeight: 48 }]}
           onPress={onDetective} />
       </View>
@@ -2731,13 +2745,15 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
   const choose = action => { onWelcomeSeen(); setMenu(false); setResident(null); action(); };
   return <View style={{ flex: 1, backgroundColor: "#173C50" }} testID="neighborhood-map-screen">
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 10, backgroundColor: "#FFF8EA" }}>
-      <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
-        accessibilityLabel={menu ? "Close neighborhood menu" : "Open neighborhood menu"}
-        accessibilityState={{ expanded: menu }} onPress={() => { onWelcomeSeen(); setResident(null); setMenu(!menu); }}
+      {menu ? <IllustratedButton artwork={require("./assets/characters/map-menu-return.jpg")} label="‹ Back to map"
+        accessibilityLabel="Close neighborhood menu" accessibilityState={{ expanded: true }}
+        onPress={() => setMenu(false)} style={styles.mapReturnButton} /> : <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
+        accessibilityLabel="Open neighborhood menu"
+        accessibilityState={{ expanded: false }} onPress={() => { onWelcomeSeen(); setResident(null); setMenu(true); }}
         style={{ minHeight: 44, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, gap: 5 }}>
-        <Ionicons name={menu ? "arrow-back" : "menu-outline"} size={25} color={palette.ink} />
-          <Text style={{ fontWeight: "800", color: palette.ink }}>{menu ? "Back to map" : "Menu"}</Text>
-      </TouchableOpacity>
+        <Ionicons name="menu-outline" size={25} color={palette.ink} />
+        <Text style={{ fontWeight: "800", color: palette.ink }}>Menu</Text>
+      </TouchableOpacity>}
       {!landscape && fullMapRequested && !menu && !resident && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
         accessibilityLabel="Explore the map by swiping"
         onPress={() => setFullMapRequested(false)}
@@ -2785,16 +2801,16 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
           onPress={() => choose(onLeaveSample)} style={{ minHeight: 44, padding: 8 }}><Text>Return to my personal plan</Text></TouchableOpacity>}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 10 }}>
           {[
-            ["Help", "How Home works", onHelp],
-            ["Plans", "Open PayPlace plans", () => onOpen("Plans")],
-            ["Security & backup", "Open Security & backup", onSecurity],
-          ].map(([label, accessibilityLabel, action]) => <TouchableOpacity key={label} accessibilityRole="button"
-            accessibilityLabel={accessibilityLabel} onPress={() => choose(action)}
-            style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 10 }}>
-            <Text style={{ color: palette.ink, fontWeight: "800" }}>{label}</Text>
-          </TouchableOpacity>)}
+            ["Help", "How Home works", onHelp, require("./assets/characters/map-menu-help.jpg"), styles.mapUtilityButton],
+            ["Plans", "Open PayPlace plans", () => onOpen("Plans"), require("./assets/characters/map-menu-plans.jpg"), styles.mapPlanButton],
+            ["Security & backup", "Open Security & backup", onSecurity, require("./assets/characters/map-menu-security.jpg"), styles.mapSecurityButton],
+          ].map(([label, accessibilityLabel, action, artwork, style]) => <IllustratedButton key={label}
+            artwork={artwork} label={label} accessibilityLabel={accessibilityLabel} onPress={() => choose(action)}
+            style={style} />)}
         </View>
-        <NavigationTiles largeArtwork items={[{title: "Bobbie’s Cabaret Show", onPress: () => choose(() => onOpen("Cabaret"))}]} />
+        <IllustratedButton artwork={require("./assets/characters/map-menu-cabaret.jpg")} label="Bobbie’s Cabaret Show"
+          accessibilityLabel="Open Bobbie’s Cabaret Show" onPress={() => choose(() => onOpen("Cabaret"))}
+          style={styles.mapCabaretButton} />
         <NeighborhoodLinks onOpen={next => choose(() => onOpen(next))} />
         <NeighborhoodTownLife weatherZip={weatherZip} weather={weather} onOpen={next => choose(() => onOpen(next))} onWeatherZip={onWeatherZip} />
         {children}
@@ -2953,12 +2969,12 @@ const importDemoBills = () => {
       <ExpandableSection title="Banking & subscriptions">
         <NavigationTiles stackedArtworkRatio={3 / 2} items={[
           {title:'Banking Demo',source:require('./assets/characters/banking-demo-tile.jpg'),body:'Sample accounts',onPress:onBankingDemo},
-          {title:'Subscription Detective',source:require('./assets/characters/subscription-detective-banking-tile.jpg'),body:'Premium',onPress:onSubscriptions},
+          {title:'Subscription Detective',source:require('./assets/characters/subscription-detective-banking-tile.jpg'),body:'Banking Demo',onPress:onSubscriptions},
         ]} />
         <Text style={styles.bankingManualNote}>You can add subscriptions manually as bills in any plan.</Text>
         {onBankLinking && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Plaid bank-linking availability"
           style={styles.primaryButtonTight} onPress={onBankLinking}>
-          <Text style={styles.primaryButtonText}>Plaid bank linking · Premium availability</Text>
+          <Text style={styles.primaryButtonText}>Bank linking · In development</Text>
         </TouchableOpacity>}
       </ExpandableSection>
 
@@ -3429,8 +3445,8 @@ function BudgetScreen({
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <SectionTitle title="Budget" />
-      <View style={styles.safeSpendCard}>
-        <Text style={styles.cardLabelLight}>Safe to Spend</Text>
+      <View style={styles.safeSpendCard} testID="budget-safe-to-spend">
+        <Text accessibilityRole="header" style={styles.cardLabelLight}>Safe to Spend</Text>
         <Text style={styles.safeSpendNumber} numberOfLines={1} adjustsFontSizeToFit>
           {money(safeToSpend)}
         </Text>
@@ -3456,9 +3472,12 @@ function BudgetScreen({
             valueColor={palette.ink}
           />
         </View>
+        <View style={styles.safeHeroImageFrame}>
+          <SafeToSpendArtwork placement="budget" testID="budget-safe-to-spend-artwork" />
+        </View>
       </View>
 
-      <ExpandableSection title="Edit money info" artworkAction="editBudget" compact>
+      <ExpandableSection title="Edit money info" fullBleedArtwork={require("./assets/characters/budget-entry-edit.jpg")}>
       <View style={styles.formCard}>
         <InputField
           label="Current bank balance"
@@ -3526,7 +3545,7 @@ function BudgetScreen({
 
       </ExpandableSection>
       {onCategories && <CategoryEntry onOpen={onCategories} compact />}
-      <ExpandableSection title="Paydays & savings">
+      <ExpandableSection title="Paydays & savings" fullBleedArtwork={require("./assets/characters/budget-entry-paydays.jpg")}>
         {onOutlook && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Money outlook"
           onPress={onOutlook} style={styles.primaryButtonTight}>
           <Text style={styles.primaryButtonText}>Money outlook</Text>
@@ -3537,7 +3556,7 @@ function BudgetScreen({
           {title:'Savings Goals',onPress:onSavings},
         ]} />
       </ExpandableSection>
-      <ExpandableSection title="Budget data settings">
+      <ExpandableSection title="Budget data settings" fullBleedArtwork={require("./assets/characters/budget-entry-settings.jpg")}>
         <View style={styles.noteCard}>
           <Ionicons name="save" size={22} color={palette.purple} />
           <Text style={styles.noteText}>
@@ -4457,9 +4476,12 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 6,
   },
-  headerHelp: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 10 },
-  headerHelpText: { color: palette.purple, fontWeight: '800' },
-  headerPlans: { minHeight: 48, paddingHorizontal: 10, marginLeft: 8, justifyContent: 'center', backgroundColor: '#FFE455', borderColor: '#BA8500' },
+  headerActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: 6, marginTop: 5 },
+  headerHelp: { flex: 1, minWidth: 72, minHeight: 65, borderColor: palette.purple },
+  headerPlans: { minWidth: 64, minHeight: 65, borderColor: palette.gold },
+  headerSecurity: { minWidth: 74, minHeight: 65, borderColor: palette.teal },
+  compactArtLabel: { fontSize: 13, lineHeight: 17, paddingVertical: 3, paddingHorizontal: 5 },
+  deletionShortcut: { minWidth: 50, minHeight: 48, borderColor: palette.purple },
   headerTopRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -4495,13 +4517,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: "hidden",
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.35)",
+    borderColor: palette.teal,
   },
   safeMapShortcut: { margin: 10, flexDirection: "row", alignItems: "stretch", overflow: "hidden",
-    backgroundColor: "#097A73", borderColor: "#60CFCB" },
+    backgroundColor: "#097A73", borderColor: palette.teal },
   safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
   safeMapCopy: { flex: 1, minWidth: 0, padding: 10, justifyContent: "center" },
   safeMapArtwork: { width: "45%", flexShrink: 0, alignSelf: "center" },
+  mapReturnButton: { width: 168, minHeight: 55, marginVertical: 4, borderColor: palette.purple },
+  mapUtilityButton: { flexBasis: "46%", flexGrow: 1, minHeight: 100, borderColor: palette.purple },
+  mapPlanButton: { flexBasis: "46%", flexGrow: 1, minHeight: 100, borderColor: palette.gold },
+  mapSecurityButton: { flexBasis: "100%", minHeight: 86, borderColor: palette.teal },
+  mapCabaretButton: { width: "100%", maxWidth: 480, aspectRatio: 1.12, alignSelf: "center", marginBottom: 14, borderColor: palette.coral },
   safeHeroGlowOne: {
     position: "absolute",
     width: 200,
