@@ -26,6 +26,7 @@ import useBillReminders from "./src/useBillReminders";
 import { deletedItems, deleteEntry, restoreEntry } from "./src/deleted-items.mjs";
 import Alert from "./src/alert";
 import CharacterArtwork from "./src/CharacterArtwork";
+import MapRotationCue from "./src/MapRotationCue";
 import { EncouragementProvider } from "./src/Encouragement";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
@@ -47,7 +48,7 @@ import LivingNeighborhood, { NeighborhoodTownLife } from "./src/LivingNeighborho
 import useNeighborhoodWeather from "./src/useNeighborhoodWeather";
 import { RoomVisitors } from "./src/NeighborhoodWorld";
 import PetSpa from "./src/PetSpa";
-import NeighborhoodNav, { buildingArtwork, spaPorchArtwork, tabArtwork } from "./src/NeighborhoodNav";
+import NeighborhoodNav, { buildingArtwork, spaPorchArtwork } from "./src/NeighborhoodNav";
 import { NEIGHBOR_DESTINATIONS } from "./src/neighborhood-destinations.mjs";
 import BankWelcomeCard from "./src/BankWelcomeCard";
 import SeasonalWelcome, { NeighborhoodOpening } from "./src/SeasonalWelcome";
@@ -739,7 +740,7 @@ const STORAGE_KEY = "@payplace_finance_v5_manual_mode";
 const ONBOARDING_KEY = "@payplace_onboarding_v3_annie_first";
 const neighborhoodScene = require("./assets/characters/annie-red-door-village.png");
 // Welcome, red door, and foyer share Dave's original canonical Annie.
-import LaunchEssentials, { EssentialsButtons } from "./src/LaunchEssentials";
+import LaunchEssentials from "./src/LaunchEssentials";
 import { PrivacyContext } from "./src/Privacy";
 import { paydaySnapshot, recordBillHistory, undoPayment, firstWinPlan, emptyPlan, samplePlan, quietSettings } from "./src/launch-essentials.mjs";
 const greatAnnieHero = annieArtwork.welcome;
@@ -760,7 +761,6 @@ const calmPearlImage3 = portraits.together;
 const calmPearlImage4 = portraits.together;
 const calmPearlImage5 = portraits.together;
 const calmPearlImage6 = portraits.together;
-const moodCardImage = require("./assets/characters/money-mood-family-budget.jpg");
 function imageSource(image) {
   return typeof image === "string" ? { uri: image } : image;
 }
@@ -1992,7 +1992,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)}
           onLeaveSample={sampleFinance ? endSample : null}>
           <ExpandableSection title="Annie’s porch & quiet tools">
-            <FeatureLinks compact items={[
+            <FeatureLinks items={[
               {title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},
               {title:'Quiet Mode',body:'Reminders, animation and hidden amounts.',onPress:()=>setEssentialsPanel('quiet')},
               {title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding},
@@ -2166,7 +2166,7 @@ const ONBOARDING_STEPS = [
     type: "choice",
     optional: true,
     options: [
-      ...payPlacePlans.map(plan => ({ id: plan.id, title: plan.name, detail: `${plan.price}/month · ${plan.onboardingSummary}`, artwork: plan.artwork })),
+      ...payPlacePlans.map(plan => ({ id: plan.id, title: plan.name, detail: `${plan.price}/month · ${plan.onboardingSummary}` })),
       { id: "later", title: "Decide later" },
     ],
     accent: palette.purple,
@@ -2323,7 +2323,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
             {step.type === "choice" ? (
               <View style={styles.onboardingChoices}>
                 {step.options.map((option) => {
-                  const { id, title, detail, artwork } = typeof option === "string" ? { id: option, title: option } : option;
+                  const { id, title, detail } = typeof option === "string" ? { id: option, title: option } : option;
                   const selected = value === id;
                   return (
                     <TouchableOpacity
@@ -2334,7 +2334,6 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
                       accessibilityState={{ selected }}
                       style={[styles.onboardingChoice, selected && { borderColor: step.accent, backgroundColor: `${step.accent}16` }]}
                     >
-                      {artwork && <Image source={artwork} resizeMode="contain" accessible={false} style={{ width: 48, height: 48 }} />}
                       <Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={22} color={selected ? step.accent : palette.muted} />
                       <View style={styles.flexOne}>
                         <Text style={[styles.onboardingChoiceText, selected && { color: palette.ink }]}>{title}</Text>
@@ -2540,9 +2539,9 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
 
 
       <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
-        style={{ marginHorizontal: 18, marginTop: 12, padding: 12, borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9", flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <CharacterArtwork source={spaPorchArtwork} style={{ width: 112, height: 90 }} resizeMode="contain" accessible={false} />
-        <View style={{ flex: 1 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
+        style={{ marginHorizontal: 18, marginTop: 12, overflow: "hidden", borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9" }}>
+        <CharacterArtwork source={spaPorchArtwork} style={{ width: "100%", aspectRatio: 1 }} resizeMode="cover" accessible={false} />
+        <View style={{ padding: 12 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
           <Text style={{ color: "#34465E", fontSize: 14, lineHeight: 20, marginTop: 4 }}>Peek in for pampered paws, top-secret makeovers, and cookie cleanup. ›</Text></View>
       </TouchableOpacity>
 
@@ -2641,10 +2640,10 @@ function MyFinancesScreen({
         </View>
       </View>
       <NavigationTiles testID="home-shortcuts" items={[
-        { title: "Review my bills", body: unpaidBills.length === 1 ? "1 unpaid bill" : `${unpaidBills.length} unpaid bills`, onPress: () => switchTab("Bills") },
-        { title: "One small step", onPress: () => setGuidanceVisible(true) },
-        { title: "Payoff methods", onPress: onPayoffMethods },
-        { title: "Budget", source: buildingArtwork("Budget"), onPress: () => switchTab("Budget") },
+        { title: "Review my bills", source: require("./assets/characters/finances-bills-westley.jpg"), body: unpaidBills.length === 1 ? "1 unpaid bill" : `${unpaidBills.length} unpaid bills`, colors: { fill: "#65EBEF", border: "#00AABF" }, onPress: () => switchTab("Bills") },
+        { title: "One small step", source: require("./assets/characters/finances-step-tate.jpg"), colors: { fill: "#DCABFF", border: "#9F3DE5" }, onPress: () => setGuidanceVisible(true) },
+        { title: "Payoff methods", source: require("./assets/characters/finances-payoff-bobbie.jpg"), colors: { fill: "#FFE455", border: "#E1AC00" }, onPress: onPayoffMethods },
+        { title: "Budget", source: require("./assets/characters/finances-budget-chapo.jpg"), colors: { fill: "#FFB0A4", border: "#E65D60" }, onPress: () => switchTab("Budget") },
       ]} />
       <Modal
         visible={guidanceVisible}
@@ -2732,17 +2731,20 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
         accessibilityLabel={menu ? "Close neighborhood menu" : "Open neighborhood menu"}
         accessibilityState={{ expanded: menu }} onPress={() => { onWelcomeSeen(); setResident(null); setMenu(!menu); }}
         style={{ minHeight: 44, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, gap: 5 }}>
-        <Image source={tabArtwork.Home} style={{ width: 36, height: 32 }} resizeMode="contain" accessible={false} />
+        <Ionicons name={menu ? "arrow-back" : "menu-outline"} size={25} color={palette.ink} />
           <Text style={{ fontWeight: "800", color: palette.ink }}>{menu ? "Back to map" : "Menu"}</Text>
       </TouchableOpacity>
-      {!landscape && !menu && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
-        accessibilityLabel={fullMap ? "Explore the map by swiping" : "Show the whole neighborhood map"}
-        onPress={() => { onWelcomeSeen(); setFullMapRequested(!fullMapRequested); }}
+      {!landscape && fullMapRequested && !menu && !resident && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
+        accessibilityLabel="Explore the map by swiping"
+        onPress={() => setFullMapRequested(false)}
         style={{ flex: 1, minHeight: 44, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, gap: 5 }}>
-        <Ionicons name="phone-landscape-outline" size={18} color={palette.purple} accessible={false} />
-        <Text style={{ flex: 1, color: palette.ink }}>{fullMap ? "Swipe view" : canRotate ? "Turn your phone for the full map" : "Show the full map"}</Text>
+        <Text style={{ flex: 1, color: palette.ink }}>Swipe view</Text>
       </TouchableOpacity>}
     </View>
+    {!fullMap && !menu && !resident && !showWelcome && <View style={{ paddingHorizontal: 10, paddingTop: 10 }}>
+      <MapRotationCue canRotate={canRotate} reduceAnimation={reduceAnimation || paused}
+        onPress={() => setFullMapRequested(true)} />
+    </View>}
     <View style={menu || resident ? { display: "none" } : styles.flexOne}
       accessibilityElementsHidden={menu || !!resident} importantForAccessibility={menu || resident ? "no-hide-descendants" : "auto"}>
       <LivingNeighborhood showTreehouses mapOnly fullMap={fullMap} reduceAnimation={reduceAnimation} paused={paused || menu || !!resident || showWelcome}
@@ -2752,13 +2754,13 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
     {!landscape && !fullMap && !menu && !resident && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
       accessibilityLabel={`Safe to Spend, ${money(safeToSpendDaily)} per day. Open My Finances`} onPress={() => choose(() => onOpen("Finances"))}
       style={styles.safeMapShortcut}>
-      <View style={styles.flexOne}>
+      <View style={styles.safeMapCopy}>
         <Text style={styles.safeHeroLabel}>Safe to Spend</Text>
         <Text style={styles.safeMapAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>{Math.max(Number(daysUntilPayday || 0), 1)} {Number(daysUntilPayday) > 1 ? "days" : "day"} to payday</Text>
       </View>
-      <FittedArtwork source={require("./assets/characters/extra-paycheck-chapo-treat-rain.png")} style={styles.safeMapArtwork}
-        aspectRatio={3 / 2} testID="map-safe-to-spend-artwork" accessible={false} />
+      <FittedArtwork source={require("./assets/characters/money-mood-family-budget.jpg")} style={styles.safeMapArtwork}
+        resizeMode="cover" testID="map-safe-to-spend-artwork" accessible={false} />
     </TouchableOpacity>}
     {resident && <ScrollView style={{ backgroundColor: "#FFF8EA" }} contentContainerStyle={{ padding: 14 }}>
       <Text accessibilityRole="header" style={{ color: palette.ink, fontSize: 20, fontWeight: "800" }}>{resident.name} · {resident.job}</Text>
@@ -2932,9 +2934,10 @@ const importDemoBills = () => {
       <SectionTitle title="Bills & Banking" />
       <NavigationTiles testID="bills-shortcuts" items={[
         { title: 'Add a bill', accessibilityLabel: 'Add a bill',
-          source: require("./assets/characters/header-bills-billiam-westley.png"),
+          source: require("./assets/characters/bills-add-billiam.jpg"),
           colors: { fill: '#FFE455', border: '#BA8500' }, onPress: () => setAddingBill(true) },
-        { title: 'Monthly payment calendar', artworkAction: 'monthlyCalendar', onPress: onMonthlyCalendar },
+        { title: 'Monthly payment calendar', source: require("./assets/characters/bills-calendar-billiam.jpg"),
+          colors: { fill: '#DCABFF', border: '#9F3DE5' }, onPress: onMonthlyCalendar },
       ]} />
       <ExpandableSection title="Bill tools, debt & payments">
         <NavigationTiles items={[
@@ -2946,7 +2949,7 @@ const importDemoBills = () => {
       </ExpandableSection>
       <ExpandableSection title="Banking & subscriptions">
         <NavigationTiles items={[
-          {title:'Banking Demo',body:'Sample accounts',onPress:onBankingDemo},
+          {title:'Banking Demo',source:require('./assets/characters/banking-demo-tile.jpg'),body:'Sample accounts',onPress:onBankingDemo},
           {title:'Subscription Detective',body:'Premium',onPress:onSubscriptions},
         ]} />
         <Text style={styles.bankingManualNote}>You can add subscriptions manually as bills in any plan.</Text>
@@ -3328,9 +3331,9 @@ const importDemoBills = () => {
 
         <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Try sample bill review"
           style={styles.sampleBillsShortcut} onPress={importDemoBills}>
-          <CharacterArtwork source={imageSource(importBillsWestleyGraphic)} style={styles.sampleBillsArtwork}
-            resizeMode="contain" accessible={false} />
-          <View style={styles.flexOne}>
+          <FittedArtwork source={imageSource(importBillsWestleyGraphic)} aspectRatio={4 / 3}
+            testID="sample-bills-shortcut-artwork" resizeMode="cover" accessible={false} />
+          <View style={styles.sampleBillsCopy}>
             <Text style={styles.sampleBillsTitle}>Try sample bill review</Text>
             <Text style={styles.cardSub}>Practice with fictional bills.</Text>
           </View>
@@ -3549,9 +3552,6 @@ function BudgetScreen({
 
 function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mixedQuickWinId, setPayoffMode, addDebt, payDebt, deleteDebt }) {
   const [addingDebt, setAddingDebt] = useState(false);
-  const { width, fontScale } = useWindowDimensions();
-  const stackStrategyArtwork = width < 370 || fontScale > 1.1;
-  const strategyArtworkWidth = Math.min(192, Math.floor(width * 0.42));
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3585,11 +3585,10 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
           ].map(option => <TouchableOpacity key={option.id} testID={`payoff-method-${option.id}`}
             artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`${option.title}: ${option.subtitle}`}
             accessibilityState={{ selected: mode === option.id }}
-            style={[styles.payoffModeButton, !stackStrategyArtwork && styles.payoffModeButtonRow, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
+            style={[styles.payoffModeButton, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
             onPress={() => setPayoffMode(option.id)}>
-            <Image source={option.artwork} resizeMode="contain" accessible={false}
-              style={[styles.payoffModeArtwork, { width: strategyArtworkWidth, height: strategyArtworkWidth / option.artworkRatio }]} />
-            <View style={stackStrategyArtwork ? styles.payoffModeCaptionStacked : styles.payoffModeCaption}>
+            <FittedArtwork source={option.artwork} aspectRatio={option.artworkRatio} resizeMode="cover" accessible={false} />
+            <View style={styles.payoffModeCaption}>
               <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
               <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
             </View>
@@ -4495,10 +4494,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.35)",
   },
-  safeMapShortcut: { margin: 10, padding: 10, gap: 10, flexDirection: "row", alignItems: "center",
+  safeMapShortcut: { margin: 10, flexDirection: "row", alignItems: "stretch", overflow: "hidden",
     backgroundColor: "#097A73", borderColor: "#60CFCB" },
   safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
-  safeMapArtwork: { width: "39%", maxWidth: 132, flexShrink: 0, borderRadius: 12 },
+  safeMapCopy: { flex: 1, minWidth: 0, padding: 10, justifyContent: "center" },
+  safeMapArtwork: { width: "39%", minHeight: 90, flexShrink: 0 },
   safeHeroGlowOne: {
     position: "absolute",
     width: 200,
@@ -4926,16 +4926,10 @@ const styles = StyleSheet.create({
     borderColor: "#D8CCFF",
   },
   sampleBillsShortcut: {
-    minHeight: 100,
-    marginTop: 12,
-    padding: 10,
-    gap: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#65EBEF",
-    borderColor: "#00AABF",
+    marginTop: 12, borderWidth: 2, overflow: "hidden",
+    backgroundColor: "#65EBEF", borderColor: "#00AABF",
   },
-  sampleBillsArtwork: { width: 76, height: 76, flexShrink: 0, borderRadius: 10 },
+  sampleBillsCopy: { padding: 12 },
   sampleBillsTitle: { color: "#071A3A", fontWeight: "900", fontSize: 18 },
   billActionImage: {
     width: "100%",
@@ -5359,26 +5353,11 @@ const styles = StyleSheet.create({
   },
   payoffModeButton: {
     width: "100%",
-    alignItems: "center",
     borderRadius: 22,
-    padding: 9,
-    gap: 10,
     borderWidth: 2,
+    overflow: "hidden",
   },
-  payoffModeButtonRow: {
-    flexDirection: "row",
-  },
-  payoffModeArtwork: {
-    flexShrink: 0,
-    borderRadius: 14,
-  },
-  payoffModeCaption: {
-    flex: 1,
-    minWidth: 0,
-  },
-  payoffModeCaptionStacked: {
-    width: "100%",
-  },
+  payoffModeCaption: { padding: 12 },
   payoffModeButtonActive: {
     borderWidth: 3,
     shadowColor: "#000",
