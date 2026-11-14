@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { fetchNeighborhoodWeather, neighborhoodWeatherFromText } from '../src/neighborhood-local-weather.mjs';
-import { isNeighborhoodLeafSeason, neighborhoodResidents, neighborhoodWalkers, seasonalNeighborhoodWeather } from '../src/neighborhood-world.mjs';
+import { isNeighborhoodLeafSeason, neighborhoodResidents, neighborhoodWalkers, neighborhoodWalkRoute, seasonalNeighborhoodWeather } from '../src/neighborhood-world.mjs';
 
 test('neighbors change jobs or destinations as the town clock advances', () => {
   const find = (hour, id, date = 16) => neighborhoodResidents(new Date(2026, 10, date, hour)).find(resident => resident.id === id);
@@ -23,6 +23,37 @@ test('neighbors change jobs or destinations as the town clock advances', () => {
   const onFoot = neighborhoodWalkers(neighborhoodResidents(date), date);
   assert.ok(onFoot.length > 0 && onFoot.length <= 3 && onFoot.every(resident => resident.path));
   assert.deepEqual(neighborhoodWalkers(neighborhoodResidents(new Date(2026, 10, 16, 2)), new Date(2026, 10, 16, 2)), []);
+});
+
+test('walking residents have destination paths and indoor shifts stay off the paths', () => {
+  for (const day of [14, 16]) {
+    for (let hour = 0; hour < 24; hour++) {
+      const now = new Date(2026, 10, day, hour);
+      for (const resident of neighborhoodResidents(now)) {
+        const route = neighborhoodWalkRoute(resident);
+        if (resident.path) {
+          assert.ok(route?.length >= 3, `${resident.name} has a path to ${resident.place}`);
+          assert.ok(route.every(point => point.every(value => value > 0 && value < 1)));
+        } else {
+          assert.equal(route, undefined);
+        }
+      }
+    }
+  }
+  const daddy = hour => neighborhoodResidents(new Date(2026, 10, 16, hour)).find(resident => resident.id === 'daddy');
+  for (const hour of [8, 13, 18]) {
+    assert.equal(daddy(hour).place, 'Daddy’s workshop');
+    assert.match(daddy(hour).activity, /PayPlace app/);
+    assert.equal(neighborhoodWalkRoute(daddy(hour)), undefined);
+  }
+  assert.equal(daddy(11).destination, 'Billiam');
+  assert.equal(daddy(16).destination, 'Calm');
+  assert.ok(neighborhoodWalkRoute(daddy(11)));
+  assert.ok(neighborhoodWalkRoute(daddy(16)));
+  const westleyAt = minute => neighborhoodResidents(new Date(2026, 10, 16, 13, minute)).find(resident => resident.id === 'westley');
+  assert.ok(neighborhoodWalkRoute(westleyAt(5)));
+  assert.equal(neighborhoodWalkRoute(westleyAt(15)), undefined);
+  assert.equal(westleyAt(15).destination, 'Spa');
 });
 
 test('seasonal weather persists within a clock slot and varies by season', () => {

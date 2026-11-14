@@ -46,6 +46,24 @@ test('navigation has four visible destinations and every nested billing route re
   for(const id of ['Bills','Billiam','BankingDemo','Debt'])assert.equal(primaryDestination(id),'Bills');
   for(const id of ['Spa','Calm','Annie','Bobbie','Westley','Tate','Chapo'])assert.equal(primaryDestination(id),'Home');
 });
+test('the glossy rim stays on plain buttons and off illustrated controls', async () => {
+  const f = await fixture();
+  const rim = renderer => renderer.root.findAllByType('View').find(view => view.props.importantForAccessibility === 'no-hide-descendants');
+  const label = React.createElement('Text', null, 'Open');
+  const artwork = React.createElement(f.Image, { source: 'original-painting' });
+  let renderer;
+  await act(() => renderer = create(React.createElement(f.MascotTouchable, null, label)));
+  try {
+    assert.ok(rim(renderer));
+    await act(() => renderer.update(React.createElement(f.MascotTouchable, { artworkMode: 'integrated' }, artwork, label)));
+    assert.equal(rim(renderer), undefined);
+    await act(() => renderer.update(React.createElement(f.MascotPressable, { artworkAction: 'close' }, label)));
+    assert.equal(renderer.root.findAllByType('Image').length, 1);
+    assert.equal(rim(renderer), undefined);
+  } finally {
+    await act(() => renderer.unmount());
+  }
+});
 test('action banners adapt between wide rows and narrow tiles without changing artwork or behavior',async()=>{
   const f=await fixture();let renderer,layouts=0,taps=0;
   await act(()=>renderer=create(React.createElement(f.MascotTouchable,{accessibilityRole:'button',artworkAction:'banking',accessibilityLabel:'Explore Plaid Banking',onLayout:()=>layouts++,onPress:()=>taps++,style:{backgroundColor:'#7842D2'}},React.createElement('Text',{style:{fontSize:14}},'Explore Plaid Banking'))));

@@ -17,8 +17,9 @@ async function fixture() {
     if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
-    if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'SafeAreaView', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, StyleSheet: { create: v => v } };
+    if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'SafeAreaView', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, useWindowDimensions: () => ({ width: 375, fontScale: 1 }), StyleSheet: { create: v => v } };
     if (name === './Privacy') return { Text: 'Text', TextInput: 'TextInput' };
+    if (name === './IllustratedButton') return { __esModule: true, default: ({ label, ...props }) => React.createElement('TouchableOpacity', { ...props, accessibilityLabel: label }) };
     if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };
     if (name === './merchant-categories.mjs') return logic;
     if (name.startsWith('../assets/')) return { uri: name };
@@ -27,10 +28,25 @@ async function fixture() {
   let state = logic.sampleCategoryState(), renderer, fail = false;
   const render = () => React.createElement(module.exports.default, { visible: true, sample: false, value: state, onClose() {}, onChange: async next => { if (fail) throw new Error('Could not save. Try again.'); state = next; renderer.update(render()); } });
   await act(() => { renderer = create(render()); });
-  return { renderer, logic, get state() { return state; }, setFail: value => { fail = value; } };
+  return { renderer, logic, CategoryEntry: module.exports.CategoryEntry, get state() { return state; }, setFail: value => { fail = value; } };
 }
 const button = (r, label) => r.root.findAllByType('TouchableOpacity').find(n => n.props.accessibilityLabel === label);
 const texts = r => r.root.findAllByType('Text').map(n => n.children.join('')).join('\n');
+test('the Budget category shortcut shows the full square artwork', async () => {
+  const { renderer, CategoryEntry } = await fixture();
+  let opened = false;
+  try {
+    await act(() => renderer.update(React.createElement(CategoryEntry, { compact: true, onOpen: () => { opened = true; } })));
+    const image = renderer.root.findByType('FittedArtwork');
+    assert.equal(image.props.aspectRatio, 1);
+    assert.match(image.props.source.uri, /purchase-categories-daddy\.png$/);
+    assert.notEqual(image.props.resizeMode, 'cover');
+    await act(() => button(renderer, 'Open purchases and remembered categories').props.onPress());
+    assert.equal(opened, true);
+  } finally {
+    await act(() => renderer.unmount());
+  }
+});
 test('actual sheet corrects a purchase, remembers the rule, shows selected state and undoes it', async () => {
   const f = await fixture(); const r = f.renderer;
   try {
