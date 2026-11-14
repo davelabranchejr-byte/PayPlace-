@@ -735,6 +735,12 @@ test('plan tabs keep primary navigation visible and open working tools without p
     const cabaretArt = cabaret.find(node => node.type?.name === 'FittedArtwork');
     assert.equal(cabaretArt.props.source, harness.artworkId('assets/characters/home-cabaret-bobbie.png'));
     assert.equal(cabaretArt.props.resizeMode, 'cover');
+    assert.ok(cabaret.props.style.flat(Infinity).some(style => style?.maxWidth === 306));
+    const spa = button('Open Em’s Pet Spa');
+    assert.ok(spa.props.style.flat(Infinity).some(style => style?.width >= 190));
+    const menuHome = button('Open Home');
+    assert.ok(menuHome.props.style.flat(Infinity).some(style => style?.flexBasis === '46%'));
+    assert.ok(menuHome.findByType('Image').props.style.flat(Infinity).some(style => style?.height === 96));
     assert.ok(button('Open Chapo’s Kitchen').findAllByType('Text').every(node => node.props.numberOfLines === undefined));
     await press('Open Chapo’s Kitchen');
     assert.equal(button('Open Home').props.accessibilityState.selected, true);
