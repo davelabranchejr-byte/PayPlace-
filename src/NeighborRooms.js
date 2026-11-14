@@ -82,12 +82,12 @@ const spotCaptions = {
   email: 'Email Daddy', feedback: 'Beta Feedback',
 };
 
-export default function NeighborRoom({ destination, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
+export default function NeighborRoom({ destination, initialPanel = null, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [mailOpen, setMailOpen] = useState(false);
-  const [panel, setPanel] = useState(null);
+  const [panel, setPanel] = useState(initialPanel);
   const title = neighborhoodLabel(destination);
   const neighbor = FAMILY_STORIES.find(person => person.id === destination.toLowerCase());
   const room = rooms[destination];

@@ -44,30 +44,35 @@ function QuiltPatchArtwork({ id }) {
   return <CharacterArtwork source={patches[id][0]} style={s.patchArt} resizeMode="contain" accessible={false} />;
 }
 
-const chairRows = [
-  { left: "7.5%", top: "53.6%", width: "13.8%", transform: [{ rotate: "7deg" }] },
-  { left: "9.1%", top: "58.1%", width: "13.8%", transform: [{ rotate: "9deg" }] },
-  { left: "10.9%", top: "62.7%", width: "13.8%", transform: [{ rotate: "10deg" }] },
-  { left: "12.7%", top: "67.3%", width: "15%", transform: [{ rotate: "6deg" }] },
-  { left: "14.6%", top: "72.2%", width: "15%", transform: [{ rotate: "4deg" }] },
-];
-
-const chairScene = 1024;
-const chairUpholstery = [20, 519, 310, 329];
-const chairPercent = pixels => `${pixels / chairScene * 100}%`;
+// Insets are perspective-warped to the seams and folds in the original room artwork.
+// Bounds are measured within that 1024 × 1024 illustration.
+const chairPatches = {
+  acorn: [require("../assets/characters/quilt-chair-acorn.png"), 80, 536, 57, 34],
+  firstBill: [require("../assets/characters/quilt-chair-firstBill.png"), 117, 538, 50, 38],
+  paidBill: [require("../assets/characters/quilt-chair-paidBill.png"), 149, 544, 34, 37],
+  foundNote: [require("../assets/characters/quilt-chair-foundNote.png"), 108, 569, 43, 60],
+  sentNote: [require("../assets/characters/quilt-chair-sentNote.png"), 220, 776, 47, 37],
+  savingsGoal: [require("../assets/characters/quilt-chair-savingsGoal.png"), 155, 580, 49, 53],
+  micropayment: [require("../assets/characters/quilt-chair-micropayment.png"), 91, 568, 30, 63],
+  plannedPayday: [require("../assets/characters/quilt-chair-plannedPayday.png"), 120, 630, 51, 52],
+  addedSavings: [require("../assets/characters/quilt-chair-addedSavings.png"), 101, 629, 35, 52],
+  paidDebt: [require("../assets/characters/quilt-chair-paidDebt.png"), 176, 739, 32, 44],
+  trackedSubscription: [require("../assets/characters/quilt-chair-trackedSubscription.png"), 180, 690, 42, 18],
+  savedGrooming: [require("../assets/characters/quilt-chair-savedGrooming.png"), 116, 687, 40, 19],
+  borrowedBook: [require("../assets/characters/quilt-chair-borrowedBook.png"), 174, 704, 32, 38],
+  joinedFacebook: [require("../assets/characters/quilt-chair-joinedFacebook.png"), 205, 716, 55, 72],
+  invitedFriend: [require("../assets/characters/quilt-chair-invitedFriend.png"), 260, 738, 28, 61],
+};
+const chairPercent = pixels => `${pixels / 1024 * 100}%`;
 
 export function ChairQuilt({ finance }) {
   return <View testID="chair-quilt" pointerEvents="none" accessibilityElementsHidden
     importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
-    <Image source={require("../assets/characters/annie-chair-upholstery.png")} resizeMode="stretch"
-      accessible={false} style={s.chairUpholstery} />
-    {quiltRows(quiltMilestones(finance)).map((ids, index) =>
-      <View key={ids[0]} style={[s.patchRow, s.chairRow, chairRows[index]]}>
-        {ids.map(id => <View key={id} testID={`chair-quilt-square-${id}`} style={s.patch}>
-          <QuiltPatchArtwork id={id} />
-        </View>)}
-      </View>
-    )}
+    {["acorn", ...quiltMilestones(finance)].map(id => {
+      const [source, x, y, width, height] = chairPatches[id];
+      return <Image key={id} testID={`chair-quilt-square-${id}`} source={source} resizeMode="stretch" accessible={false}
+        style={{ position: "absolute", left: chairPercent(x), top: chairPercent(y), width: chairPercent(width), height: chairPercent(height) }} />;
+    })}
   </View>;
 }
 
@@ -174,11 +179,6 @@ const s = StyleSheet.create({
   communityButton: { minHeight: 48, justifyContent: "center", padding: 10, borderRadius: 10, backgroundColor: "#F3E3FF" },
   patchwork: { width: "100%", maxWidth: 480, alignSelf: "center", marginTop: 14 },
   patchRow: { flexDirection: "row", width: "100%" },
-  chairUpholstery: {
-    position: "absolute", left: chairPercent(chairUpholstery[0]), top: chairPercent(chairUpholstery[1]),
-    width: chairPercent(chairUpholstery[2]), height: chairPercent(chairUpholstery[3]),
-  },
-  chairRow: { position: "absolute" },
   patch: { width: "33.333%", aspectRatio: 1, overflow: "hidden", backgroundColor: "#E4CCA7" },
   stitchedEdge: { borderWidth: 1, borderColor: "#9B7751", borderRadius: 2 },
   patchArt: { ...StyleSheet.absoluteFillObject, width: "100%", height: "100%" },

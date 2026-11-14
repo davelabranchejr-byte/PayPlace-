@@ -2,7 +2,7 @@ import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import { EncouragementSpot } from './Encouragement';
 import React, { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, AppState, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { SPA_VISITS, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
+import { SPA_SCENES, SPA_VISITS, nextSpaScene, spaCanPlay } from './spa-scenes.mjs';
 import PayPlaceBrand from './PayPlaceBrand';
 import ContainedIllustration from './ContainedIllustration';
 import FittedArtwork from './FittedArtwork';
@@ -11,6 +11,7 @@ import { LibraryBookDetails } from './NeighborhoodLibrary';
 import { normalizeLibrary, LIBRARY_BOOKS } from './neighborhood-library.mjs';
 import InteractiveRoom from './InteractiveRoom';
 import { RoomVisitors } from './NeighborhoodWorld';
+import { WILD_TURKEYS_ART, WILD_TURKEYS_LABEL } from './PawprintMemory';
 
 const spaRoom = require('../assets/characters/em-interactive-spa.jpg');
 
@@ -21,7 +22,7 @@ const pastArtwork = [
   require('../assets/characters/spa-bobbie-jacuzzi.png'),
   require('../assets/characters/spa-glamour-and-tate.png'),
 ];
-const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg')];
+const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg'),WILD_TURKEYS_ART];
 
 function SpaAtmosphere({ playing, kind }) {
   const progress = useRef(new Animated.Value(0)).current;
@@ -44,7 +45,7 @@ function SpaAtmosphere({ playing, kind }) {
   </View>;
 }
 
-export default function PetSpa({ onGrooming, obscured = false, reduceAnimation = false, library, onLibraryChange }) {
+export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, reduceAnimation = false, library, onLibraryChange }) {
   const bobbieHasBook = normalizeLibrary(library).loans[LIBRARY_BOOKS[0].id]?.reader === 'bobbie';
   const [visitId,setVisitId]=useState('slumber-party');
   const [panel, setPanel] = useState('room');
@@ -52,7 +53,7 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
   const scenes=visit.scenes;
   const artwork=visit.current?currentVisitArtwork:pastArtwork;
   const [index, setIndex] = useState(0);
-  const openVisit=id=>{setVisitId(id);setIndex(0);setPanel('visit');setPaused(true);setReply('');};
+  const openVisit=(id, sceneIndex = 0)=>{setVisitId(id);setIndex(sceneIndex);setPanel('visit');setPaused(true);setReply('');};
   const [bookDetails, setBookDetails] = useState(false);
   const [paused, setPaused] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
@@ -63,6 +64,7 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
   const playing = spaCanPlay({ paused, reducedMotion: motionOff, active, focused: focused && !obscured && !bookDetails && panel === 'visit' });
   const currentArtwork = artwork.map((source,i) => !visit.current && i === 3 && bobbieHasBook ? bobbieReadingEm : source);
   const scene = !visit.current && index === 3 && bobbieHasBook ? {...scenes[index], caption:'Bobbie has borrowed Before You Call Me Difficult by Emma Acly from Annie’s library. A little self-care and a good book, darling.'} : scenes[index];
+  const pickup = scene.id === 'pickup';
   useEffect(() => {
     let mounted = true;
     AccessibilityInfo.isReduceMotionEnabled().then(value => { if (mounted) setReducedMotion(value); }).catch(() => {});
@@ -90,11 +92,14 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
       ...(bobbieHasBook ? [{label:'Open the library book Bobbie borrowed',caption:'Borrowed Book',area:{left:'61%',top:'62%',width:'30%',height:'29%'},open:()=>setBookDetails(true)}] : []),
     ]}><EncouragementSpot place="spa" style={{ left: '48%', top: '91%' }} /></InteractiveRoom>
     <Text style={s.body}>Tap the grooming station, lounge, or scrapbook.</Text>
+    <TouchableOpacity accessibilityRole="button" accessibilityLabel="Pick up Westley and Tate" style={s.action} onPress={() => openVisit('slumber-party', SPA_SCENES.findIndex(item => item.id === 'pickup'))}>
+      <Text style={s.actionText}>Pick up Westley and Tate</Text>
+    </TouchableOpacity>
     <RoomVisitors destination="Spa" />
     {bookOverlay}
   </ScrollView>;
-  const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={scene.caption}>
-    <SpaAtmosphere playing={playing} kind={scene.motion} />
+  const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={pickup ? WILD_TURKEYS_LABEL : scene.caption}>
+    {!pickup && <SpaAtmosphere playing={playing} kind={scene.motion} />}
     <EncouragementSpot place="spa"/>
   </ContainedIllustration><View style={s.brandBanner}><PayPlaceBrand compact/><Text style={s.spaBrand}>Em’s Pet Spa</Text></View></View>;
   if(panel === 'scrapbook') return <ScrollView style={s.screen} contentContainerStyle={s.content}>
@@ -112,8 +117,11 @@ export default function PetSpa({ onGrooming, obscured = false, reduceAnimation =
       {!visit.current && index === 3 && bobbieHasBook ? <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Emma’s book Bobbie is reading at the spa" onPress={() => setBookDetails(true)}>{illustration}</TouchableOpacity> : illustration}
       <Text style={s.sceneTitle} accessibilityRole="header">{scene.title}</Text>
       <Text style={s.body}>{scene.caption}</Text>
-      <TouchableOpacity accessibilityRole="button" onPress={() => { setPaused(true); setReply(scene.reply); }} style={s.action}><Text style={s.actionText}>{scene.action}</Text></TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={scene.action} onPress={() => { setPaused(true); setReply(scene.reply); }} style={s.action}><Text style={s.actionText}>{scene.action}</Text></TouchableOpacity>
       {!!reply && <Text accessibilityLiveRegion="polite" style={s.reply}>{reply}</Text>}
+      {pickup && reply && onFamilyWall && <TouchableOpacity accessibilityRole="button" accessibilityLabel="See it on Annie’s family wall" style={s.action} onPress={onFamilyWall}>
+        <Text style={s.actionText}>See it on Annie’s family wall</Text>
+      </TouchableOpacity>}
       <View style={s.controls}>
         <TouchableOpacity accessibilityRole="button" accessibilityLabel="Previous spa scene" onPress={() => choose(nextSpaScene(index,-1,scenes))} style={s.control}><Text style={s.controlText}>‹ Previous</Text></TouchableOpacity>
         <TouchableOpacity accessibilityRole="button" accessibilityLabel={paused ? 'Resume spa scenes' : 'Pause spa scenes'} accessibilityState={{ disabled: motionOff }} disabled={motionOff} onPress={() => setPaused(value => !value)} style={[s.control, motionOff && { opacity: 0.6 }]}><Text style={s.controlText}>{motionOff ? 'Motion off' : paused ? 'Play' : 'Pause'}</Text></TouchableOpacity>

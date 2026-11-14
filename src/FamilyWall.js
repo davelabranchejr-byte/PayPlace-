@@ -92,6 +92,7 @@ export default function FamilyWall({ onSelect }) {
     </View>
     </View>
     <PawprintMemory />
+    <PawprintMemory memory="turkeys" />
   </View>;
 }
 
