@@ -110,6 +110,12 @@ test('completed verified neighbors enter on relaunch; unverified flags and resto
   assert.throws(() => progress.completedProfile({ name: 'Dave' }));
   const done = progress.completedProfile({ ...verified, onboardingProgress: { stage: 'email' } }, '2026-10-07T13:00:00Z');
   assert.equal(done.onboardingProgress, undefined); assert.equal(done.completedAt, '2026-10-07T13:00:00Z');
+  const guest = progress.completedProfile({ ...verified, contact: verified.email, annieLetters: true }, undefined, { localOnly: true });
+  assert.equal(progress.canEnterNeighborhood(guest), true);
+  assert.equal(guest.email, undefined);
+  assert.equal(guest.contact, undefined);
+  assert.equal(guest.emailVerified, false);
+  assert.equal(guest.annieLetters, false);
   const restored = progress.restoredProfile(verified, 7);
   assert.equal(progress.canEnterNeighborhood(restored), false);
   assert.equal(progress.onboardingPosition(restored, 7).stage, 'email');

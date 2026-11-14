@@ -7,7 +7,7 @@ const { create, act } = require('react-test-renderer');
 const babel = require('@babel/core');
 global.IS_REACT_ACT_ENVIRONMENT = true;
 
-test('Clubhouse supports add/edit cents, review decisions and beta disclosure without a purchase control', async () => {
+test('Clubhouse supports add/edit cents, review decisions and sample-data disclosure without a purchase control', async () => {
   const model = await import('../src/subscription-detective.mjs');
   const { parseAmount } = await import('../src/smart-mirror.mjs');
   const source = fs.readFileSync(require('node:path').join(__dirname, '../src/SubscriptionDetective.js'), 'utf8');
@@ -36,7 +36,7 @@ test('Clubhouse supports add/edit cents, review decisions and beta disclosure wi
   const field = label => renderer.root.findAllByType('TextInput').find(item => item.props.accessibilityLabel === label);
   await act(() => { renderer = create(render()); });
   try {
-    assert.match(JSON.stringify(renderer.toJSON()), /Paid Premium feature.*fictional transactions/);
+    assert.match(JSON.stringify(renderer.toJSON()), /This demo uses a separate sample plan and fictional transactions/);
     assert.equal(button('Buy Premium'), undefined);
     await act(() => button('Add a subscription or trial').props.onPress());
     await act(() => field('Subscription name').props.onChangeText('My app'));

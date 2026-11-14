@@ -32,6 +32,7 @@ vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosu
   if (name === './Privacy') return { Text:'Text' };
   if (name === './ActionArtwork') return { ACTION_ARTWORK: {} };
   if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };
+  if (name === './IllustratedButton') return { __esModule: true, default: 'TouchableOpacity' };
   throw new Error(name);
 }});
 const sandbox = {
@@ -39,7 +40,7 @@ const sandbox = {
   ExpandableSection: disclosureModule.exports.default,
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
-    'NavigationTiles', 'SectionTitle', 'SafeMiniCard', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
+    'NavigationTiles', 'SectionTitle', 'SafeMiniCard', 'SafeToSpendArtwork', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
   styles: {}, palette: {}, approvedClothedCharacterArtwork: {}, portraits: { together: {} }, artStudioArtwork: {},
   scheduleSettings: () => ({ kind: 'biweekly' }), module: { exports: {} },
 };

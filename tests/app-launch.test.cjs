@@ -197,7 +197,7 @@ test('onboarding saves the chosen plan and payoff method with the verified profi
     await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
     await press('Mixed. Pay off one small balance, then focus on the highest interest rate.');
     await press('Next');
-    await press('Plus. $4.99/month · Debt payoff tools, micropayments and printable calendar');
+    await press('Plus. Debt payoff tools, micropayments and printable calendar');
     await press('Meet Annie');
     const enter = renderer.root.findAllByType('TouchableOpacity').find(node => textContent(node.props.children).includes('Enter the neighborhood'));
     await act(async () => enter.props.onPress());
@@ -410,7 +410,9 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     const shortcut = renderer.root.findAllByType('TouchableOpacity').find(node => node.props.accessibilityLabel?.startsWith('Safe to Spend,'));
     const artwork = shortcut.find(node => node.type === 'View' && node.props.testID === 'map-safe-to-spend-artwork');
     await act(() => artwork.props.onLayout({ nativeEvent: { layout: { width: 128, height: 128 / 1.5 } } }));
-    const shortcutImage = shortcut.findByType('Image');
+    const shortcutImage = shortcut.findByProps({testID:'map-safe-to-spend-artwork-image'});
+    assert.equal(shortcut.findByProps({testID:'payplace-artwork-mark'}).props.source,
+      harness.artworkId('assets/branding/payplace-artwork-mark.png'));
     assert.equal(shortcutImage.props.resizeMode, 'cover');
     assert.ok(['porch', 'rainy-day'].some(scene => shortcutImage.props.source === harness.artworkId(`assets/characters/safe-to-spend-${scene}.jpg`)));
     assert.equal(shortcutImage.props.style.width, 128);
@@ -468,6 +470,13 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       if (id === 'Home') await act(() => button('Open neighborhood menu').props.onPress());
       const selected = button(neighbors.some(place=>place.id===id)?'Open Home':['Bills','Billiam','BankingDemo','Debt'].includes(id)?'Open Bills & Banking':`Open ${label}`);
       assert.equal(selected.props.accessibilityState.selected, true);
+      if (id === 'Budget') {
+        const budgetCard = renderer.root.findByProps({testID:'budget-safe-to-spend'});
+        const budgetArt = budgetCard.find(node => node.type?.name === 'FittedArtwork');
+        assert.equal(budgetArt.props.testID, 'budget-safe-to-spend-artwork');
+        assert.equal(budgetArt.props.source, harness.artworkId('assets/characters/safe-to-spend-budget-workshop.jpg'));
+        assert.equal(budgetArt.props.resizeMode, 'contain');
+      }
       if (id === 'Home') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 0, 'Home no longer duplicates the mirror');
       if (id === 'Bobbie') assert.equal(renderer.root.findAll(node => node.type?.name === 'BobbieSmartMirror').length, 1, 'the working mirror lives inside Bobbie’s building');
       if (id === 'Tate') assert.ok(renderer.root.findAllByType('View').some(node => node.props.testID === 'neighbor-room-artwork'));
@@ -555,7 +564,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
       await press('Show instructions');
       await press('Back to Banking Demo');
     }
-    await press('Account connections & beta setup');
+    await press('Demo account settings');
     await press('Connect sample accounts');
     await press('Back to Banking Demo');
     await press('Open Round Up & Save');
@@ -597,21 +606,22 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await press('Refresh sample watch feed');
     await press('Open Subscription Detective');
     assert.equal(renderer.root.find(node => node.type?.name === 'SubscriptionDetective').props.visible, false);
-    assert.match(harness.alerts.at(-1)[0], /Paid Premium/);
+    assert.match(harness.alerts.at(-1)[0], /Pardon our dust/);
     assert.match(harness.alerts.at(-1)[1], /add your subscriptions as bills/);
     await act(() => harness.alerts.at(-1)[2].find(action => action.text === 'Open my bills').onPress());
     assert.ok(button('Add a bill'), 'regular users can manually enter subscription bills');
     await press('Banking & subscriptions');
     await press('Open Banking Demo');
-    await press('Account connections & beta setup');
+    await press('Demo account settings');
     assert.equal(button('Plaid bank-linking availability'), undefined, 'sample banking does not offer a live connection');
     assert.equal(button('View live bank-linking availability'), undefined, 'the demo account page is sample-only');
     await press('Back to Bills and Banking');
     await press('Banking & subscriptions');
     await press('Plaid bank-linking availability');
-    assert.equal(renderer.root.find(node => node.type?.name === 'BankConnections').props.visible, true);
-    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0, 'bank linking does not open the demo');
-    await act(() => renderer.root.find(node => node.type?.name === 'BankConnections').props.onClose());
+    assert.match(harness.alerts.at(-1)[0], /Pardon our dust · Bank linking/);
+    assert.equal(renderer.root.find(node => node.type?.name === 'BankConnections').props.visible, false);
+    assert.ok(harness.alerts.at(-1)[2].find(action => action.text === 'Open Banking Demo'));
+    assert.equal(renderer.root.findAll(node => node.type?.name === 'PremiumResilienceHub').length, 0);
     await nav('Home');
     assert.equal(renderer.root.findAllByType('TouchableOpacity').some(node=>node.props.accessibilityLabel?.startsWith('Credit Score:')),false,'Home no longer duplicates the credit dashboard');
     await nav('BankingDemo');await press('Open Credit Center');
@@ -628,7 +638,7 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     assert.equal(hub().props.betaState.roundUpEnabled, false);
     assert.equal(hub().props.premiumState.roundUpCap, 1.5);
     assert.equal(hub().props.betaState.creditRefreshes, 1, 'sample activity survives reopening');
-    await press('Account connections & beta setup');
+    await press('Demo account settings');
     await press('Disconnect sample accounts');
     assert.equal(harness.finance().premiumBeta.fundEnabled, false);
     await press('Reset sample activity');
@@ -750,14 +760,29 @@ test('plan tabs keep primary navigation visible and open working tools without p
     assert.equal(directory.props.horizontal, true);
     const cabaret = button('Open Bobbie’s Cabaret Show');
     const cabaretArt = cabaret.find(node => node.type?.name === 'FittedArtwork');
-    assert.equal(cabaretArt.props.source, harness.artworkId('assets/characters/home-cabaret-bobbie.png'));
+    assert.equal(cabaretArt.props.source, harness.artworkId('assets/characters/map-menu-cabaret.jpg'));
     assert.equal(cabaretArt.props.resizeMode, 'cover');
-    assert.ok(cabaret.props.style.flat(Infinity).some(style => style?.maxWidth === 306));
+    assert.ok(cabaret.props.style.flat(Infinity).some(style => style?.width === '100%' && style?.maxWidth === 480));
     const spa = button('Open Em’s Pet Spa');
     assert.ok(spa.props.style.flat(Infinity).some(style => style?.width >= 190));
     const menuHome = button('Open Home');
     assert.ok(menuHome.props.style.flat(Infinity).some(style => style?.flexBasis === '46%'));
-    assert.ok(menuHome.findByType('Image').props.style.flat(Infinity).some(style => style?.height === 96));
+    const artworkFiles = {
+      'Open Home': 'home', 'Open My Finances': 'finances', 'Open Budget': 'budget',
+      'How Home works': 'help', 'Open PayPlace plans': 'plans', 'Open Security & backup': 'security', 'Close neighborhood menu': 'return',
+    };
+    for (const [label, file] of Object.entries(artworkFiles)) {
+      const art = button(label).find(node => node.type?.name === 'FittedArtwork');
+      assert.equal(art.props.source, harness.artworkId(`assets/characters/map-menu-${file}.jpg`));
+      assert.equal(art.props.resizeMode, 'cover');
+      const artFrame = art.findByType('View');
+      await act(() => artFrame.props.onLayout({nativeEvent:{layout:{width:150,height:120}}}));
+      assert.equal(art.findByProps({testID:'payplace-artwork-mark'}).props.source,
+        harness.artworkId('assets/branding/payplace-artwork-mark.png'));
+    }
+    const billsArt = button('Open Bills & Banking').find(node => node.type?.name === 'FittedArtwork');
+    assert.equal(billsArt.props.source, harness.artworkId('assets/characters/billiam-canonical.png'));
+    assert.equal(billsArt.props.resizeMode, 'cover');
     assert.ok(button('Open Chapo’s Kitchen').findAllByType('Text').every(node => node.props.numberOfLines === undefined));
     await press('Open Chapo’s Kitchen');
     assert.equal(button('Open Home').props.accessibilityState.selected, true);
@@ -765,9 +790,14 @@ test('plan tabs keep primary navigation visible and open working tools without p
     assert.equal(button('Open Chapo’s Kitchen'), undefined, 'returning opens the map');
     await press('Open neighborhood menu');
     await press('Open PayPlace plans');
-    for (const label of ['Open Home', 'Open My Finances', 'Open Budget', 'Open Bills & Banking']) {
+    for (const [label, scene] of [
+      ['Open Home', 'home'], ['Open My Finances', 'finances'], ['Open Budget', 'budget'], ['Open Bills & Banking', 'bills'],
+    ]) {
       const tab = button(label);
       assert.equal(tab.props.accessibilityRole, 'tab');
+      const art = tab.find(node => node.type?.name === 'FittedArtwork');
+      assert.equal(art.props.source, harness.artworkId(`assets/characters/bottom-tab-${scene}.jpg`));
+      assert.equal(art.props.resizeMode, 'cover');
       assert.ok(tab.findAllByType('Text').every(text => text.props.numberOfLines === undefined),
         'large text may wrap instead of truncating the destination');
     }
@@ -782,14 +812,14 @@ test('plan tabs keep primary navigation visible and open working tools without p
     }
     assert.match(texts(), /Start wherever you are. No shame./);
     assert.ok(button('Try free Banking Demo from Plans'));
-    assert.match(texts(), /\$0\.99/);
+    assert.match(texts(), /Free/);
     await press('Open Monthly calendar from Plans');
     assert.equal(calendar().props.canPrint, false);
     await pressCalendarButton('Close monthly calendar');
 
     await press('Plus');
     assert.equal(button('Plus').props.accessibilityState.selected, true);
-    assert.match(texts(), /\$4\.99/);
+    assert.match(texts(), /Included free in this release/);
     assert.match(texts(), /Small bites\. Big wins\./);
     const saved = JSON.stringify(harness.finance());
     await press('Open Money outlook from Plans');
@@ -818,7 +848,7 @@ test('plan tabs keep primary navigation visible and open working tools without p
     await press('Open PayPlace plans');
     assert.equal(button('Plus').props.accessibilityState.selected, true, 'the previous plan tab is remembered');
     await press('Premium');
-    assert.match(texts(), /\$19\.99/);
+    assert.match(texts(), /In development/);
     assert.match(texts(), /High maintenance, not high and mighty\./);
     assert.match(texts(), /Connected account insights/);
     assert.match(texts(), /Live bank sync and automatic subscription finding are planned/);
@@ -891,7 +921,7 @@ test('Bobbie banking demo works without verification or network and leaves perso
   assert.equal(hub().props.betaState.creditRefreshes,1);
   await press('Back to Banking Demo');await press('Open Automatic Money Watch');await press('Refresh sample watch feed');
   assert.equal(hub().props.betaState.watchRefreshes,1);
-  await press('Back to Banking Demo');await press('Account connections & beta setup');await press('Disconnect sample accounts');
+  await press('Back to Banking Demo');await press('Demo account settings');await press('Disconnect sample accounts');
   assert.equal(hub().props.betaState.sampleConnected,false);
   assert.equal(hub().props.betaState.roundUpEnabled,false);
   await input('Demo username','bobbie');await input('Demo password','litterbox');await press('Open Bobbie’s banking demo');
@@ -947,10 +977,9 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(renderer.root.findAll(node => node.type?.name === 'SeasonalWelcome').length, 0);
     await press('Open neighborhood menu');
     await press('Open My Finances');
-    const approvedLogo = harness.artworkId('assets/branding/payplace-icon.png');
-    assert.deepEqual(button('How My Finances works').findAllByType('Image').map(image => image.props.source), [
-      harness.artworkId('assets/characters/feature-how-home-works-daddy.png'), approvedLogo,
-    ]);
+    const helpArt = button('How My Finances works').find(node => node.type?.name === 'FittedArtwork');
+    assert.equal(helpArt.props.source, harness.artworkId('assets/characters/feature-how-home-works-daddy.png'));
+    assert.equal(helpArt.props.resizeMode, 'cover');
     for (const [title, file] of [
       ['Review my bills', 'finances-bills-westley.jpg'],
       ['One small step', 'finances-step-tate.jpg'],
@@ -1072,7 +1101,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Close add a debt');
     await press('Payoff strategy & guidance');
     const debtHelp = harness.artworkId('assets/characters/feature-how-debt-works.png');
-    assert.equal(button('How Debt works').findByType('Image').props.source, debtHelp);
+    assert.equal(button('How Debt works').find(node => node.type?.name === 'FittedArtwork').props.source, debtHelp);
     const debtMicro = harness.artworkId('assets/characters/feature-micropayments-westley.png');
     assert.equal(await measureArt(micropaymentShortcut()), debtMicro);
     assert.notEqual(debtMicro,billMicro);
@@ -1095,7 +1124,10 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Open Budget');
     const budgetCategories = button('Open purchases and remembered categories')
       .find(node => node.type?.name === 'FittedArtwork');
-    assert.equal(budgetCategories.props.source, harness.artworkId('assets/characters/feature-purchase-categories-daddy.png'));
+    assert.equal(budgetCategories.props.source, harness.artworkId('assets/characters/budget-entry-purchases.jpg'));
+    assert.equal(budgetCategories.props.resizeMode, 'cover');
+    const editArtwork = button('Edit money info').find(node => node.type?.name === 'FittedArtwork');
+    assert.equal(editArtwork.props.source, harness.artworkId('assets/characters/budget-entry-edit.jpg'));
     assert.equal(input('Current bank balance'), undefined);
     await press('Edit money info');
     assert.ok(input('Current bank balance'));
@@ -1169,8 +1201,8 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(harness.finance().neighborhoodWeatherZip, '');
     await press('Neighborhood weather');
     const neighborhoodTab = button('Open Home');
-    const neighborhoodTabArt = neighborhoodTab.findByType('Image').props.source;
-    assert.equal(neighborhoodTabArt, harness.artworkId('assets/characters/nav-neighborhood-homes.png'));
+    const neighborhoodTabArt = neighborhoodTab.find(node => node.type?.name === 'FittedArtwork').props.source;
+    assert.equal(neighborhoodTabArt, harness.artworkId('assets/characters/map-menu-home.jpg'));
     assert.notEqual(neighborhoodTabArt, harness.artworkId('assets/characters/neighborhood-panorama-day.png'));
     assert.equal(renderer.root.findAll(node => node.type?.name === 'NeighborhoodWelcome').length, 0);
     assert.equal(renderer.root.findAll(node => node.type?.name === 'NeighborCare').length, 0);
@@ -1257,8 +1289,14 @@ test('Billiam mailbox opens seven room stations and their original bounded artwo
     for(const [index,id] of ids.entries()){
       await act(()=>tasks[index].props.onPress());
       const artworkId = id === 'scan' ? 'billiam-scanner-artwork' : `billiam-${id}-artwork`;
-      const { width, height } = id === 'scan' ? {width:330,height:220} : {width:88,height:88};
+      const wideArtwork = id === 'scan' || id === 'household';
+      const { width, height } = wideArtwork ? {width:330,height:220} : {width:88,height:88};
       const frame=renderer.root.findAllByType('View').find(n=>n.props.testID===artworkId);
+      if (id === 'household') {
+        const frameStyle = Object.assign({}, ...frame.props.style.flat(Infinity).filter(Boolean));
+        assert.equal(frameStyle.width, '100%');
+        assert.equal(frameStyle.aspectRatio, 3 / 2);
+      }
       await act(()=>frame.props.onLayout({nativeEvent:{layout:{width,height}}}));
       const img=renderer.root.findByProps({testID:`${artworkId}-image`});
       assert.equal(img.props.resizeMode,'contain');
@@ -1266,6 +1304,8 @@ test('Billiam mailbox opens seven room stations and their original bounded artwo
       assert.equal(img.props.style.height,height);
       const sheet=renderer.root.find(n=>n.type?.name==='EntrySheet'&&n.props.visible);
       if (id === 'scan') assert.equal(sheet.findAllByType('Image').filter(node => node.props.source === img.props.source).length,1);
+      if (id === 'household') assert.equal(sheet.findByProps({testID:'payplace-artwork-mark'}).props.source,
+        harness.artworkId('assets/branding/payplace-artwork-mark.png'));
       await act(()=>sheet.props.onClose());
     }
   }finally{await act(()=>renderer.unmount());}

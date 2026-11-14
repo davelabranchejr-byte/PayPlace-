@@ -140,6 +140,13 @@ test('the panorama pauses its day and night effects while a panel covers it or Q
       const expected = [hour >= 18 || hour < 6 ? 'neighborhood-shooting-star' : 'neighborhood-airplane'];
       if (hour === 4 || hour === 23) expected.push('neighborhood-saucer');
       assert.deepEqual(skies(),expected);
+      if (hour === 12) {
+        const flyby = renderer.root.findByProps({ testID: 'neighborhood-airplane' });
+        const plane = flyby.findByType('Image');
+        assert.equal(plane.props.source, '../assets/characters/cameo-airplane.png');
+        assert.equal(plane.props.resizeMode, 'contain');
+        assert.equal(flyby.findAllByType('Ionicons').length, 0);
+      }
       const before=animation.started;
       assert.ok(before>1);
       await act(()=>renderer.update(React.createElement(Panorama,{paused:true})));

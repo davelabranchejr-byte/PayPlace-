@@ -19,7 +19,7 @@ async function fixture() {
     if (name === 'react') return React;
     if (name === 'react-native') return { ...Object.fromEntries(['KeyboardAvoidingView', 'Modal', 'SafeAreaView', 'ScrollView', 'TouchableOpacity', 'View'].map(n => [n, n])), Platform: { OS: 'ios' }, useWindowDimensions: () => ({ width: 375, fontScale: 1 }), StyleSheet: { create: v => v } };
     if (name === './Privacy') return { Text: 'Text', TextInput: 'TextInput' };
-    if (name === './IllustratedButton') return { __esModule: true, default: ({ label, ...props }) => React.createElement('TouchableOpacity', { ...props, accessibilityLabel: label }) };
+    if (name === './IllustratedButton') return { __esModule: true, default: ({ label, accessibilityLabel = label, ...props }) => React.createElement('TouchableOpacity', { ...props, accessibilityLabel }) };
     if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };
     if (name === './merchant-categories.mjs') return logic;
     if (name.startsWith('../assets/')) return { uri: name };
@@ -32,16 +32,15 @@ async function fixture() {
 }
 const button = (r, label) => r.root.findAllByType('TouchableOpacity').find(n => n.props.accessibilityLabel === label);
 const texts = r => r.root.findAllByType('Text').map(n => n.children.join('')).join('\n');
-test('the Budget category shortcut shows the full square artwork', async () => {
+test('the Budget category shortcut uses its full-bleed receipt scene', async () => {
   const { renderer, CategoryEntry } = await fixture();
   let opened = false;
   try {
     await act(() => renderer.update(React.createElement(CategoryEntry, { compact: true, onOpen: () => { opened = true; } })));
-    const image = renderer.root.findByType('FittedArtwork');
-    assert.equal(image.props.aspectRatio, 1);
-    assert.match(image.props.source.uri, /purchase-categories-daddy\.png$/);
-    assert.notEqual(image.props.resizeMode, 'cover');
-    await act(() => button(renderer, 'Open purchases and remembered categories').props.onPress());
+    const entry = button(renderer, 'Open purchases and remembered categories');
+    assert.match(entry.props.artwork.uri, /budget-entry-purchases\.jpg$/);
+    assert.equal(entry.props.style.aspectRatio, 3 / 2);
+    await act(() => entry.props.onPress());
     assert.equal(opened, true);
   } finally {
     await act(() => renderer.unmount());

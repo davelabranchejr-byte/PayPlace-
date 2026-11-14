@@ -56,6 +56,17 @@ test('walking residents have destination paths and indoor shifts stay off the pa
   assert.equal(westleyAt(15).destination, 'Spa');
 });
 
+test('Billiam’s late-morning delivery to Annie stays on the stone path', () => {
+  const now = new Date(2026, 10, 14, 11, 15);
+  const walkers = neighborhoodWalkers(neighborhoodResidents(now), now);
+  const billiam = walkers.find(resident => resident.id === 'billiam');
+  assert.equal(billiam?.destination, 'Annie');
+  const route = neighborhoodWalkRoute(billiam);
+  // The visible stone path lies below the bridge, at the bottom of the panorama.
+  assert.ok(route.every(([x, y]) => x >= 0.45 && x <= 0.65 && y >= 0.91 && y <= 0.99));
+  assert.ok(route.at(-1)[0] > route[0][0], 'Billiam walks toward Annie’s side of town');
+});
+
 test('seasonal weather persists within a clock slot and varies by season', () => {
   const day = (month, date, hour, minute = 0) => new Date(2026, month - 1, date, hour, minute);
   assert.equal(seasonalNeighborhoodWeather(day(7, 7, 12)), seasonalNeighborhoodWeather(day(7, 7, 14, 59)));

@@ -14,7 +14,7 @@ function load(file, imports, exports) {
   const code = babel.transformSync(source, { configFile: false, babelrc: false,
     plugins: [[require('@babel/plugin-transform-react-jsx'), { runtime: 'classic' }]] }).code;
   const sandbox = { React, useState: React.useState, require: () => 1,
-    ...Object.fromEntries(['Image','View','Text','TextInput','ScrollView','TouchableOpacity','Pressable','Ionicons','CharacterArtwork','PawprintMemory','Modal','SafeAreaView'].map(k => [k,k])),
+    ...Object.fromEntries(['Image','View','Text','TextInput','ScrollView','TouchableOpacity','Pressable','Ionicons','CharacterArtwork','PawprintMemory','ArtworkBrandMark','Modal','SafeAreaView'].map(k => [k,k])),
     StyleSheet: { create: x => x, absoluteFillObject: { position:'absolute',top:0,left:0,right:0,bottom:0 } },
     ...imports, module:{exports:{}} };
   vm.runInNewContext(code + '\nmodule.exports = {' + exports.join(',') + '};', sandbox);
@@ -93,33 +93,38 @@ test('quilt uses approved stitched acorn art and opens/returns from its detailed
   await act(()=>r.unmount());
 });
 
-test('approved combined paw-print wall opens uncropped and closes by button or system Back', async () => {
-  const {PawprintMemory}=load('PawprintMemory.js',{},['PawprintMemory']);
-  const png=fs.readFileSync(path.join(__dirname,'../assets/characters/em-pawprint-memory-wall.png'));
-  const width=png.readUInt32BE(16),height=png.readUInt32BE(20);
+test('both keepsakes open uncropped from their positions on one family wall', async () => {
+  const {PawprintMemory}=load('PawprintMemory.js',{
+    require: filename => path.basename(filename),
+  },['PawprintMemory']);
   let r;
   await act(()=>{r=create(React.createElement(PawprintMemory));});
   try {
     const preview=r.root.findByProps({testID:'pawprint-memory-preview'});
+    const turkeys=r.root.findByProps({testID:'wild-turkeys-preview'});
+    const wall=r.root.findByProps({testID:'family-keepsake-wall-frame'});
+    const wallArt=wall.findByProps({testID:'family-keepsake-wall-artwork'});
+    assert.equal(wallArt.props.resizeMode,'contain');
+    assert.equal(wallArt.props.source,'em-family-keepsake-wall.jpg');
+    assert.equal(flatten(wall.props.style).aspectRatio,2/3);
+    const bounds = node => flatten(node.props.style({pressed:false}));
+    assert.ok(parseFloat(bounds(turkeys).top) > parseFloat(bounds(preview).top) + parseFloat(bounds(preview).height));
+    assert.ok(parseFloat(bounds(turkeys).left) < parseFloat(bounds(preview).left) + parseFloat(bounds(preview).width));
     assert.equal(r.root.findByType('Modal').props.visible,false);
     await act(()=>preview.props.onPress());
     assert.equal(r.root.findByType('Modal').props.visible,true);
-    const small=r.root.findByProps({testID:'pawprint-garden-artwork'});
-    const full=r.root.findByProps({testID:'pawprint-memory-full'});
-    for(const img of [small,full]) {
+    for(const img of [wallArt,r.root.findByProps({testID:'pawprint-memory-full'})]) {
       assert.equal(img.props.resizeMode,'contain');
       assert.equal(flatten(img.props.style).width,'100%');
       assert.equal(flatten(img.props.style).height,'100%');
     }
-    for(const frame of [preview,r.root.findByProps({testID:'pawprint-memory-full-frame'})]) {
-      const style=Array.isArray(frame.props.style)||typeof frame.props.style==='object'
-        ? frame.props.style : frame.props.style({pressed:false});
-      assert.equal(flatten(style).aspectRatio,width/height);
-    }
-    assert.equal(small.props.source,full.props.source);
+    assert.equal(flatten(r.root.findByProps({testID:'pawprint-memory-full-frame'}).props.style).aspectRatio,1186/1326);
     await act(()=>r.root.findByProps({testID:'pawprint-memory-close'}).props.onPress());
     assert.equal(r.root.findByType('Modal').props.visible,false);
-    await act(()=>preview.props.onPress());
+    await act(()=>turkeys.props.onPress());
+    const painting=r.root.findByProps({testID:'wild-turkeys-full'});
+    assert.equal(painting.props.source,'em-wild-turkeys-painting.jpg');
+    assert.equal(painting.props.resizeMode,'contain');
     await act(()=>r.root.findByType('Modal').props.onRequestClose());
     assert.equal(r.root.findByType('Modal').props.visible,false);
   } finally { await act(()=>r.unmount()); }
