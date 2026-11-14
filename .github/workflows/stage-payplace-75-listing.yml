@@ -1,0 +1,121 @@
+name: Prepare the PayPlace build 75 listing
+
+on:
+  push:
+    branches: [release/ios-75-store-prep]
+    paths: [.github/workflows/stage-payplace-75-listing.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix "$RUNNER_TEMP/payplace-eas" --no-audit --no-fund eas-cli@latest
+      - name: Attach the valid build and update the editable listing
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          node <<'NODE'
+          const { createSign } = require('node:crypto');
+          const root = process.env.RUNNER_TEMP + '/payplace-eas/node_modules/eas-cli/build/';
+          const { createGraphqlClient } = require(root + 'commandUtils/context/contextUtils/createGraphqlClient');
+          const { getOwnerAccountForProjectIdAsync } = require(root + 'project/projectUtils');
+          const { getAscApiKeyForAppSubmissionsAsync } = require(root + 'credentials/ios/api/GraphqlClient');
+          const { AppStoreConnectApiKeyQuery } = require(root + 'graphql/queries/AppStoreConnectApiKeyQuery');
+          const appId = '6793296732';
+          const bundleIdentifier = 'com.davelabranchejr.payplace';
+          async function main() {
+            const client = createGraphqlClient({ accessToken: process.env.EXPO_TOKEN, sessionSecret: null });
+            const account = await getOwnerAccountForProjectIdAsync(client, '4be1e462-b04c-492b-bb9e-d922655dba9f');
+            const keyReference = await getAscApiKeyForAppSubmissionsAsync(client, { account, projectName: 'payplace', bundleIdentifier });
+            if (!keyReference) throw new Error('The project has no saved App Store Connect key.');
+            const key = await AppStoreConnectApiKeyQuery.getByIdAsync(client, keyReference.id);
+            const now = Math.floor(Date.now() / 1000);
+            const identity = key.issuerIdentifier ? { iss: key.issuerIdentifier } : { sub: 'user' };
+            const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+            const header = encode({ alg: 'ES256', kid: key.keyIdentifier, typ: 'JWT' });
+            const payload = encode({ ...identity, iat: now, exp: now + 600, aud: 'appstoreconnect-v1' });
+            const signed = header + '.' + payload;
+            const signature = createSign('SHA256').update(signed).sign({ key: key.keyP8, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+            const token = signed + '.' + signature;
+            async function request(path, method = 'GET', data) {
+              const response = await fetch('https://api.appstoreconnect.apple.com/v1/' + path, {
+                method, headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: data === undefined ? undefined : JSON.stringify({ data }), signal: AbortSignal.timeout(15000),
+              });
+              const body = response.status === 204 ? {} : await response.json();
+              return { status: response.status, data: body.data ?? [], errors: body.errors?.map(item => item.code) };
+            }
+            const [versions, builds, reviews] = await Promise.all([
+              request('apps/' + appId + '/appStoreVersions?filter%5Bplatform%5D=IOS&include=build&limit=20'),
+              request('builds?filter%5Bapp%5D=' + appId + '&filter%5Bversion%5D=75&limit=10'),
+              request('reviewSubmissions?filter%5Bapp%5D=' + appId + '&limit=10'),
+            ]);
+            const version = versions.data.find(item => item.attributes.versionString === '1.0.0');
+            const build = builds.data.find(item => item.attributes.processingState === 'VALID' && !item.attributes.expired);
+            const editable = ['READY_FOR_REVIEW', 'PREPARE_FOR_SUBMISSION', 'REJECTED', 'METADATA_REJECTED', 'DEVELOPER_REJECTED'];
+            if (!version || !build || !editable.includes(version.attributes.appVersionState ?? version.attributes.appStoreState)) {
+              throw new Error('Build or App Store version is not ready to update.');
+            }
+            async function update(label, path, method, data) {
+              const result = await request(path, method, data);
+              console.log(label, JSON.stringify({ status: result.status, errors: result.errors }));
+              if (result.status >= 400) process.exitCode = 1;
+              return result;
+            }
+            for (const review of reviews.data) {
+              if (review.attributes.state !== 'UNRESOLVED_ISSUES') continue;
+              const items = await request('reviewSubmissions/' + review.id + '/items');
+              for (const item of items.data) {
+                console.log('Prior review item', JSON.stringify({ state: item.attributes.state, related: Object.entries(item.relationships ?? {}).filter(([, entry]) => Boolean(entry.data)).map(([kind]) => kind) }));
+              }
+            }
+            if (version.relationships?.build?.data?.id !== build.id) {
+              await update('Attach build 75', 'appStoreVersions/' + version.id + '/relationships/build', 'PATCH', { type: 'builds', id: build.id });
+            } else {
+              console.log('Build 75 was already attached.');
+            }
+            const [locales, details] = await Promise.all([
+              request('appStoreVersions/' + version.id + '/appStoreVersionLocalizations?limit=20'),
+              request('appStoreVersions/' + version.id + '/appStoreReviewDetail'),
+            ]);
+            const locale = locales.data.find(item => item.attributes.locale === 'en-US');
+            const review = details.data;
+            if (locale) {
+              const listing = {
+                promotionalText: 'Plan around bills, paydays, and savings goals at your own pace. PayPlace gives you a place to begin, even when money feels overwhelming.',
+                description: [
+                  'Welcome home to money without shame.',
+                  'PayPlace helps you plan what’s coming in, what’s going out, and what you have available between paydays.',
+                  '• Enter your balance, income, bills, and debts by hand. See upcoming due dates and set optional bill reminders.',
+                  '• Use Safe to Spend to see a planning estimate based on your entries. Review upcoming bills and paydays in the calendar.',
+                  '• Set savings goals, organize purchases, and compare debt snowball and avalanche payoff strategies.',
+                  '• Visit Annie and the mascots. Take a quiet break in the Calm Garden whenever you need one.',
+                  'Your budget is stored on your iPhone. You can start without email and create a password-protected backup. Make payments with your bank or biller, then record them in PayPlace.'
+                ].join('\n\n'),
+                keywords: 'budget,bills,debt,payday,spending,savings,calendar,planner,money',
+                supportUrl: 'https://payplace-dave.davelabranchejr.chatgpt.site/support',
+              };
+              await update('English listing', 'appStoreVersionLocalizations/' + locale.id, 'PATCH', { type: 'appStoreVersionLocalizations', id: locale.id, attributes: listing });
+            }
+            if (review?.id) {
+              const notes = [
+                'PayPlace is a free manual budgeting and bill-organizing app. It calculates planning estimates from entries the user supplies.',
+                'For immediate access with fictional data, select “Explore the sample neighborhood first” on Annie’s welcome screen. For personal budgeting, select a reason, tap “Sit with Annie,” complete the setup questions, and tap “Continue without email” on the quilt screen.',
+                'Open Menu, then Budget or Bills & Banking. In Budget, “Edit money info” lets you enter a balance and payday. In Bills & Banking, “Add a bill” creates a manual bill. “Record payment” records a payment already made outside PayPlace.',
+                'In Bills & Banking, open “Banking & subscriptions,” then “Banking Demo” for fictional accounts, transactions, recurring charges, and scores. The public release provides no live account linking, external payments, funds transfers, credit checks, or in-app purchases.',
+                'Optional email verification is separate from device unlock and uses Resend. Optional support and cabaret forms send user-entered details. The budget stays on-device. Open Security & backup, then Delete account & data, or use Privacy & data controls on the welcome screen.'
+              ].join('\n\n');
+              await update('Review notes', 'appStoreReviewDetails/' + review.id, 'PATCH', { type: 'appStoreReviewDetails', id: review.id, attributes: { notes } });
+            }
+            const attached = await request('appStoreVersions/' + version.id + '/relationships/build');
+            console.log('Verified build 75 attached:', attached.data?.id === build.id);
+          }
+          main().catch(error => { console.error('Could not prepare the PayPlace listing:', error.name); process.exitCode = 1; });
+          NODE
