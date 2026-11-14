@@ -28,7 +28,7 @@ const TAB_HELP = {
   Finances: { summary:'Your short money overview and one next step.', steps:[
     'Review my bills opens Bills & Banking. Payoff methods brings you to Snowball, Avalanche, Mixed and Micropayments.',
     'Safe to Spend uses your entered balance, bills, debt and buffer. Budget holds payday planning, the extra-paycheck calendar and savings goals.',
-    'Bills holds payment history and manual entries. Plaid bank linking and Subscription Detective require paid Premium.',
+    'Bills holds your payment history and manual entries. Try automatic subscription tracking with fictional transactions in Banking Demo.',
     'One small step opens your next suggested action. Find Bobbie’s Cabaret Show in the neighborhood menu.',
   ] },
   Billiam: {summary:'Visit Billiam’s mailbox outside Annie Oak Tree.',steps:['Tap a station in the mailroom to scan/import bills, compare charges, remember a recurring cycle or review a breakdown. Every scan needs your review before it is saved.','Our household plan assigns bill responsibility and creates password-protected files containing only selected bills. Review received files; updates must be shared again.','Use Bills & Banking to return to your bills; the four main tabs stay visible.']},
@@ -37,7 +37,7 @@ const TAB_HELP = {
     'Banking & subscriptions contains the Banking Demo and Premium options. Monthly payment calendar opens directly from this tab.',
     'Enter a bill name, amount and due date, then add it. Review opens its details so you can check or edit them.',
     'After paying through your bank or the bill provider, tap Record payment to record it here. Undo record puts the bill back on your unpaid list. Bills payment history shows changes and lets you correct a recorded amount.',
-    'Sample bills let you try the review flow. They enter your saved list if you add them. PayPlace does not send a payment in this beta.',
+    'Sample bills let you try the review flow. They enter your saved list if you add them. Make payments with your biller before recording them in PayPlace.',
   ] },
   Budget: { summary: 'Enter the numbers that power your planning screens.', steps: [
     'Open Edit money info to enter the money available now, your expected next paycheck, payday and emergency buffer. These entries save as you edit them.',
@@ -57,7 +57,7 @@ const TAB_HELP = {
   ] },
   BankingDemo: { summary: 'Try fictional banking and financial planning tools.', steps: [
     'Tap an illustrated feature. Its How this works card explains the purpose, steps and result.',
-    'Round-ups, payday savings, Money Watch and Credit Center use fictional sample accounts. Connect them from a feature or Account connections & beta setup.',
+    'Round-ups, payday savings, Money Watch and Credit Center use fictional sample accounts. Connect them from a feature or Demo account settings.',
     'Recovery plans can use your saved entries or a fictional budget. Sample activity never moves money, pays bills or retrieves a credit report.',
   ] },
 };

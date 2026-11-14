@@ -76,11 +76,13 @@ export function neighborhoodWalkers(residents, date) {
 }
 
 // Each point marks foot placement on the 3:1 panorama. Building approaches
-// end at doors or stairs. Upper rooms use the painted balcony walkways.
+// end at doors, stairs, or the nearest visible walkway.
 const houseApproach = [[0.485, 0.968], [0.449, 0.955], [0.43, 0.92], [0.405, 0.861], [0.39, 0.823]];
 const spaApproach = [[0.542, 0.96], [0.586, 0.948], [0.612, 0.917], [0.642, 0.89], [0.654, 0.869]];
 const approaches = {
-  Annie: [[0.752, 0.499], [0.775, 0.482], [0.802, 0.457], [0.823, 0.441], [0.845, 0.432]],
+  // There is no visible stairway to Annie’s upper balcony. Continue the
+  // delivery on the stone footpath below the treehouses and fade out there.
+  Annie: [[0.466, 0.973], [0.51, 0.967], [0.548, 0.96], [0.585, 0.953], [0.624, 0.929]],
   Billiam: [[0.424, 0.925], [0.397, 0.874], [0.362, 0.854], [0.321, 0.861], [0.271, 0.838]],
   Bobbie: [[0.961, 0.741], [0.948, 0.743], [0.924, 0.758], [0.909, 0.759]],
   Calm: [[0.609, 0.851], [0.575, 0.827], [0.547, 0.815], [0.519, 0.827], [0.496, 0.843]],

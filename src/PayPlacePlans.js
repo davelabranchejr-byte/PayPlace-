@@ -6,7 +6,7 @@ export const plans = [
   {
     id: 'basic',
     name: 'Basic',
-    price: '$0.99',
+    availability: 'Free',
     onboardingSummary: 'Manual budgeting, bills and savings',
     color: '#08796E',
     fill: '#65EBEF',
@@ -26,14 +26,14 @@ export const plans = [
   {
     id: 'plus',
     name: 'Plus',
-    price: '$4.99',
+    availability: 'Included free in this release',
     onboardingSummary: 'Debt payoff tools, micropayments and printable calendar',
     color: '#8C5900',
     fill: '#FFE455',
     heading: 'Build momentum with Taters',
     saying: 'Small bites. Big wins.',
     artwork: require('../assets/characters/plan-plus-tate.png'),
-    includes: 'Everything in Basic, plus these tools. Enter your own information.',
+    includes: 'These manual planning tools are also available in PayPlace.',
     features: [
       ['Snowball, Mixed and Avalanche', 'Choose which debt to focus on and compare payoff approaches.', 'debt'],
       ['Micropayments tracker', 'Record small extra payments you make with your biller.', 'micropayments'],
@@ -45,14 +45,14 @@ export const plans = [
   {
     id: 'premium',
     name: 'Premium',
-    price: '$19.99',
+    availability: 'In development',
     onboardingSummary: 'Bank sync and subscription tracking planned',
     color: '#6925A0',
     fill: '#DCABFF',
     heading: 'Queen Bobbie’s connected plan',
     saying: 'High maintenance, not high and mighty.',
     artwork: require('../assets/characters/plan-premium-queen-bobbie.png'),
-    includes: 'Everything in Plus, with connected tools planned for Premium.',
+    includes: 'These connected tools are planned for a future release.',
     features: [
       ['Plaid bank sync', 'Connect supported accounts and import transactions.'],
       ['Automatic transaction categorization', 'Organize imported activity and review its categories.'],
@@ -106,8 +106,7 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
         <View style={[styles.summary, { backgroundColor: selected.fill, borderColor: selected.color }]}>
           <Text accessibilityRole="header" style={styles.heading}>{selected.heading}</Text>
           {selected.saying && <Text style={styles.saying}>{selected.saying}</Text>}
-          <Text style={styles.price}>{selected.price} / month</Text>
-          <Text style={styles.copy}>Proposed pricing · beta access is free</Text>
+          <Text style={styles.availability}>{selected.availability}</Text>
           {selected.includes && <Text style={styles.copy}>{selected.includes}</Text>}
         </View>
         {selected.id === 'premium' && (
@@ -143,7 +142,7 @@ const styles = StyleSheet.create({
   summary: { borderRadius: 20, borderWidth: 2, padding: 14, gap: 4 },
   heading: { color: '#071A3A', fontSize: 20, fontWeight: '900' },
   saying: { color: '#243952', fontSize: 17, fontWeight: '800' },
-  price: { color: '#071A3A', fontSize: 20, fontWeight: '900' },
+  availability: { color: '#071A3A', fontSize: 20, fontWeight: '900' },
   feature: { padding: 12, gap: 6, borderRadius: 16, borderWidth: 1, borderColor: '#D7CBE8', backgroundColor: '#FFFCF7' },
   featureTitle: { color: '#071A3A', fontSize: 17, fontWeight: '900' },
   copy: { color: '#243952', fontSize: 15, lineHeight: 21 },

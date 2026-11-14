@@ -76,11 +76,6 @@ export default function EmailVerification({ answers, onDraftChange = () => {}, o
       <TouchableOpacity accessibilityRole="button" disabled={busy || waiting > 0} onPress={send} style={{ paddingVertical: 16 }}><Text style={{ color: '#147D78', fontSize: 16 }}>{waiting ? `Resend in ${waiting}s` : 'Send a new code'}</Text></TouchableOpacity>
       <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => { setChallenge(null); setVerifiedProfile(null); setCode(''); setMessage(''); }} style={{ minHeight: 48, paddingVertical: 14 }}><Text style={{ color: '#147D78', fontSize: 16 }}>Change email address</Text></TouchableOpacity>
     </>}
-    <View style={{ marginTop: 24, padding: 16, backgroundColor: '#F1EDFF', borderRadius: 14 }}>
-      <Text style={{ color: '#62509C', fontWeight: '800', fontSize: 12 }}>COMING SOON · PREMIUM</Text>
-      <Text style={{ color: '#173C43', fontWeight: '700', fontSize: 17, marginTop: 6 }}>Text-message security codes</Text>
-      <Text style={{ color: '#52616B', fontSize: 15, lineHeight: 22, marginTop: 6 }}>A planned paid option for receiving your sign-in code by text. Email verification remains included.</Text>
-    </View>
     {!!message && <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={{ fontSize: 16, lineHeight: 24, marginTop: 12 }}>{message}</Text>}
   </View>;
 }

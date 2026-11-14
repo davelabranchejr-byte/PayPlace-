@@ -1,8 +1,7 @@
-import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React from 'react';
-import { Image, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
-import CharacterArtwork from './CharacterArtwork';
-import { BankBuildingMark } from './PlaidBankScene';
+import { Image, StyleSheet, View, useWindowDimensions } from 'react-native';
+import IllustratedButton from './IllustratedButton';
+import { payplaceColors } from './brand';
 import { NEIGHBORHOOD_DESTINATIONS, PRIMARY_DESTINATIONS, primaryDestination } from './neighborhood-destinations.mjs';
 
 const atlas = require('../assets/characters/neighborhood-building-tabs.png');
@@ -30,34 +29,41 @@ export function buildingArtwork(id) {
 }
 
 const tabArtwork = {
-  Home: require('../assets/characters/nav-neighborhood-homes.png'),
-  Finances: require('../assets/characters/neighborhood-navigation-mascots.png'),
-  Budget: buildingArtwork('Budget'),
+  Home: require('../assets/characters/bottom-tab-home.jpg'),
+  Finances: require('../assets/characters/bottom-tab-finances.jpg'),
+  Budget: require('../assets/characters/bottom-tab-budget.jpg'),
+  Bills: require('../assets/characters/bottom-tab-bills.jpg'),
 };
+const menuArtwork = {
+  Home: require('../assets/characters/map-menu-home.jpg'),
+  Finances: require('../assets/characters/map-menu-finances.jpg'),
+  Budget: require('../assets/characters/map-menu-budget.jpg'),
+  Bills: require('../assets/characters/billiam-canonical.png'),
+};
+const tabColors = { Home: payplaceColors.purple, Finances: payplaceColors.coral, Budget: payplaceColors.yellow, Bills: payplaceColors.turquoise };
 export default function NeighborhoodNav({ current, switchTab, artworkFirst = false }) {
   const { width, fontScale } = useWindowDimensions();
   const wrap = width < 340 || fontScale > 1.2;
-  const artworkStyle = [s.artwork, wrap && s.compactArt, artworkFirst && s.largeArt];
-  return <View style={artworkFirst ? s.menu : s.wrap}><View accessibilityRole="tablist" style={[s.strip, (wrap || artworkFirst) && s.wrapStrip, artworkFirst && s.menuStrip]}>
-    {PRIMARY_DESTINATIONS.map(place => {
-      const selected = place.id === primaryDestination(current);
-      return <TouchableOpacity key={place.id} artworkMode="integrated" accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`} accessibilityState={{selected}}
-        onPress={() => switchTab(place.id)} style={[s.tab, {flex:place.id==='Finances'?1.25:place.id==='Bills'?1.2:0.9,backgroundColor:place.id==='Home'?'#ECD5FF':place.id==='Budget'?'#FFF2B6':place.id==='Bills'?'#D5FFF4':'#FFF7D5',borderColor:selected?place.color:'#D9D5B6'}, selected && {borderColor:place.color}, wrap && s.wrapTab, artworkFirst && s.menuTab]}>
-        {place.id === 'Bills' ? <BankBuildingMark style={artworkStyle} /> :
-          <CharacterArtwork source={tabArtwork[place.id]} style={artworkStyle}
-            resizeMode={!artworkFirst && !wrap && place.id !== 'Finances' ? 'cover' : 'contain'} accessible={false} />}
-        <Text adjustsFontSizeToFit={!wrap && !artworkFirst} minimumFontScale={0.85} style={[s.label, artworkFirst && s.menuLabel, {color:selected?place.color:'#34465E'}]}>{place.id==='Bills' && !wrap && !artworkFirst ? 'Bills &\nBanking' : place.label}</Text>
-        <View accessible={false} style={[s.selectedMark,{backgroundColor:selected?place.color:'transparent'}]} />
-      </TouchableOpacity>;
-    })}
+  if (artworkFirst) return <View accessibilityRole="tablist" style={s.menu}>
+    {PRIMARY_DESTINATIONS.map(place => <IllustratedButton key={place.id} artwork={menuArtwork[place.id]}
+      label={place.label} accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`}
+      selected={place.id === primaryDestination(current)} onPress={() => switchTab(place.id)}
+      style={[s.menuTab, { borderColor: tabColors[place.id] }]} />)}
+  </View>;
+
+  return <View style={s.wrap}><View accessibilityRole="tablist" style={[s.strip, wrap && s.wrapStrip]}>
+    {PRIMARY_DESTINATIONS.map(place => <IllustratedButton key={place.id} artwork={tabArtwork[place.id]}
+      label={place.label} accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`}
+      selected={place.id === primaryDestination(current)} onPress={() => switchTab(place.id)}
+      labelStyle={s.tabLabel} style={[s.tab, wrap && s.wrapTab, { borderColor: tabColors[place.id] }]} />)}
   </View></View>;
 }
 const s=StyleSheet.create({
   wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},tab:{flex:1,minHeight:74,minWidth:0,borderRadius:20,borderWidth:2,borderColor:'transparent',paddingBottom:4,alignItems:'center',justifyContent:'flex-start',overflow:'hidden'},
-  wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:58},compactArt:{height:32},
-  menu:{marginBottom:8},menuStrip:{paddingHorizontal:0,gap:8},
-  menuTab:{flexBasis:'46%',flexGrow:1},largeArt:{height:96},
-  menuLabel:{fontSize:16,lineHeight:21,paddingHorizontal:5,paddingVertical:4},
-  artwork:{width:'100%',height:46},label:{width:'100%',fontSize:13,fontWeight:'800',textAlign:'center',paddingHorizontal:2,paddingTop:1,lineHeight:17,flexGrow:1},selectedMark:{width:22,height:3,borderRadius:2,marginTop:3},
+  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},
+  tab:{flex:1,minHeight:84,minWidth:0,borderRadius:16},
+  tabLabel:{fontSize:13,lineHeight:17,paddingHorizontal:2},
+  wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:76},
+  menu:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:8},
+  menuTab:{flexBasis:'46%',flexGrow:1,minHeight:136},
 });

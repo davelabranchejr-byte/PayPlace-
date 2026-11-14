@@ -109,7 +109,8 @@ function Waterfall({ playing }) {
 }
 
 const skyPasses = {
-  airplane: { wait: 4500, duration: 6800, rest: 17000, x: 0.35, y: -0.014 },
+  airplane: { wait: 4500, duration: 11000, rest: 26000, x: 0.17, y: -0.008,
+    source: require('../assets/characters/cameo-airplane.png'), width: 38, height: 20 },
   'shooting-star': { wait: 7200, duration: 1050, rest: 25000, x: -0.19, y: 0.084 },
   saucer: { wait: 16000, duration: 4200, rest: 54000, x: 0.23, y: -0.035 },
   santa: { wait: 11000, duration: 6600, rest: 36000, x: 0.30, y: -0.035,
@@ -159,7 +160,6 @@ function ScenePass({ kind, width }) {
       <View style={s.starTrail} />
       <View style={s.starTail} />
     </View>}
-    {kind === 'airplane' && <Ionicons name="airplane" size={15} color="#FFFDF4" style={s.plane} />}
     {kind === 'saucer' && <View style={s.saucerShape}>
       <View style={s.saucerDome} />
       <View style={s.saucerRim}>
@@ -313,9 +313,7 @@ const s=StyleSheet.create({
   water: { position: 'absolute', left: '49.5%', top: '72%', width: '9%', height: '3.5%', borderRadius: 6, backgroundColor: '#C9F4FF' },
   hint: { flex: 1, fontSize: 13, color: '#34465E' },
   skyPass: { position: 'absolute' },
-  airplane: { left: '32%', top: '16%' },
-  plane: { textShadowColor: '#26425F99', textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 2,
-    transform: [{ rotate: '30deg' }] },
+  airplane: { left: '47%', top: '22%' },
   'shooting-star': { left: '61%', top: '12%' },
   star: { flexDirection: 'row', alignItems: 'center', transform: [{ rotate: '-24deg' }] },
   starHead: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#FFF8D5' },

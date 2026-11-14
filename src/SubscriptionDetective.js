@@ -27,8 +27,8 @@ function Choices({ label, options, value, onChange }) {
 }
 
 export function SubscriptionDetectiveEntry({ onOpen }) {
-  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Subscription Detective, paid Premium feature" activeOpacity={0.92} onPress={onOpen} style={s.entry}>
-    <Art /><View style={s.entryCopy}><Text style={s.eyebrow}>PREMIUM PAID FEATURE</Text><Text style={s.title}>Subscription Detective</Text><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text><Text style={s.body}>Investigate subscriptions, keep an eye on trials, and give every renewal a little attention.</Text><View style={s.entryAction}><Ionicons name="search" color="#FFFFFF" size={20} /><Text style={s.buttonText}>Enter the Detective Clubhouse</Text></View><Text style={s.note}>Paid Premium · sample preview available</Text></View>
+  return <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Subscription Detective in Banking Demo" activeOpacity={0.92} onPress={onOpen} style={s.entry}>
+    <Art /><View style={s.entryCopy}><Text style={s.eyebrow}>BANKING DEMO</Text><Text style={s.title}>Subscription Detective</Text><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text><Text style={s.body}>Investigate subscriptions, keep an eye on trials, and give every renewal a little attention.</Text><View style={s.entryAction}><Ionicons name="search" color="#FFFFFF" size={20} /><Text style={s.buttonText}>Enter the Detective Clubhouse</Text></View><Text style={s.note}>Fictional transactions</Text></View>
   </TouchableOpacity>;
 }
 
@@ -66,11 +66,11 @@ export default function SubscriptionDetective({ visible, onClose, finance, onAct
   }
   return <Modal visible={visible} animationType="slide" onRequestClose={close}>
     <SafeAreaView style={s.safe}><KeyboardAvoidingView style={s.safe} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={s.header}><View style={s.flex}><Text style={s.eyebrow}>PAYPLACE PREMIUM · INCLUDED DURING BETA</Text><Text accessibilityRole="header" style={s.title}>Detective Clubhouse</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Detective Clubhouse" onPress={close} style={s.close}><Ionicons name="close" size={26} color="#142445" /></TouchableOpacity></View>
+      <View style={s.header}><View style={s.flex}><Text style={s.eyebrow}>BANKING DEMO · SAMPLE DATA</Text><Text accessibilityRole="header" style={s.title}>Detective Clubhouse</Text></View><TouchableOpacity accessibilityRole="button" accessibilityLabel="Close Detective Clubhouse" onPress={close} style={s.close}><Ionicons name="close" size={26} color="#142445" /></TouchableOpacity></View>
       <ScrollView ref={scroll} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         <Art /><Text style={s.quote}>“Oooh, premium like me!” — Bobbie</Text>
         <Text style={s.body}>Little charges deserve a little investigation. Add your subscriptions and trials, then decide what earns a place in your life.</Text>
-        <Text style={s.note}>Paid Premium feature. This preview uses a separate sample plan and fictional transactions. To enter a real subscription with regular PayPlace, add it as a bill.</Text>
+        <Text style={s.note}>This demo uses a separate sample plan and fictional transactions. Track your own subscriptions by adding them as bills.</Text>
         <View style={[s.card, { backgroundColor: '#BBF5E8' }]}>
           <Text accessibilityRole="header" style={s.subtitle}>Bobbie found a few clues</Text>
           <Text style={s.body}>We look for at least three settled charges on a regular schedule. These are possible subscriptions or recurring bills, not confirmed contracts. Next-charge dates are estimates.</Text>

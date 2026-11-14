@@ -58,9 +58,11 @@ function CategoryTiles({ selected, onSelect, customCategories = [] }) {
     <View style={s.tiles}>{UTILITY_CATEGORIES.map(tile)}</View>
   </>;
 }
-const budgetCategoryArtwork = require('../assets/characters/feature-purchase-categories-daddy.png');
+const budgetCategoryArtwork = require('../assets/characters/budget-entry-purchases.jpg');
 const bankingCategoryArtwork = require('../assets/characters/feature-purchase-categories-bobbie.png');
 export function CategoryEntry({ onOpen, inBanking = false, compact = false }) {
+  if (compact && !inBanking) return <IllustratedButton artwork={budgetCategoryArtwork} label="Purchases & categories"
+    accessibilityLabel="Open purchases and remembered categories" onPress={onOpen} style={s.budgetEntry} />;
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories"
     onPress={onOpen} style={[s.entry, compact && s.entryCompact]}>
     <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} />
@@ -217,5 +219,6 @@ const s = StyleSheet.create({
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, check: { minHeight: 48, paddingVertical: 10, justifyContent: 'center' }, error: { color: '#92273B', fontSize: 16, lineHeight: 24 }, notice: { padding: 16, borderRadius: 18, backgroundColor: '#DFFCF7', gap: 12 }, split: { gap: 8, borderBottomWidth: 1, borderBottomColor: '#DCE9F0', paddingBottom: 12 },
   entry: { backgroundColor: '#EEE7FF', borderRadius: 24, borderWidth: 2, borderColor: '#B799EC', overflow: 'hidden' },
   entryCompact: { marginBottom: 12 },
+  budgetEntry: { marginBottom: 12, minHeight: 142, aspectRatio: 3 / 2 },
   entryCopy: { padding: 12 }, entryLink: { fontSize: 17, color: '#542199', fontWeight: '900', paddingVertical: 8 },
 });

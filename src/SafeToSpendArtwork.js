@@ -10,8 +10,9 @@ const scenes = {
     require('../assets/characters/safe-to-spend-porch.jpg'),
     require('../assets/characters/safe-to-spend-rainy-day.jpg'),
   ],
+  budget: [require('../assets/characters/safe-to-spend-budget-workshop.jpg')],
 };
-const nextScene = { finances: 0, map: 0 };
+const nextScene = { finances: 0, map: 0, budget: 0 };
 
 export default function SafeToSpendArtwork({ placement, style, testID }) {
   const selected = useRef(null);
@@ -27,6 +28,6 @@ export default function SafeToSpendArtwork({ placement, style, testID }) {
     setSource(selected.current.source);
   }, [placement]);
 
-  return <FittedArtwork source={source || scenes[placement][0]} aspectRatio={3 / 2} resizeMode="cover"
-    style={style} testID={testID} accessible={false} />;
+  return <FittedArtwork source={source || scenes[placement][0]} aspectRatio={3 / 2} resizeMode={placement === 'budget' ? 'contain' : 'cover'}
+    style={style} testID={testID} accessible={false} brandMarkSize={placement === 'map' ? 20 : 27} />;
 }

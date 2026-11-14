@@ -1,7 +1,7 @@
 import { hasVerifiedContact } from './contact-verification.mjs';
 
 export function canEnterNeighborhood(profile) {
-  return profile?.completed === true && hasVerifiedContact(profile);
+  return profile?.completed === true && (profile.guest === true || hasVerifiedContact(profile));
 }
 
 export function onboardingPosition(profile, stepCount) {
@@ -21,9 +21,15 @@ export function onboardingDraft(answers, stage, stepIndex) {
     onboardingProgress: { version: 1, stage, stepIndex } };
 }
 
-export function completedProfile(answers, completedAt = new Date().toISOString()) {
-  if (!hasVerifiedContact(answers)) throw new Error('Confirm your email before entering PayPlace.');
+export function completedProfile(answers, completedAt = new Date().toISOString(), { localOnly = false } = {}) {
   const { onboardingProgress, ...profile } = answers;
+  if (localOnly) {
+    const { email, phone, contact, contactChannel, contactVerifiedAt, emailVerifiedAt,
+      notificationChannel, ...localProfile } = profile;
+    return { ...localProfile, guest: true, completed: true, completedAt,
+      contactVerified: false, emailVerified: false, phoneVerified: false, annieLetters: false };
+  }
+  if (!hasVerifiedContact(answers)) throw new Error('Confirm your email before entering PayPlace.');
   return { ...profile, completed: true, completedAt };
 }
 
