@@ -1,0 +1,109 @@
+name: Prepare PayPlace build 75 for App Review
+
+on:
+  push:
+    branches: [release/ios-75-store-prep]
+    paths: [.github/workflows/prepare-build-75-store.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: Read current App Store metadata
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci
+      - name: Verify existing Expo authorization can read Apple metadata
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          umask 077
+          if npx --yes eas-cli@latest metadata:pull --profile production --non-interactive > "$RUNNER_TEMP/payplace-apple-check.log" 2>&1; then
+            echo 'Existing Expo authorization successfully read PayPlace metadata from Apple.' >> "$GITHUB_STEP_SUMMARY"
+            node -e 'const apple=require("./store.config.json").apple; if (apple?.version?.versionString) console.log("App Store version: " + apple.version.versionString)' >> "$GITHUB_STEP_SUMMARY"
+          else
+            if grep -Fq 'No App Store Connect API Key found' "$RUNNER_TEMP/payplace-apple-check.log"; then
+              echo 'The Expo token could not retrieve an Apple API key for metadata.' >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo 'Expo could not complete the metadata read using the current authorization.' >> "$GITHUB_STEP_SUMMARY"
+            fi
+            exit 1
+          fi
+  screenshots:
+    name: Capture native iPhone screenshots from build 75 source
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Prepare simulator build and capture tool
+        run: |
+          npm ci
+          npx expo prebuild --platform ios --no-install
+          (cd ios && pod install)
+          brew install mobile-dev-inc/tap/maestro
+      - name: Compile unchanged production source for the iPhone simulator
+        run: |
+          if ! xcodebuild -workspace ios/PayPlace.xcworkspace -scheme PayPlace -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/payplace-simulator" CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/payplace-simulator.log" 2>&1; then
+            tail -n 90 "$RUNNER_TEMP/payplace-simulator.log"
+            exit 1
+          fi
+      - name: Capture the sample neighborhood, finances, budget, bills and calendar
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const script = 'scripts/capture-ios-screenshots.mjs';
+          const source = readFileSync(script, 'utf8');
+          const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'");
+          writeFileSync(script, updated);
+          NODE
+          cat > maestro/store-screenshots.yml <<'FLOW'
+          appId: com.davelabranchejr.payplace
+          ---
+          - launchApp:
+              clearState: true
+          - scrollUntilVisible:
+              element:
+                text: 'Explore sample neighborhood before setup'
+              direction: DOWN
+              timeout: 30000
+          - tapOn: 'Explore sample neighborhood before setup'
+          - extendedWaitUntil:
+              visible: 'Open neighborhood menu'
+              timeout: 30000
+          - waitForAnimationToEnd:
+              timeout: 3000
+          - takeScreenshot: 01-neighborhood
+          - tapOn: 'Open neighborhood menu'
+          - tapOn: 'Open My Finances'
+          - assertVisible: 'Planning estimate.*'
+          - takeScreenshot: 02-safe-to-spend
+          - tapOn: 'Open Budget'
+          - assertVisible: 'Balance minus unpaid bills, debt minimums and your emergency buffer.'
+          - takeScreenshot: 03-budget
+          - tapOn: 'Open Bills & Banking'
+          - assertVisible: 'Add a bill'
+          - takeScreenshot: 04-bills
+          - tapOn: 'Monthly payment calendar'
+          - assertVisible: 'Sample calendar.*fictional data'
+          - takeScreenshot: 05-payment-calendar
+          FLOW
+          node scripts/capture-ios-screenshots.mjs "$RUNNER_TEMP/payplace-simulator/Build/Products/Release-iphonesimulator/PayPlace.app"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: payplace-75-iphone-screenshots
+          path: ios-artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
