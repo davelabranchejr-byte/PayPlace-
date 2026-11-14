@@ -10,38 +10,13 @@ permissions:
   contents: read
 
 jobs:
-  inspect:
-    name: Read current App Store metadata
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - run: npm ci
-      - name: Verify existing Expo authorization can read Apple metadata
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: |
-          umask 077
-          if npx --yes eas-cli@latest metadata:pull --profile production --non-interactive > "$RUNNER_TEMP/payplace-apple-check.log" 2>&1; then
-            echo 'Existing Expo authorization successfully read PayPlace metadata from Apple.' >> "$GITHUB_STEP_SUMMARY"
-            node -e 'const apple=require("./store.config.json").apple; if (apple?.version?.versionString) console.log("App Store version: " + apple.version.versionString)' >> "$GITHUB_STEP_SUMMARY"
-          else
-            if grep -Fq 'No App Store Connect API Key found' "$RUNNER_TEMP/payplace-apple-check.log"; then
-              echo 'The Expo token could not retrieve an Apple API key for metadata.' >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo 'Expo could not complete the metadata read using the current authorization.' >> "$GITHUB_STEP_SUMMARY"
-            fi
-            exit 1
-          fi
   screenshots:
     name: Capture native iPhone screenshots from build 75 source
     runs-on: macos-15
     timeout-minutes: 45
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      MAESTRO_CLI_NO_ANALYTICS: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -52,7 +27,9 @@ jobs:
           npm ci
           npx expo prebuild --platform ios --no-install
           (cd ios && pod install)
-          brew install mobile-dev-inc/tap/maestro
+          curl -fsSL https://get.maestro.mobile.dev -o "$RUNNER_TEMP/install-maestro.sh"
+          MAESTRO_VERSION=2.0.10 bash "$RUNNER_TEMP/install-maestro.sh"
+          echo "$HOME/.maestro/bin" >> "$GITHUB_PATH"
       - name: Compile unchanged production source for the iPhone simulator
         run: |
           if ! xcodebuild -workspace ios/PayPlace.xcworkspace -scheme PayPlace -configuration Release -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/payplace-simulator" CODE_SIGNING_ALLOWED=NO build > "$RUNNER_TEMP/payplace-simulator.log" 2>&1; then
@@ -65,7 +42,7 @@ jobs:
           import { readFileSync, writeFileSync } from 'node:fs';
           const script = 'scripts/capture-ios-screenshots.mjs';
           const source = readFileSync(script, 'utf8');
-          const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'");
+          const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'").replace("'test', '--format'", "'test', '--debug-output', 'ios-artifacts/debug', '--format'");
           writeFileSync(script, updated);
           NODE
           cat > maestro/store-screenshots.yml <<'FLOW'
