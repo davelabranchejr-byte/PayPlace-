@@ -41,16 +41,18 @@ jobs:
           const script = 'scripts/capture-ios-screenshots.mjs';
           const source = readFileSync(script, 'utf8');
           const updated = source.replace("'iPhone 13 Pro Max'", "'iPhone 16 Pro'").replace("'iPhone 16 Plus'", "'iPhone 17 Pro'");
-          writeFileSync(script, updated);
+          const launch = "  run('xcrun', ['simctl', 'launch', deviceId, 'com.davelabranchejr.payplace']);\n  run('xcrun', ['simctl', 'io', deviceId, 'screenshot', 'ios-artifacts/launch.png']);\n  run('maestro'";
+          writeFileSync(script, updated.replace("  run('maestro'", launch));
           NODE
           cat > maestro/store-screenshots.yml <<'FLOW'
           appId: com.davelabranchejr.payplace
           ---
-          - launchApp:
-              clearState: true
+          - extendedWaitUntil:
+              visible: 'There you are.'
+              timeout: 30000
           - scrollUntilVisible:
               element:
-                text: 'Explore sample neighborhood before setup'
+                text: 'Explore (the )?sample neighborhood( first| before setup)'
               direction: DOWN
               timeout: 30000
           - tapOn: 'Explore sample neighborhood before setup'
@@ -70,7 +72,7 @@ jobs:
           - tapOn: 'Open Bills & Banking'
           - assertVisible: 'Add a bill'
           - takeScreenshot: 04-bills
-          - tapOn: 'Monthly payment calendar'
+          - tapOn: 'Open Monthly payment calendar'
           - assertVisible: 'Sample calendar.*fictional data'
           - takeScreenshot: 05-payment-calendar
           FLOW
@@ -96,6 +98,7 @@ jobs:
             ios-artifacts/device.json
             ios-artifacts/result.json
             ios-artifacts/report.xml
+            ios-artifacts/launch.png
             ios-artifacts/failure.png
           if-no-files-found: ignore
           retention-days: 7
