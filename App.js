@@ -19,7 +19,8 @@ import { AppState, Image, Modal, KeyboardAvoidingView, Platform, SafeAreaView, S
 import { Text, TextInput } from "./src/Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import ProtectedStorage from "./src/secure-storage";
-import AppSecurity from "./src/AppSecurity";
+import AppSecurity, { useAppSecurity } from "./src/AppSecurity";
+import { lockAsync, OrientationLock } from "expo-screen-orientation";
 import SecuritySettings from "./src/SecuritySettings";
 import useBillReminders from "./src/useBillReminders";
 import { deletedItems, deleteEntry, restoreEntry } from "./src/deleted-items.mjs";
@@ -29,7 +30,6 @@ import { EncouragementProvider } from "./src/Encouragement";
 import { portraits, annieArtwork } from "./src/characters";
 import BankConnections, { isBankOAuthReturn } from "./src/BankConnections";
 import MerchantCategories, { CategoryEntry } from "./src/MerchantCategories";
-import FacebookNeighborhood from "./src/FacebookNeighborhood";
 import { demoBankAction } from "./src/bank-activity.mjs";
 import EmailVerification from "./src/EmailVerification";
 import { hasVerifiedContact } from "./src/contact-verification.mjs";
@@ -43,12 +43,16 @@ import NeighborCare, { SmallSteps } from "./src/NeighborCare";
 import useAnnieCare from "./src/useAnnieCare";
 import { recordActivity } from "./src/neighborhood-progress.mjs";
 import { awardQuiltMilestone, keepQuiltMilestones } from "./src/quilt-milestones.mjs";
-import LivingNeighborhood from "./src/LivingNeighborhood";
+import LivingNeighborhood, { NeighborhoodTownLife } from "./src/LivingNeighborhood";
+import useNeighborhoodWeather from "./src/useNeighborhoodWeather";
+import { RoomVisitors } from "./src/NeighborhoodWorld";
 import PetSpa from "./src/PetSpa";
-import NeighborhoodNav, { buildingArtwork, spaPorchArtwork } from "./src/NeighborhoodNav";
+import NeighborhoodNav, { buildingArtwork, spaPorchArtwork, tabArtwork } from "./src/NeighborhoodNav";
 import { NEIGHBOR_DESTINATIONS } from "./src/neighborhood-destinations.mjs";
 import BankWelcomeCard from "./src/BankWelcomeCard";
-import SeasonalWelcome from "./src/SeasonalWelcome";
+import SeasonalWelcome, { NeighborhoodOpening } from "./src/SeasonalWelcome";
+import { neighborhoodWelcomeTheme } from "./src/neighborhood-time.mjs";
+import useNeighborhoodClock from "./src/useNeighborhoodClock";
 import FittedArtwork from "./src/FittedArtwork";
 import FeatureLinks from "./src/FeatureLinks";
 import NavigationTiles from "./src/NavigationTiles";
@@ -64,7 +68,7 @@ import ExtraPaycheckChapoScene from "./src/ExtraPaycheckChapoScene";
 import ExtraPaycheckCalendar from "./src/ExtraPaycheckCalendar";
 import SubscriptionDetective from "./src/SubscriptionDetective";
 import PremiumResilienceHub from "./src/PremiumResilienceHub";
-import PayPlacePlans from "./src/PayPlacePlans";
+import PayPlacePlans, { plans as payPlacePlans } from "./src/PayPlacePlans";
 import BobbieBankDemoLogin from "./src/BobbieBankDemoLogin";
 import PrivacyLinks from './src/PrivacyLinks';
 import { clearDeviceRecords } from './src/device-deletion';
@@ -83,7 +87,7 @@ import MonthlyPaymentCalendar from "./src/MonthlyPaymentCalendar";
 import MoneyOutlook from "./src/MoneyOutlook";
 import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
 import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
-import { normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
+import { STRATEGY_ORDER, normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
 import { mirrorBudget, recordTreat, saveFunMoney, saveLook, undoTreat } from "./src/smart-mirror.mjs";
 const lockedWestley = portraits.westley;
 const lockedBobbie = portraits.bobbie;
@@ -1147,7 +1151,7 @@ function getTellMeWhatToDoPlan({ finance, upcomingTotal, debtDueTotal, safeToSpe
     return {
       title: "Plan the extra paycheck",
       body: "PayPlace found an extra check month. That money needs a job before chaos gets a shopping cart.",
-      targetTab: "Home",
+      targetTab: "Budget",
       actionLabel: "See Extra Check",
       accentColor: palette.purple,
       tintColor: palette.lavender,
@@ -1216,6 +1220,7 @@ export default function App() {
 }
 
 function PayPlaceApp() {
+  const { obscured } = useAppSecurity();
   const dataDeletion = useRef(false);
   const [clearingData, setClearingData] = useState(false);
   const [deletionGeneration, setDeletionGeneration] = useState(0);
@@ -1230,11 +1235,13 @@ function PayPlaceApp() {
   const [cabaretVisible, setCabaretVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
+  const [welcomeSeen, setWelcomeSeen] = useState(false);
+  const seeWelcome = useCallback(() => setWelcomeSeen(true), []);
   const [billiamBack, setBilliamBack] = useState("Bills");
   const [calmBack, setCalmBack] = useState("Neighborhood");
   useEffect(() => { if (tab !== "Calm") setCalmBack("Neighborhood"); }, [tab]);
   function openBankingDemo() { setBankingDemoVisit(current => current + 1); setTab("BankingDemo"); }
-  const [selectedPlan, setSelectedPlan] = useState("basic");
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [debtEntry, setDebtEntry] = useState({ showMethods: false, back: "Bills" });
   const [savedFinance, setSavedFinance] = useState(starterFinance);
   const [sampleFinance, setSampleFinance] = useState(null);
@@ -1366,6 +1373,19 @@ function PayPlaceApp() {
     notes: "",
     arrivalReason: "",
   });
+  const onTownMap = tab === "Home" || tab === "Neighborhood";
+  const canRotateMap = onTownMap && (onboardingComplete || !!sampleFinance) &&
+    !revisitingAnnie && !obscured && !storageError && !bankConnectionsVisible && !securityVisible && !tabHelpVisible && !essentialsPanel && !cabaretVisible;
+  const [rotationUnavailable, setRotationUnavailable] = useState(false);
+  const orientationRequest = useRef(Promise.resolve());
+  useEffect(() => {
+    if (Platform.OS === "web") return;
+    let current = true;
+    orientationRequest.current = orientationRequest.current
+      .then(() => lockAsync(canRotateMap ? OrientationLock.DEFAULT : OrientationLock.PORTRAIT_UP))
+      .then(() => { if (current) setRotationUnavailable(false); }, () => { if (current) setRotationUnavailable(true); });
+    return () => { current = false; };
+  }, [canRotateMap]);
   const annieStatus = useAnnieCare(effectiveCareSettings, loaded && onboardingComplete && !storageError && !clearingData, now => setFinanceRaw(current => ({...current, annieCare:{...current.annieCare, lastOpened:now, returnedAfterWeek: !!current.annieCare?.lastOpened && now-current.annieCare.lastOpened >= 7*86400000}})), () => setTab("Home"));
   const reminderStatus = useBillReminders(finance.bills, effectiveBillSettings, loaded && !storageError && !clearingData,
     () => setTab("Bills"));
@@ -1760,8 +1780,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
     const completedAnswers = completedProfile(answers);
     onboardingFinalizing.current = true;
     try {
-      await ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
+      const chosenStrategy = !onboardingComplete && !revisitingAnnie && STRATEGY_ORDER.includes(answers.onboardingPayoffMethod);
+      if (chosenStrategy) {
+        const nextFinance = initializeMixedTarget(selectStrategy(savedFinance, answers.onboardingPayoffMethod));
+        await ProtectedStorage.setItems({
+          [STORAGE_KEY]: JSON.stringify(nextFinance),
+          [ONBOARDING_KEY]: JSON.stringify(completedAnswers),
+        });
+        setSavedFinance(nextFinance);
+      } else {
+        await ProtectedStorage.setItem(ONBOARDING_KEY, JSON.stringify(completedAnswers));
+      }
       setOnboardingAnswers(completedAnswers);
+      setSelectedPlan(null);
       setOnboardingComplete(true);
       setRevisitingAnnie(false);
       if (!finance.firstWinComplete && !finance.bills.length) setEssentialsPanel("firstWin");
@@ -1849,19 +1880,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowTwo} />
         <View style={styles.glowThree} />
 
-        {sampleFinance && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        <Header tab={tab}
+        {sampleFinance && !onTownMap && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
+        {!onTownMap && <Header tab={tab}
           onHelp={tab === "Plans" ? undefined : () => setTabHelpVisible(true)}
           onPlans={tab === "Plans" ? undefined : () => setTab("Plans")}
-          onSecurity={() => setSecurityVisible(true)} />
-        {tab === "Plans" && <PayPlacePlans selectedId={selectedPlan} onSelectPlan={setSelectedPlan} onOpenTool={openPlanTool} onOpenDemo={startBankDemo} />}
+          onSecurity={() => setSecurityVisible(true)} />}
+        {tab === "Plans" && <PayPlacePlans selectedId={selectedPlan || payPlacePlans.find(plan => plan.id === onboardingAnswers.planPreference)?.id || "basic"} onSelectPlan={setSelectedPlan} onOpenTool={openPlanTool} onOpenDemo={startBankDemo} />}
         <ScreenHelp tab={tab} visible={tabHelpVisible} onClose={() => setTabHelpVisible(false)} />
         {["BankingDemo", "Billiam", "Debt"].includes(tab) && (
           <MoneyToolBack destination={tab === "Debt" ? debtEntry.back : tab === "Billiam" ? billiamBack : "Bills"} onBack={setTab} />
         )}
 
-        {tab === "Home" && (
-          <HomeScreen
+        {tab === "Finances" && (
+          <MyFinancesScreen
             finance={finance}
             onEssentials={setEssentialsPanel}
             upcomingTotal={upcomingTotal}
@@ -1870,16 +1901,9 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             safeToSpendDaily={safeToSpendDaily}
             switchTab={setTab}
             onDetective={openSubscriptionDetective}
-            onPayoffMethods={() => openDebt(true, "Home")}
-            onCabaret={() => setCabaretVisible(true)}
+            onPayoffMethods={() => openDebt(true, "Finances")}
             onStepsChange={next => setFinanceRaw(current => ({...current,smallSteps:next}))}
             onSavings={() => setSavingsVisible(true)}
-            mapPaused={tabHelpVisible || securityVisible || !!essentialsPanel || detectiveVisible || cabaretVisible || savingsVisible}
-            reduceAnimation={quiet.reduceAnimation}
-            onOpenMapDestination={next => {
-              if (next === "Billiam") openBilliam("Home");
-              else { setCalmBack("Home"); setTab(next); }
-            }}
           />
         )}
 
@@ -1952,14 +1976,21 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onCreditChange={text => updateNumber("creditScore", text)}
         />}
 
-        {tab === "Neighborhood" && <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
-          <SectionTitle title="Neighborhood" />
-          <LivingNeighborhood showTreehouses reduceAnimation={quiet.reduceAnimation} paused={tabHelpVisible || securityVisible || !!essentialsPanel}
-            onOpen={next => next === "Billiam" ? openBilliam("Neighborhood") : setTab(next)}
-            weatherZip={finance.neighborhoodWeatherZip}
-            onWeatherZip={zip => setFinanceRaw(current => ({ ...current, neighborhoodWeatherZip: zip }))}>
-            <NeighborhoodLinks onOpen={setTab} />
-          </LivingNeighborhood>
+        {onTownMap && <NeighborhoodMapScreen
+          canRotate={Platform.OS !== "web" && !rotationUnavailable} reduceAnimation={quiet.reduceAnimation}
+          paused={obscured || securityVisible || tabHelpVisible || !!essentialsPanel || cabaretVisible}
+          onOpen={next => {
+            if (next === "Billiam") openBilliam(tab);
+            else if (next === "Cabaret") setCabaretVisible(true);
+            else { if (next === "Calm") setCalmBack(tab); setTab(next); }
+          }}
+          safeToSpendDaily={safeToSpendDaily} daysUntilPayday={finance.daysUntilPayday}
+          showWelcome={!welcomeSeen && !obscured && !essentialsPanel && !sampleFinance}
+          onWelcomeSeen={seeWelcome}
+          weatherZip={finance.neighborhoodWeatherZip}
+          onWeatherZip={zip => setFinanceRaw(current => ({ ...current, neighborhoodWeatherZip: zip }))}
+          onHelp={() => setTabHelpVisible(true)} onSecurity={() => setSecurityVisible(true)}
+          onLeaveSample={sampleFinance ? endSample : null}>
           <ExpandableSection title="Annie’s porch & quiet tools">
             <FeatureLinks compact items={[
               {title:'I am overwhelmed',body:'Take a soft landing with Westley.',onPress:handleOverwhelmed},
@@ -1967,14 +1998,13 @@ Confidence: ${bill.confidence || "Confirmed"}`,
               {title:'Visit Annie again',body:'Revisit your welcome and answers.',onPress:replayAnnieOnboarding},
             ]} />
             <ExpandableSection title="A little care from Annie" artworkAction="annieCare" compact>
-              <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Home')} onCalm={()=>setTab('Calm')}/>
+              <NeighborCare finance={finance} onChange={next => setFinanceRaw(current => ({...current,annieCare:next}))} status={annieStatus} onSmallStep={()=>setTab('Finances')} onCalm={()=>setTab('Calm')}/>
             </ExpandableSection>
             <ExpandableSection title="Annie’s porch & today’s poster" artworkAction="anniePoster" compact>
               <NeighborhoodWelcome finance={finance} onQuiltMilestone={addQuiltSquare} reduceAnimation={quiet.reduceAnimation} switchTab={setTab} safeToSpendDaily={safeToSpendDaily} onDetective={openSubscriptionDetective}/>
             </ExpandableSection>
           </ExpandableSection>
-          <FacebookNeighborhood />
-        </ScrollView>}
+        </NeighborhoodMapScreen>}
         {tab === "Spa" && <MoneyToolBack destination="Neighborhood" onBack={setTab} />}
         {tab === "Calm" && <MoneyToolBack destination={calmBack} onBack={setTab} />}
         {tab === "Calm" && (
@@ -1991,19 +2021,19 @@ Confidence: ${bill.confidence || "Confirmed"}`,
 
         {tab === "Spa" && <PetSpa onGrooming={() => setMonthlyCalendarMode("grooming")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible || !!monthlyCalendarMode}
           library={finance.neighborhoodLibrary} onLibraryChange={changeLibrary} />}
-        {["Annie", "Bobbie", "Westley", "Tate", "Chapo"].includes(tab) && <NeighborRoom key={tab} destination={tab}
+        {["Annie", "Bobbie", "Westley", "Tate", "Chapo", "Daddy"].includes(tab) && <NeighborRoom key={tab} destination={tab}
           finance={finance} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "BankingDemo") openBankingDemo(); else if (next === "Billiam") openBilliam("Neighborhood"); else setTab(next); }}
           onMirrorAction={updateMirror}
           onLibraryChange={changeLibrary} onQuiltMilestone={addQuiltSquare}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
-        {recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
+        {!onTownMap && recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ flex: 1, color: palette.ink }}>Deleted {recentDeleted[0].collection === "bills" ? "bill" : "debt"}. You can bring it back.</Text>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Undo last deletion" onPress={() => undoDeletion(recentDeleted[0].key)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>Undo</Text></TouchableOpacity>
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="View recently deleted entries" onPress={() => setSecurityVisible(true)} style={{ padding: 8 }}><Text style={{ color: palette.purple, fontWeight: "800" }}>All</Text></TouchableOpacity>
         </View>}
-        <NeighborhoodNav current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />
+        {!onTownMap && <NeighborhoodNav current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />}
         {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
           canPrint={monthlyCalendarMode !== "view"} startGrooming={monthlyCalendarMode === "grooming"} onClose={() => setMonthlyCalendarMode(null)}
           onAppointmentsChange={groomingAppointments => setFinanceRaw(current => keepQuiltMilestones(current, { ...current, groomingAppointments }))} />}
@@ -2018,7 +2048,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         {categoriesVisible && <MerchantCategories key={`${sampleFinance ? 'sample' : 'personal'}-${deletionGeneration}`} visible
           onClose={() => setCategoriesVisible(false)} value={finance.categorization} onChange={saveCategories} sample={!!sampleFinance} />}
         {cabaretVisible && <BobbieCabaret visible onClose={() => setCabaretVisible(false)}
-          returnLabel={tab === "Home" ? "Back to Home" : undefined} />}
+          returnLabel={onTownMap ? "Back to the neighborhood" : tab === "Finances" ? "Back to My Finances" : undefined} />}
         <SubscriptionDetective visible={subscriptionPreview && detectiveVisible} onClose={() => setDetectiveVisible(false)}
           finance={finance} onAction={updateDetective} onBills={() => setTab("Bills")} />
         {securityPanel}
@@ -2111,6 +2141,35 @@ const ONBOARDING_STEPS = [
     keyboardType: "default",
     accent: palette.blue,
     optional: true,
+  },
+  {
+    key: "onboardingPayoffMethod",
+    mascot: "Daddy",
+    role: "Budget Coach",
+    question: "How would you like to pay down debt?",
+    helper: "You can change your method and record extra payments anytime under Payoff methods.",
+    image: portraits.daddy,
+    type: "choice",
+    optional: true,
+    options: [
+      { id: "snowball", title: "Snowball", detail: "Start with the smallest balance." },
+      { id: "avalanche", title: "Avalanche", detail: "Start with the highest interest rate." },
+      { id: "mixed", title: "Mixed", detail: "Pay off one small balance, then focus on the highest interest rate." },
+      { id: "later", title: "Decide later" },
+    ],
+    accent: palette.purple,
+  },
+  {
+    key: "planPreference",
+    question: "Which PayPlace plan interests you?",
+    helper: "Beta access is free. The monthly prices below are proposed. Your choice is saved for later.",
+    type: "choice",
+    optional: true,
+    options: [
+      ...payPlacePlans.map(plan => ({ id: plan.id, title: plan.name, detail: `${plan.price}/month · ${plan.onboardingSummary}`, artwork: plan.artwork })),
+      { id: "later", title: "Decide later" },
+    ],
+    accent: palette.purple,
   },
 ];
 
@@ -2253,26 +2312,34 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
               <View style={[styles.onboardingImage, {alignItems:"center"}]}>
                 <ActionArtwork action={step.artworkAction} size={210} />
               </View>
-            ) : <CharacterArtwork source={imageSource(step.image)} style={styles.onboardingImage} resizeMode="contain" />}
-            <View style={[styles.onboardingMascotBadge, { backgroundColor: step.accent }]}>
+            ) : step.image && <CharacterArtwork source={imageSource(step.image)} style={styles.onboardingImage} resizeMode="contain" />}
+            {step.mascot && <View style={[styles.onboardingMascotBadge, { backgroundColor: step.accent }]}>
               <Text style={styles.onboardingMascotName}>{step.mascot}</Text>
               <Text style={styles.onboardingMascotRole}>{step.role}</Text>
-            </View>
+            </View>}
             <Text style={styles.onboardingQuestion}>{step.question}</Text>
             <Text style={styles.onboardingHelper}>{step.helper}</Text>
 
             {step.type === "choice" ? (
               <View style={styles.onboardingChoices}>
                 {step.options.map((option) => {
-                  const selected = value === option;
+                  const { id, title, detail, artwork } = typeof option === "string" ? { id: option, title: option } : option;
+                  const selected = value === id;
                   return (
                     <TouchableOpacity
-                      key={option}
-                      onPress={() => choose(option)}
+                      key={id}
+                      onPress={() => choose(id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={detail ? `${title}. ${detail}` : title}
+                      accessibilityState={{ selected }}
                       style={[styles.onboardingChoice, selected && { borderColor: step.accent, backgroundColor: `${step.accent}16` }]}
                     >
+                      {artwork && <Image source={artwork} resizeMode="contain" accessible={false} style={{ width: 48, height: 48 }} />}
                       <Ionicons name={selected ? "checkmark-circle" : "ellipse-outline"} size={22} color={selected ? step.accent : palette.muted} />
-                      <Text style={[styles.onboardingChoiceText, selected && { color: palette.ink }]}>{option}</Text>
+                      <View style={styles.flexOne}>
+                        <Text style={[styles.onboardingChoiceText, selected && { color: palette.ink }]}>{title}</Text>
+                        {detail && <Text style={styles.onboardingHelper}>{detail}</Text>}
+                      </View>
                     </TouchableOpacity>
                   );
                 })}
@@ -2318,7 +2385,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
 }
 
 function Header({ onSecurity, onHelp, onPlans, tab }) {
-  const helpArt = tab === "Home" ? "homeGuide" : tab === "Debt" ? "debtHelp" : null;
+  const helpArt = tab === "Finances" ? "homeGuide" : tab === "Debt" ? "debtHelp" : null;
   return (
     <View style={styles.header}>
       <View style={styles.headerTopRow}>
@@ -2519,7 +2586,7 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
 
 
 function MoneyToolBack({ destination, onBack }) {
-  const label = destination === "Bills" ? "Bills & Banking" : destination;
+  const label = destination === "Bills" ? "Bills & Banking" : neighborhoodLabel(destination);
   return <TouchableOpacity accessibilityRole="button"
     accessibilityLabel={destination === "Bills" ? "Back to Bills and Banking" : `Back to ${label}`}
     onPress={() => onBack(destination)} style={{ minHeight: 48, paddingHorizontal: 18, paddingVertical: 8 }}>
@@ -2527,7 +2594,7 @@ function MoneyToolBack({ destination, onBack }) {
   </TouchableOpacity>;
 }
 
-function HomeScreen({
+function MyFinancesScreen({
   finance,
   onEssentials,
   upcomingTotal,
@@ -2537,12 +2604,8 @@ function HomeScreen({
   switchTab,
   onDetective,
   onPayoffMethods,
-  onCabaret,
   onSavings,
   onStepsChange,
-  onOpenMapDestination,
-  mapPaused,
-  reduceAnimation,
 }) {
   const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
@@ -2567,18 +2630,21 @@ function HomeScreen({
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
-      <LivingNeighborhood paused={mapPaused || guidanceVisible} reduceAnimation={reduceAnimation}
-        weatherZip={finance.neighborhoodWeatherZip} onOpen={onOpenMapDestination} />
-      <View style={[styles.safeHeroCard, { padding: 16 }]}>
-        <Text style={styles.safeHeroLabel}>SAFE TO SPEND</Text>
+      <SectionTitle title="My Finances" />
+      <View style={styles.safeHeroCard} testID="home-safe-to-spend">
+        <Text accessibilityRole="header" style={styles.safeHeroLabel}>Safe to Spend</Text>
         <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
         <Text style={styles.safeHeroSub}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
+        <View style={styles.safeHeroImageFrame}>
+          <FittedArtwork source={require("./assets/characters/payplace-art-studio.png")} aspectRatio={3 / 2}
+            testID="home-safe-to-spend-artwork" accessible={false} />
+        </View>
       </View>
       <NavigationTiles testID="home-shortcuts" items={[
         { title: "Review my bills", body: unpaidBills.length === 1 ? "1 unpaid bill" : `${unpaidBills.length} unpaid bills`, onPress: () => switchTab("Bills") },
         { title: "One small step", onPress: () => setGuidanceVisible(true) },
         { title: "Payoff methods", onPress: onPayoffMethods },
-        { title: "Bobbie’s Cabaret Show", onPress: onCabaret },
+        { title: "Budget", source: buildingArtwork("Budget"), onPress: () => switchTab("Budget") },
       ]} />
       <Modal
         visible={guidanceVisible}
@@ -2648,6 +2714,89 @@ function HomeScreen({
 }
 
 const neighborhoodTileFills = ['#FFB0A4', '#65EBEF', '#FFE455', '#DCABFF'];
+
+function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, weatherZip, onWeatherZip, onHelp, onSecurity, onLeaveSample, safeToSpendDaily, daysUntilPayday, showWelcome, onWelcomeSeen, children }) {
+  const { width, height } = useWindowDimensions();
+  const [menu, setMenu] = useState(false);
+  const [resident, setResident] = useState(null);
+  const weather = useNeighborhoodWeather(weatherZip);
+  const season = neighborhoodWelcomeTheme(useNeighborhoodClock());
+  const [openingTheme] = useState(() => showWelcome ? season : null);
+  const [fullMapRequested, setFullMapRequested] = useState(false);
+  const landscape = width > height;
+  const fullMap = landscape || fullMapRequested;
+  const choose = action => { onWelcomeSeen(); setMenu(false); setResident(null); action(); };
+  return <View style={{ flex: 1, backgroundColor: "#173C50" }} testID="neighborhood-map-screen">
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 10, backgroundColor: "#FFF8EA" }}>
+      <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
+        accessibilityLabel={menu ? "Close neighborhood menu" : "Open neighborhood menu"}
+        accessibilityState={{ expanded: menu }} onPress={() => { onWelcomeSeen(); setResident(null); setMenu(!menu); }}
+        style={{ minHeight: 44, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, gap: 5 }}>
+        <Image source={tabArtwork.Home} style={{ width: 36, height: 32 }} resizeMode="contain" accessible={false} />
+          <Text style={{ fontWeight: "800", color: palette.ink }}>{menu ? "Back to map" : "Menu"}</Text>
+      </TouchableOpacity>
+      {!landscape && !menu && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
+        accessibilityLabel={fullMap ? "Explore the map by swiping" : "Show the whole neighborhood map"}
+        onPress={() => { onWelcomeSeen(); setFullMapRequested(!fullMapRequested); }}
+        style={{ flex: 1, minHeight: 44, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, gap: 5 }}>
+        <Ionicons name="phone-landscape-outline" size={18} color={palette.purple} accessible={false} />
+        <Text style={{ flex: 1, color: palette.ink }}>{fullMap ? "Swipe view" : canRotate ? "Turn your phone for the full map" : "Show the full map"}</Text>
+      </TouchableOpacity>}
+    </View>
+    <View style={menu || resident ? { display: "none" } : styles.flexOne}
+      accessibilityElementsHidden={menu || !!resident} importantForAccessibility={menu || resident ? "no-hide-descendants" : "auto"}>
+      <LivingNeighborhood showTreehouses mapOnly fullMap={fullMap} reduceAnimation={reduceAnimation} paused={paused || menu || !!resident || showWelcome}
+        onOpen={next => choose(() => onOpen(next))} sharedWeather={weather} onMeet={setResident} openingTheme={openingTheme} />
+      {showWelcome && !menu && !resident && <NeighborhoodOpening theme={season} reduceAnimation={reduceAnimation} onFinish={onWelcomeSeen} />}
+    </View>
+    {!landscape && !fullMap && !menu && !resident && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
+      accessibilityLabel={`Safe to Spend, ${money(safeToSpendDaily)} per day. Open My Finances`} onPress={() => choose(() => onOpen("Finances"))}
+      style={styles.safeMapShortcut}>
+      <View style={styles.flexOne}>
+        <Text style={styles.safeHeroLabel}>Safe to Spend</Text>
+        <Text style={styles.safeMapAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
+        <Text style={styles.safeHeroSub}>{Math.max(Number(daysUntilPayday || 0), 1)} {Number(daysUntilPayday) > 1 ? "days" : "day"} to payday</Text>
+      </View>
+      <FittedArtwork source={require("./assets/characters/extra-paycheck-chapo-treat-rain.png")} style={styles.safeMapArtwork}
+        aspectRatio={3 / 2} testID="map-safe-to-spend-artwork" accessible={false} />
+    </TouchableOpacity>}
+    {resident && <ScrollView style={{ backgroundColor: "#FFF8EA" }} contentContainerStyle={{ padding: 14 }}>
+      <Text accessibilityRole="header" style={{ color: palette.ink, fontSize: 20, fontWeight: "800" }}>{resident.name} · {resident.job}</Text>
+      <Text style={{ color: palette.ink, marginVertical: 8 }}>{resident.activity} · {resident.place}</Text>
+      {resident.companions.length > 0 && <Text style={{ color: palette.ink }}>With {resident.companions.join(", ")}</Text>}
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Visit ${resident.place}`}
+        onPress={() => choose(() => onOpen(resident.destination))} style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 10 }}>
+        <Text style={{ color: palette.ink, fontWeight: "800" }}>Visit {resident.place}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to the neighborhood map"
+        onPress={() => setResident(null)} style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 10 }}>
+        <Text style={{ color: palette.ink, fontWeight: "800" }}>Back to the map</Text>
+      </TouchableOpacity>
+    </ScrollView>}
+    {menu && <View style={[styles.screen, { backgroundColor: "#FFF8EA" }]}>
+      <NeighborhoodNav current="Home" switchTab={next => choose(() => { if (next !== "Home") onOpen(next); })} />
+      <ScrollView contentContainerStyle={[styles.content, styles.tabContent]}>
+        {onLeaveSample && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan"
+          onPress={() => choose(onLeaveSample)} style={{ minHeight: 44, padding: 8 }}><Text>Return to my personal plan</Text></TouchableOpacity>}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 10 }}>
+          {[
+            ["Help", "How Home works", onHelp],
+            ["Plans", "Open PayPlace plans", () => onOpen("Plans")],
+            ["Security & backup", "Open Security & backup", onSecurity],
+          ].map(([label, accessibilityLabel, action]) => <TouchableOpacity key={label} accessibilityRole="button"
+            accessibilityLabel={accessibilityLabel} onPress={() => choose(action)}
+            style={{ minHeight: 44, justifyContent: "center", paddingHorizontal: 10 }}>
+            <Text style={{ color: palette.ink, fontWeight: "800" }}>{label}</Text>
+          </TouchableOpacity>)}
+        </View>
+        <NavigationTiles items={[{title: "Bobbie’s Cabaret Show", onPress: () => choose(() => onOpen("Cabaret"))}]} />
+        <NeighborhoodLinks onOpen={next => choose(() => onOpen(next))} />
+        <NeighborhoodTownLife weatherZip={weatherZip} weather={weather} onOpen={next => choose(() => onOpen(next))} onWeatherZip={onWeatherZip} />
+        {children}
+      </ScrollView>
+    </View>}
+  </View>;
+}
 
 function NeighborhoodLinks({ onOpen }) {
   return <>
@@ -3402,7 +3551,7 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
   const [addingDebt, setAddingDebt] = useState(false);
   const { width, fontScale } = useWindowDimensions();
   const stackStrategyArtwork = width < 370 || fontScale > 1.1;
-  const strategyArtworkWidth = Math.min(226, Math.floor((width - 80) * (stackStrategyArtwork ? 0.9 : 0.56)));
+  const strategyArtworkWidth = Math.min(192, Math.floor(width * 0.42));
   const [newDebt, setNewDebt] = useState({
     name: "",
     balance: "",
@@ -3753,6 +3902,7 @@ function CalmScreen({ pearl, count, nextPearl, category, collections, categoryOr
             open: () => { selectCategory(key); scroll.current?.scrollTo?.({ y: storyTop.current, animated: false }); },
           }))} />
         </CalmGardenScene>
+        <RoomVisitors destination="Calm" />
       </View>
       <Text style={styles.sectionSubtitle}>Tap a marked spot for a story.</Text>
 
@@ -4336,14 +4486,19 @@ const styles = StyleSheet.create({
   tabContent: { paddingBottom: 24 },
   bankingManualNote: { color: palette.ink, marginBottom: 10 },
   safeHeroCard: {
-    backgroundColor: palette.teal,
-    borderRadius: 30,
-    padding: 22,
+    backgroundColor: "#097A73",
+    borderRadius: 28,
+    padding: 20,
     marginTop: 4,
+    marginBottom: 12,
     overflow: "hidden",
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.35)",
   },
+  safeMapShortcut: { margin: 10, padding: 10, gap: 10, flexDirection: "row", alignItems: "center",
+    backgroundColor: "#097A73", borderColor: "#60CFCB" },
+  safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
+  safeMapArtwork: { width: "39%", maxWidth: 132, flexShrink: 0, borderRadius: 12 },
   safeHeroGlowOne: {
     position: "absolute",
     width: 200,
@@ -4370,10 +4525,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   safeHeroLabel: {
-    color: "#EFFFFB",
-    fontSize: 13,
+    color: "#C4FCFF",
+    fontSize: 16,
     fontWeight: "900",
-    letterSpacing: 1.2,
   },
   safeHeroPill: {
     backgroundColor: "rgba(255,255,255,0.78)",
@@ -4387,32 +4541,26 @@ const styles = StyleSheet.create({
     fontWeight: "900",
   },
   safeHeroAmount: {
-    color: palette.ink,
-    fontSize: 54,
+    color: "#BDFBFF",
+    fontSize: 48,
     fontWeight: "900",
-    marginTop: 10,
+    marginTop: 4,
   },
   safeHeroSub: {
-    color: "rgba(7, 26, 58, 0.78)",
-    fontSize: 15,
-    marginTop: 4,
-    fontWeight: "800",
+    color: "#C4FCFF",
+    fontSize: 14,
+    marginTop: 5,
+    fontWeight: "700",
   },
   safeHeroImageFrame: {
     width: "100%",
-    height: 172,
-    borderRadius: 25,
+    maxWidth: 520,
+    alignSelf: "center",
+    borderRadius: 18,
+    marginTop: 14,
+    borderWidth: 2,
+    borderColor: "#BDFBFF",
     overflow: "hidden",
-    marginTop: 16,
-    borderWidth: 3,
-    borderColor: "rgba(255,255,255,0.78)",
-    backgroundColor: "rgba(255,255,255,0.22)",
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#071A3A",
-    shadowOpacity: 0.16,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 10 },
   },
   safeHeroDogsImage: {
     width: "100%",

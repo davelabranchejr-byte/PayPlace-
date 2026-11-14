@@ -5,7 +5,7 @@
     "icon": "./assets/branding/payplace-icon.png",
     "slug": "payplace",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "light",
     "platforms": [
       "ios",
@@ -20,7 +20,7 @@
     "ios": {
       "icon": "./assets/branding/payplace-icon.png",
       "bundleIdentifier": "com.davelabranchejr.payplace",
-      "buildNumber": "63",
+      "buildNumber": "70",
       "supportsTablet": false
     },
     "android": {
@@ -33,6 +33,10 @@
       }
     },
     "plugins": [
+      [
+        "expo-screen-orientation",
+        { "initialOrientation": "PORTRAIT_UP" }
+      ],
       [
         "expo-secure-store",
         {
