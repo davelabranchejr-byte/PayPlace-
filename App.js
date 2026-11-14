@@ -2776,8 +2776,8 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
       </TouchableOpacity>
     </ScrollView>}
     {menu && <View style={[styles.screen, { backgroundColor: "#FFF8EA" }]}>
-      <NeighborhoodNav current="Home" switchTab={next => choose(() => { if (next !== "Home") onOpen(next); })} />
       <ScrollView contentContainerStyle={[styles.content, styles.tabContent]}>
+        <NeighborhoodNav artworkFirst current="Home" switchTab={next => choose(() => { if (next !== "Home") onOpen(next); })} />
         {onLeaveSample && <TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan"
           onPress={() => choose(onLeaveSample)} style={{ minHeight: 44, padding: 8 }}><Text>Return to my personal plan</Text></TouchableOpacity>}
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginVertical: 10 }}>
@@ -2791,7 +2791,7 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
             <Text style={{ color: palette.ink, fontWeight: "800" }}>{label}</Text>
           </TouchableOpacity>)}
         </View>
-        <NavigationTiles items={[{title: "Bobbie’s Cabaret Show", onPress: () => choose(() => onOpen("Cabaret"))}]} />
+        <NavigationTiles largeArtwork items={[{title: "Bobbie’s Cabaret Show", onPress: () => choose(() => onOpen("Cabaret"))}]} />
         <NeighborhoodLinks onOpen={next => choose(() => onOpen(next))} />
         <NeighborhoodTownLife weatherZip={weatherZip} weather={weather} onOpen={next => choose(() => onOpen(next))} onWeatherZip={onWeatherZip} />
         {children}
@@ -2803,7 +2803,7 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
 function NeighborhoodLinks({ onOpen }) {
   return <>
     <Text style={styles.sectionSubtitle}>Swipe for places to visit.</Text>
-    <NavigationTiles testID="neighborhood-destinations" horizontal items={NEIGHBOR_DESTINATIONS.map((place, index) => ({
+    <NavigationTiles testID="neighborhood-destinations" horizontal largeArtwork items={NEIGHBOR_DESTINATIONS.map((place, index) => ({
       title: place.label,
       source: buildingArtwork(place.id),
       colors: { fill: neighborhoodTileFills[index % neighborhoodTileFills.length], border: place.color },
