@@ -1,0 +1,81 @@
+name: Inspect PayPlace build 75 in App Store Connect
+
+on:
+  push:
+    branches: [release/ios-75-store-prep]
+    paths: [.github/workflows/inspect-payplace-version.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix "$RUNNER_TEMP/payplace-eas" --no-audit --no-fund eas-cli@latest
+      - name: Read only the PayPlace build, version and review status
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          node <<'NODE'
+          const { createSign } = require('node:crypto');
+          const root = process.env.RUNNER_TEMP + '/payplace-eas/node_modules/eas-cli/build/';
+          const { createGraphqlClient } = require(root + 'commandUtils/context/contextUtils/createGraphqlClient');
+          const { getOwnerAccountForProjectIdAsync } = require(root + 'project/projectUtils');
+          const { getAscApiKeyForAppSubmissionsAsync } = require(root + 'credentials/ios/api/GraphqlClient');
+          const { AppStoreConnectApiKeyQuery } = require(root + 'graphql/queries/AppStoreConnectApiKeyQuery');
+          const appId = '6793296732';
+          const bundleIdentifier = 'com.davelabranchejr.payplace';
+          async function main() {
+            const client = createGraphqlClient({ accessToken: process.env.EXPO_TOKEN, sessionSecret: null });
+            const account = await getOwnerAccountForProjectIdAsync(client, '4be1e462-b04c-492b-bb9e-d922655dba9f');
+            const keyReference = await getAscApiKeyForAppSubmissionsAsync(client, { account, projectName: 'payplace', bundleIdentifier });
+            if (!keyReference) throw new Error('The project has no saved App Store Connect key.');
+            const key = await AppStoreConnectApiKeyQuery.getByIdAsync(client, keyReference.id);
+            const now = Math.floor(Date.now() / 1000);
+            const identity = key.issuerIdentifier ? { iss: key.issuerIdentifier } : { sub: 'user' };
+            const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url');
+            const header = encode({ alg: 'ES256', kid: key.keyIdentifier, typ: 'JWT' });
+            const payload = encode({ ...identity, iat: now, exp: now + 600, aud: 'appstoreconnect-v1' });
+            const signed = header + '.' + payload;
+            const signature = createSign('SHA256').update(signed).sign({ key: key.keyP8, dsaEncoding: 'ieee-p1363' }).toString('base64url');
+            const token = signed + '.' + signature;
+            async function get(path) {
+              const response = await fetch('https://api.appstoreconnect.apple.com/v1/' + path, {
+                headers: { Authorization: 'Bearer ' + token }, signal: AbortSignal.timeout(15000),
+              });
+              const body = await response.json();
+              return { status: response.status, data: body.data ?? [], errors: body.errors?.map(item => item.code) };
+            }
+            const [app, versions, builds, reviews, availability] = await Promise.all([
+              get('apps/' + appId),
+              get('apps/' + appId + '/appStoreVersions?filter%5Bplatform%5D=IOS&include=build&limit=20'),
+              get('builds?filter%5Bapp%5D=' + appId + '&filter%5Bversion%5D=75&limit=10'),
+              get('reviewSubmissions?filter%5Bapp%5D=' + appId + '&limit=10'),
+              get('apps/' + appId + '/appAvailabilityV2'),
+            ]);
+            function report(label, result, select) {
+              const records = Array.isArray(result.data) ? result.data : [result.data];
+              console.log(label, JSON.stringify({ status: result.status, errors: result.errors, records: records.map(select) }));
+            }
+            report('App', app, item => ({ name: item.attributes?.name, locale: item.attributes?.primaryLocale }));
+            report('Versions', versions, item => ({ version: item.attributes?.versionString, state: item.attributes?.appVersionState ?? item.attributes?.appStoreState, build: item.relationships?.build?.data?.id ?? null, releaseType: item.attributes?.releaseType }));
+            report('Build 75', builds, item => ({ id: item.id, state: item.attributes?.processingState, expired: item.attributes?.expired, nonExemptEncryption: item.attributes?.usesNonExemptEncryption }));
+            report('Review submissions', reviews, item => ({ state: item.attributes?.state, platform: item.attributes?.platform }));
+            report('Availability', availability, item => ({ availableInNewTerritories: item.attributes?.availableInNewTerritories }));
+            for (const version of versions.data ?? []) {
+              if (version.attributes?.versionString !== '1.0.0') continue;
+              const [locales, detail] = await Promise.all([
+                get('appStoreVersions/' + version.id + '/appStoreVersionLocalizations?include=appScreenshotSets&limit=20'),
+                get('appStoreVersions/' + version.id + '/appStoreReviewDetail'),
+              ]);
+              report('Version 1.0.0 listing', locales, item => ({ locale: item.attributes?.locale, hasDescription: Boolean(item.attributes?.description), hasSupportUrl: Boolean(item.attributes?.supportUrl), screenshotSets: item.relationships?.appScreenshotSets?.data?.length ?? 0 }));
+              report('Review details', detail, item => ({ hasContact: Boolean(item.attributes?.contactEmail && item.attributes?.contactPhone), hasNotes: Boolean(item.attributes?.notes), demoAccountRequired: item.attributes?.demoAccountRequired }));
+            }
+          }
+          main().catch(error => { console.error('Unable to complete the read-only Apple status check:', error.name); process.exitCode = 1; });
+          NODE
