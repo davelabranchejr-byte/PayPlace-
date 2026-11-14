@@ -5,41 +5,42 @@ const residents = {
   westley: { name: 'Westley', job: 'Chaos coach', home: 'Westley', homeLabel: 'Westley’s den', rest: 'Resting in his den', shifts: [
     [7, 9, 'Calm', 'Calm Garden', 'Making morning rounds with Tate', 'bridge'],
     [9, 13, 'Calm', 'Calm Garden', 'Helping neighbors take a breather'],
-    [13, 16, 'Spa', 'Em’s Pet Spa', 'Checking in on spa guests', 'right'],
-    [16, 19, 'Annie', 'Annie’s house', 'Returning a library book', 'left'],
+    [13, 16, 'Spa', 'Em’s Pet Spa', 'Checking in on spa guests', 'arrival'],
+    [16, 19, 'Annie', 'Annie’s house', 'Returning a library book', 'arrival'],
   ] },
   tate: { name: 'Tate', job: 'Tiny wins coach', home: 'Tate', homeLabel: 'Tate’s hangout', rest: 'Calling it a day', shifts: [
     [8, 9, 'Calm', 'Calm Garden', 'Making morning rounds with Westley', 'bridge'],
     [9, 11, 'Tate', 'Tate’s hangout', 'Cheering on small steps'],
     [11, 14, 'Billiam', 'Billiam’s mailbox', 'Helping with the mail route', 'left'],
-    [14, 18, 'Chapo', 'Chapo’s kitchen', 'Picking up a snack', 'bridge'],
+    [14, 18, 'Chapo', 'Chapo’s kitchen', 'Picking up a snack', 'arrival'],
   ] },
   bobbie: { name: 'Bobbie', job: 'Boutique owner', home: 'Bobbie', homeLabel: 'Bobbie’s boutique', rest: 'Putting the wigs to bed', shifts: [
     [9, 12, 'Bobbie', 'Bobbie’s boutique', 'Setting out new looks'],
-    [12, 15, 'Spa', 'Em’s Pet Spa', 'Dropping off a styling kit', 'right'],
-    [15, 18, 'Bobbie', 'Bobbie’s boutique', 'Putting together her cabaret look', 'bridge'],
-    [18, 21, 'Cabaret', 'Bobbie’s Cabaret', 'Hosting the show'],
+    [12, 15, 'Spa', 'Em’s Pet Spa', 'Dropping off a styling kit', 'arrival'],
+    [15, 18, 'Bobbie', 'Bobbie’s boutique', 'Putting together her cabaret look', 'arrival'],
+    [18, 21, 'Cabaret', 'Bobbie’s Cabaret', 'Hosting the show', 'arrival'],
   ] },
   chapo: { name: 'Chapo', job: 'Neighborhood baker', home: 'Chapo', homeLabel: 'Chapo’s kitchen', rest: 'Napping after a long day of snacks', shifts: [
     [6, 10, 'Chapo', 'Chapo’s kitchen', 'Baking the morning buns'],
-    [10, 13, 'Annie', 'Annie’s house', 'Delivering fresh buns', 'left'],
-    [13, 18, 'Chapo', 'Chapo’s kitchen', 'Back in the kitchen', 'right'],
+    [10, 13, 'Annie', 'Annie’s house', 'Delivering fresh buns', 'arrival'],
+    [13, 18, 'Chapo', 'Chapo’s kitchen', 'Back in the kitchen', 'arrival'],
   ] },
   daddy: { name: 'Daddy', job: 'Budget coach', home: 'Daddy', homeLabel: 'Daddy’s house', rest: 'Unwinding at home', shifts: [
-    [8, 11, 'Budget', 'Budget Corner', 'Helping neighbors make a plan', 'right'],
-    [11, 14, 'Billiam', 'Billiam’s mailbox', 'Checking in on Billiam', 'left'],
-    [14, 16, 'Annie', 'Annie’s house', 'Stopping by the family gallery', 'bridge'],
-    [16, 19, 'Daddy', 'Daddy’s house', 'Reading neighborhood mail'],
+    [7, 11, 'Daddy', 'Daddy’s workshop', 'Working on the PayPlace app'],
+    [11, 12, 'Billiam', 'Billiam’s mailbox', 'Taking a walk to check the mail', 'left'],
+    [12, 16, 'Daddy', 'Daddy’s workshop', 'Building and testing the PayPlace app', 'arrival'],
+    [16, 17, 'Calm', 'Calm Garden', 'Stretching his legs with a walk through the garden', 'bridge'],
+    [17, 20, 'Daddy', 'Daddy’s workshop', 'Finishing up work on the PayPlace app', 'arrival'],
   ] },
   billiam: { name: 'Billiam', job: 'Mail carrier', home: 'Billiam', homeLabel: 'Billiam’s mailbox', rest: 'Sorting tomorrow’s mail', shifts: [
-    [7, 10, 'Billiam', 'Billiam’s mailbox', 'Taking the morning mail out', 'left'],
+    [7, 10, 'Billiam', 'Billiam’s mailbox', 'Taking the morning mail out', 'mail-out'],
     [10, 13, 'Annie', 'Annie’s house', 'Dropping off mail for Annie', 'bridge'],
     [13, 17, 'Spa', 'Em’s Pet Spa', 'Delivering the afternoon mail', 'right'],
   ] },
   em: { name: 'Em', job: 'Pet groomer', home: 'Spa', homeLabel: 'Em’s Pet Spa', rest: 'Settling the spa guests in', shifts: [
     [8, 12, 'Spa', 'Em’s Pet Spa', 'Grooming the morning guests'],
     [12, 14, 'Calm', 'Calm Garden', 'Taking a garden break', 'bridge'],
-    [14, 19, 'Spa', 'Em’s Pet Spa', 'Grooming guests and getting towels ready', 'right'],
+    [14, 19, 'Spa', 'Em’s Pet Spa', 'Grooming guests and getting towels ready', 'arrival'],
   ] },
 };
 
@@ -50,7 +51,9 @@ export function neighborhoodResidents(date) {
   const morningDelay = weekend && hour < 12 ? 1 : 0;
   const current = Object.entries(residents).map(([id, resident]) => {
     const shift = resident.shifts.find(([start, end]) => hour - morningDelay >= start && hour - morningDelay < end);
-    const [, , destination, place, activity, path] = shift || [0, 0, resident.home, resident.homeLabel, resident.rest];
+    const [start, , destination, place, activity, scheduledPath] = shift || [0, 0, resident.home, resident.homeLabel, resident.rest];
+    const arriving = hour - morningDelay === start && date.getMinutes() < 15;
+    const path = scheduledPath === 'arrival' && !arriving ? undefined : scheduledPath;
     return { id, name: resident.name, job: resident.job, destination, place, activity, path };
   });
   return current.map(resident => ({
@@ -71,6 +74,28 @@ export function neighborhoodWalkers(residents, date) {
   const featured = groups.find(group => group.length > 1) || [];
   return [...featured, ...rotated.filter(resident => !featured.includes(resident))].slice(0, 3);
 }
+
+// Each point marks foot placement on the 3:1 panorama. Building approaches
+// end at doors or stairs. Upper rooms use the painted balcony walkways.
+const houseApproach = [[0.485, 0.968], [0.449, 0.955], [0.43, 0.92], [0.405, 0.861], [0.39, 0.823]];
+const spaApproach = [[0.542, 0.96], [0.586, 0.948], [0.612, 0.917], [0.642, 0.89], [0.654, 0.869]];
+const approaches = {
+  Annie: [[0.752, 0.499], [0.775, 0.482], [0.802, 0.457], [0.823, 0.441], [0.845, 0.432]],
+  Billiam: [[0.424, 0.925], [0.397, 0.874], [0.362, 0.854], [0.321, 0.861], [0.271, 0.838]],
+  Bobbie: [[0.961, 0.741], [0.948, 0.743], [0.924, 0.758], [0.909, 0.759]],
+  Calm: [[0.609, 0.851], [0.575, 0.827], [0.547, 0.815], [0.519, 0.827], [0.496, 0.843]],
+  Cabaret: [[0.719, 0.973], [0.747, 0.942], [0.778, 0.91], [0.801, 0.865]],
+  Chapo: [[0.782, 0.629], [0.772, 0.615], [0.757, 0.61], [0.743, 0.601]],
+  Daddy: houseApproach,
+  Spa: spaApproach,
+};
+
+export function neighborhoodWalkRoute(resident) {
+  if (resident.path === 'mail-out') return mailDeparture;
+  return resident.path ? approaches[resident.destination] : undefined;
+}
+
+const mailDeparture = [...approaches.Billiam].reverse();
 
 export function seasonalNeighborhoodWeather(date) {
   const month = date.getMonth();

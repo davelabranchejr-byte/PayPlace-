@@ -1,8 +1,9 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useRef, useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import FittedArtwork from './FittedArtwork';
+import IllustratedButton from './IllustratedButton';
 import { CATEGORY_CHOICES, UTILITY_CATEGORIES, categoryAction, categoryAmountCents, categoryState, purchaseCategory } from './merchant-categories.mjs';
 
 const art = {
@@ -22,6 +23,14 @@ const art = {
   'Gas Bill': require('../assets/categories/gas-bill.jpg'),
 };
 const colors = ['#7842D2', '#FF8479', '#14C8BD', '#FFE34F'];
+const purchaseArtwork = {
+  back: require('../assets/actions/purchases-return.jpg'),
+  purchases: require('../assets/actions/purchases-list.jpg'),
+  remembered: require('../assets/actions/purchases-remembered.jpg'),
+  add: require('../assets/actions/purchases-add.jpg'),
+  allAccounts: require('../assets/actions/purchases-all-accounts.jpg'),
+  account: require('../assets/actions/purchases-account.jpg'),
+};
 const ink = '#132547';
 const dollars = cents => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 const newId = prefix => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -54,7 +63,7 @@ const bankingCategoryArtwork = require('../assets/characters/feature-purchase-ca
 export function CategoryEntry({ onOpen, inBanking = false, compact = false }) {
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Open purchases and remembered categories"
     onPress={onOpen} style={[s.entry, compact && s.entryCompact]}>
-    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={compact ? 3 / 2 : 1} resizeMode="cover" accessible={false} />
+    <FittedArtwork source={inBanking ? bankingCategoryArtwork : budgetCategoryArtwork} aspectRatio={1} accessible={false} />
     <View style={s.entryCopy}>
       <Text style={s.title}>{compact ? 'Purchases & categories' : 'Your purchases. Your categories.'}</Text>
       {!compact && <>
@@ -65,6 +74,10 @@ export function CategoryEntry({ onOpen, inBanking = false, compact = false }) {
   </TouchableOpacity>;
 }
 export default function MerchantCategories({ visible, onClose, value, onChange, sample = false }) {
+  const { width, fontScale } = useWindowDimensions();
+  const stackArtwork = width < 340 || fontScale > 1.2;
+  const artworkTiles = [s.artworkTiles, stackArtwork && s.stackedArtworkTiles];
+  const artworkTile = stackArtwork ? s.stackedArtworkTile : s.artworkTile;
   const state = categoryState(value);
   const [page, setPage] = useState('purchases'), [draft, setDraft] = useState(null);
   const [accountFilter, setAccountFilter] = useState(null), [newAccount, setNewAccount] = useState('');
@@ -113,7 +126,9 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
   const purchases = state.transactions.filter(t => !accountFilter || t.accountId === accountFilter).slice().reverse();
   return <Modal visible={visible} animationType="slide" onRequestClose={() => { if (!busy) { if (draft) setDraft(null); else onClose(); } }}>
     <SafeAreaView style={s.surface}><KeyboardAvoidingView style={s.surface} behavior={Platform.OS === 'ios' ? 'padding' : undefined}><ScrollView style={s.surface} contentContainerStyle={s.page} keyboardShouldPersistTaps="handled" pointerEvents={busy ? 'none' : 'auto'}>
-      <Button title={draft ? '← My categories' : '← Back to my neighborhood'} disabled={busy} onPress={() => { if (draft) setDraft(null); else { setUndo(null); onClose(); } }} color="#FFE34F"/>
+      {draft ? <Button title="← My categories" disabled={busy} onPress={() => setDraft(null)} color="#FFE34F" />
+        : <IllustratedButton label="← Back to my neighborhood" artwork={purchaseArtwork.back} style={s.artworkBanner}
+          disabled={busy} onPress={() => { setUndo(null); onClose(); }} />}
       <Text accessibilityRole="header" style={s.title}>{draft ? draft.ruleId ? `Remember ${draft.merchant}` : 'Where does this belong?' : 'Your purchases. Your categories.'}</Text>
       <Text style={s.body}>{sample ? 'Sample plan · These choices stay in the demo.' : 'Your choices stay on this device and travel with your encrypted backup.'}</Text>
       {!draft && <Text style={s.note}>Add purchases manually today. Bank transaction imports are still to come. These records organize purchases; they do not subtract from your balance.</Text>}
@@ -155,10 +170,17 @@ export default function MerchantCategories({ visible, onClose, value, onChange, 
           <Button title="Use one category instead" color="#FF8479" onPress={() => change({ splits: undefined })}/>
         </View>}
       </> : <>
-        <View style={s.chips}><Button title="Purchases" selected={page === 'purchases'} color="#14C8BD" onPress={() => setPage('purchases')}/><Button title="Remembered categories" selected={page === 'rules'} onPress={() => setPage('rules')}/></View>
+        <View style={artworkTiles}>
+          <IllustratedButton style={artworkTile} label="Purchases" artwork={purchaseArtwork.purchases} selected={page === 'purchases'} onPress={() => setPage('purchases')} />
+          <IllustratedButton style={artworkTile} label="Remembered categories" artwork={purchaseArtwork.remembered} selected={page === 'rules'} onPress={() => setPage('rules')} />
+        </View>
         {page === 'purchases' ? <>
-          <Button title="+ Add a purchase" color="#FFE34F" onPress={() => openPurchase(null)}/>
-          <View style={s.chips}><Button title="All accounts" color="#FF8479" selected={accountFilter === null} onPress={() => setAccountFilter(null)}/>{state.accounts.map(a => <Button key={a.id} title={a.name} color="#14C8BD" selected={accountFilter === a.id} onPress={() => setAccountFilter(a.id)}/>)}</View>
+          <IllustratedButton label="+ Add a purchase" artwork={purchaseArtwork.add} style={s.artworkBanner} onPress={() => openPurchase(null)} />
+          <View style={artworkTiles}>
+            <IllustratedButton style={artworkTile} label="All accounts" artwork={purchaseArtwork.allAccounts} selected={accountFilter === null} onPress={() => setAccountFilter(null)} />
+            {state.accounts.map(account => <IllustratedButton key={account.id} style={artworkTile} label={account.name}
+              artwork={purchaseArtwork.account} selected={accountFilter === account.id} onPress={() => setAccountFilter(account.id)} />)}
+          </View>
           {!purchases.length && <View style={s.card}><Text style={s.heading}>Every purchase gets a place</Text><Text style={s.body}>Add your first purchase, choose its category, and tell us whether to remember it.</Text></View>}
           {purchases.map(t => { const chosen = purchaseCategory(state, t); return <View key={t.id} style={s.card}>
             <Text style={s.heading}>{t.merchant} · {dollars(t.amountCents)}</Text><Text style={s.note}>{accountName(t.accountId)} · {t.date}</Text>
@@ -184,6 +206,11 @@ const s = StyleSheet.create({
   title: { color: ink, fontSize: 25, fontWeight: '900' }, heading: { color: ink, fontSize: 18, fontWeight: '800' }, body: { color: '#334660', fontSize: 16, lineHeight: 24 }, note: { color: '#43546B', fontSize: 14, lineHeight: 21 }, label: { color: ink, fontWeight: '800', fontSize: 16 },
   card: { padding: 16, borderRadius: 22, backgroundColor: 'white', gap: 12, borderWidth: 1, borderColor: '#DCE9F0' },
   button: { minHeight: 48, borderRadius: 16, padding: 14, borderWidth: 3, borderColor: 'transparent', justifyContent: 'center' }, buttonText: { fontSize: 16, fontWeight: '800', textAlign: 'center', flexShrink: 1 }, selected: { borderColor: ink },
+  artworkBanner: { aspectRatio: 2, minHeight: 108 },
+  artworkTiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  stackedArtworkTiles: { flexDirection: 'column' },
+  artworkTile: { flexBasis: '46%', flexGrow: 1, minHeight: 103 },
+  stackedArtworkTile: { width: '100%', minHeight: 100 },
   input: { backgroundColor: 'white', color: ink, borderWidth: 1, borderColor: '#8797AB', minHeight: 50, padding: 12, borderRadius: 12, fontSize: 17 },
   tiles: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 }, tile: { flexBasis: '48%', flexGrow: 0, minWidth: 120, borderRadius: 24, borderWidth: 3, borderColor: 'rgba(255,255,255,.9)', overflow: 'hidden', justifyContent: 'flex-start', minHeight: 60 }, tileText: { fontSize: 18, lineHeight: 24, fontWeight: '900', textAlign: 'center', padding: 8, minHeight: 48 },
   footer: { padding: 16, paddingBottom: 34, backgroundColor: 'white', borderTopWidth: 1, borderTopColor: '#DCE9F0' },

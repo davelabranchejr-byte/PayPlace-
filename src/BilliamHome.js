@@ -82,7 +82,7 @@ export default function BilliamHome({finance,onAdd,onUpdate,onTemplates,onHouseh
     })} />
     <Text style={s.body}>Tap a marked station for help with your bills.</Text>
     <RoomVisitors destination="Billiam" />
-    <EntrySheet visible={!!task} title={task?.title || 'Billiam'} onClose={()=>setTool(null)}>
+    <EntrySheet visible={!!task} title={task?.title || 'Billiam'} closeScene={task?.id} onClose={()=>setTool(null)}>
       {task?.image && <FittedArtwork source={task.image} style={s.taskArt} testID={`billiam-${task.id}-artwork`} accessible={false} />}
       {tool==='scan'&&<BillScanner initialOpen bills={bills} onAdd={onAdd} onUpdate={onUpdate} history={history} templates={templates} onRecurring={recurring}/>}
       {(tool==='import'||tool==='batch')&&<ImportReview batch={tool==='batch'} bills={bills} history={history} templates={templates} onAdd={onAdd} onUpdate={onUpdate} onRecurring={recurring}/>}

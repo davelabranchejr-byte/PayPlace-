@@ -7,9 +7,9 @@ import FittedArtwork from './FittedArtwork';
 import { Text } from './Privacy';
 import { featureArtworkForTitle } from './action-artwork.mjs';
 
-export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false }) {
+export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false, stackedArtworkRatio }) {
   const { width, fontScale } = useWindowDimensions();
-  const singleColumn = !horizontal && (width < 340 || fontScale > 1.2);
+  const singleColumn = !horizontal && (stackedArtworkRatio || width < 340 || fontScale > 1.2);
   const featured = largeArtwork && !horizontal;
   const tileWidth = largeArtwork && horizontal ? Math.min(250, width * 0.61) : fontScale > 1.2 ? Math.min(230, width * 0.72) : Math.min(172, Math.max(132, width * 0.4));
   const tiles = items.map(({ title, body, source, artworkAction, colors, accessibilityLabel, onPress }) => {
@@ -27,7 +27,8 @@ export default function NavigationTiles({ items, testID, horizontal = false, lar
           featured && s.featuredTile]}>
         {artwork?.crop
           ? <CharacterArtwork source={artwork} style={[s.atlas, { aspectRatio: artwork.crop[2] / artwork.crop[3] }]} accessible={false} />
-          : artwork && <FittedArtwork source={artwork} aspectRatio={ratio} resizeMode="cover" accessible={false} />}
+          : artwork && <FittedArtwork source={artwork} aspectRatio={stackedArtworkRatio || ratio}
+            resizeMode={stackedArtworkRatio ? 'contain' : 'cover'} accessible={false} />}
         <View style={[s.copy, singleColumn && !artwork && s.wideCopy, artwork && s.illustratedCopy]}>
           <Text style={[s.title, singleColumn && !artwork && s.left]}>{title}</Text>
           {body && <Text style={[s.body, singleColumn && !artwork && s.left]}>{body}</Text>}

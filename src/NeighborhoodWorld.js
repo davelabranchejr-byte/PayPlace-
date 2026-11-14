@@ -5,18 +5,41 @@ import { portraits } from './characters';
 import ExpandableSection from './ExpandableSection';
 import { Text, TextInput } from './Privacy';
 import { isWeatherZip } from './neighborhood-local-weather.mjs';
-import { neighborhoodResidents, neighborhoodWeatherNames } from './neighborhood-world.mjs';
+import { neighborhoodResidents, neighborhoodWalkRoute, neighborhoodWeatherNames } from './neighborhood-world.mjs';
 import useNeighborhoodClock from './useNeighborhoodClock';
 
 const sprites = {
-  daddy: require('../assets/characters/town-daddy.png'),
-  billiam: require('../assets/characters/town-billiam.png'),
-  em: require('../assets/characters/town-em.png'),
+  daddy: { source: require('../assets/characters/town-daddy.png'), walk: require('../assets/characters/town-daddy-walk.png'), scale: 1, stepMs: 84 },
+  billiam: { source: require('../assets/characters/town-billiam.png'), walk: require('../assets/characters/town-billiam-walk.png'), scale: 0.86, stepMs: 75 },
+  em: { source: require('../assets/characters/town-em.png'), walk: require('../assets/characters/town-em-walk.png'), scale: 1, stepMs: 86 },
+  westley: { source: require('../assets/characters/town-westley.png'), walk: require('../assets/characters/town-westley-walk.png'), scale: 0.70, stepMs: 70 },
+  tate: { source: require('../assets/characters/town-tate.png'), walk: require('../assets/characters/town-tate-walk.png'), scale: 0.61, stepMs: 63 },
+  bobbie: { source: require('../assets/characters/town-bobbie.png'), walk: require('../assets/characters/town-bobbie-walk.png'), scale: 0.88, stepMs: 94 },
+  chapo: { source: require('../assets/characters/town-chapo.png'), walk: require('../assets/characters/town-chapo-walk.png'), scale: 0.66, stepMs: 87 },
 };
+
+const WALK_FRAMES = 8;
+const WALK_FRAME_HEIGHT = 137 / 150;
+
+function WalkArtwork({ sprite, size, facing }) {
+  const [frame, setFrame] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setFrame(previous => (previous + 1) % WALK_FRAMES), sprite.stepMs);
+    return () => clearInterval(timer);
+  }, [sprite.stepMs]);
+
+  const frameWidth = size * 1.2;
+  const frameHeight = frameWidth * WALK_FRAME_HEIGHT;
+  return <View pointerEvents="none" style={{ position: 'absolute', width: frameWidth, height: frameHeight,
+    left: (size - frameWidth) / 2, bottom: -frameHeight * 0.075, overflow: 'hidden', transform: [{ scaleX: facing }] }}>
+    <Image source={sprite.walk} resizeMode="stretch" accessible={false}
+      style={{ position: 'absolute', top: 0, left: -frame * frameWidth, width: frameWidth * WALK_FRAMES, height: frameHeight }} />
+  </View>;
+}
 
 function ResidentArt({ id, size }) {
   const style = { width: size, height: size };
-  if (sprites[id]) return <Image source={sprites[id]} resizeMode="contain" accessible={false} style={style} />;
+  if (sprites[id]) return <Image source={sprites[id].source} resizeMode="contain" accessible={false} style={style} />;
   return <View style={[s.portraitFrame, style]} accessible={false} importantForAccessibility="no-hide-descendants">
     <CharacterArtwork source={portraits[id]} style={style} resizeMode="cover" />
   </View>;
@@ -38,15 +61,15 @@ export function RoomVisitors({ destination }) {
   </View>;
 }
 
-const routes = {
-  left: [0.43, 0.96, 0.29, 0.84],
-  bridge: [0.47, 0.96, 0.56, 0.85],
-  right: [0.62, 0.89, 0.73, 0.77],
-};
-
-function Walker({ resident, width, height, index, onMeet }) {
+function Walker({ resident, route, sprite, width, height, index, onMeet }) {
   const progress = useRef(new Animated.Value(0)).current;
   const [walking, setWalking] = useState(false);
+  const walkLength = route.reduce((length, [x, y], step) => {
+    if (step === 0) return length;
+    const [previousX, previousY] = route[step - 1];
+    return length + Math.hypot((x - previousX) * width, (y - previousY) * height);
+  }, 0);
+  const duration = Math.max(5200, Math.min(11500, Math.round(walkLength / (width * 0.018) * 1000)));
   useEffect(() => {
     let stopped = false;
     let wait;
@@ -54,35 +77,36 @@ function Walker({ resident, width, height, index, onMeet }) {
     function walk() {
       progress.setValue(0);
       setWalking(true);
-      travel = Animated.timing(progress, { toValue: 1, duration: 9200, easing: Easing.linear, useNativeDriver: true });
+      travel = Animated.timing(progress, { toValue: 1, duration, easing: Easing.linear, useNativeDriver: true });
       travel.start(({ finished }) => {
         if (!finished || stopped) return;
         setWalking(false);
-        wait = setTimeout(walk, 10500 + index * 2000);
+        if (resident.path !== 'arrival') wait = setTimeout(walk, 22000 + index * 3000);
       });
     }
     wait = setTimeout(walk, index * 1000);
     return () => { stopped = true; clearTimeout(wait); travel?.stop(); };
-  }, [index, progress]);
+  }, [duration, index, progress, resident.path]);
 
   if (!walking) return null;
-  const route = routes[resident.path];
-  // Walkers on the same route move in the same direction.
-  const [startX, startY, endX, endY] = resident.path === 'left'
-    ? [route[2], route[3], route[0], route[1]] : route;
-  const size = sprites[resident.id] ? 34 : 28;
-  const artwork = <View style={{ transform: [{ scaleX: sprites[resident.id] && resident.id !== 'billiam' && startX > endX ? -1 : 1 }] }}>
-    <ResidentArt id={resident.id} size={size} />
+  const size = Math.max(28, height * 0.16) * sprite.scale;
+  const facing = route[0][0] > route.at(-1)[0] ? -1 : 1;
+  const inputRange = route.reduce((timeline, [x, y], step) => {
+    if (step === 0) return timeline;
+    const [previousX, previousY] = route[step - 1];
+    const distance = Math.hypot((x - previousX) * width, (y - previousY) * height);
+    return [...timeline, step === route.length - 1 ? 1 : timeline[step - 1] + distance / walkLength];
+  }, [0]);
+  const artwork = <View style={{ width: size, height: size }}>
+    <View style={[s.walkerShadow, { left: size * 0.24, width: size * 0.52 }]} />
+    <WalkArtwork sprite={sprite} size={size} facing={facing} />
   </View>;
   return <Animated.View pointerEvents={onMeet ? "box-none" : "none"}
     testID={`town-walker-${resident.id}`} style={[s.walker, {
-    opacity: progress.interpolate({ inputRange: [0, 0.10, 0.90, 1], outputRange: [0.25, 1, 1, 0.25] }),
+    opacity: progress.interpolate({ inputRange: [0, 0.06, 0.92, 1], outputRange: [0, 1, 1, 0] }),
     transform: [
-      { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [width * startX - size / 2, width * endX - size / 2] }) },
-      { translateY: progress.interpolate({
-        inputRange: [0, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 1],
-        outputRange: Array.from({ length: 9 }, (_, step) => (startY + (endY - startY) * step / 8) * height - size - (step % 2 ? 1.8 : 0)),
-      }) },
+      { translateX: progress.interpolate({ inputRange, outputRange: route.map(([x]) => width * x - size / 2) }) },
+      { translateY: progress.interpolate({ inputRange, outputRange: route.map(([, y]) => height * y - size) }) },
     ],
   }]}>
     {onMeet ? <Pressable style={s.walkerTarget} hitSlop={4} accessibilityRole="button"
@@ -93,9 +117,13 @@ function Walker({ resident, width, height, index, onMeet }) {
 }
 
 export function NeighborhoodWalkers({ walkers, playing, width, height, onMeet }) {
-  return playing && width > 0 && height > 0
-    ? walkers.map((resident, index) => <Walker key={`${resident.id}-${resident.path}`} {...{ resident, width, height, index, onMeet }} />)
-    : null;
+  if (!playing || width <= 0 || height <= 0) return null;
+  return walkers.map((resident, index) => {
+    const sprite = sprites[resident.id];
+    const route = neighborhoodWalkRoute(resident);
+    return sprite && route && <Walker key={`${resident.id}-${resident.destination}-${resident.path}`}
+      {...{ resident, route, sprite, width, height, index, onMeet }} />;
+  });
 }
 
 const particles = {
@@ -186,6 +214,7 @@ export function TownLife({ residents, onOpen, zip, onWeatherZip, weather, weathe
 
 const s = StyleSheet.create({
   walker: { position: 'absolute', top: 0, left: 0 },
+  walkerShadow: { position: 'absolute', bottom: 0, height: 3, borderRadius: 3, backgroundColor: '#25192D66' },
   visitors: { backgroundColor: '#FFF0BD', borderRadius: 18, padding: 12 },
   walkerTarget: { alignItems: 'center', justifyContent: 'center' },
   particle: { position: 'absolute', top: 0 },

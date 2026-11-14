@@ -96,7 +96,7 @@ export default function PayPlacePlans({ selectedId, onSelectPlan, onOpenTool, on
           <TouchableOpacity key={plan.id} testID={`plan-${plan.id}`} accessibilityRole="tab" accessibilityLabel={plan.name}
             accessibilityState={{ selected: plan.id === selectedId }} onPress={() => onSelectPlan(plan.id)}
             artworkMode="integrated" style={[styles.tab, wrapTabs && styles.wideTab, { backgroundColor: plan.fill, borderColor: plan.color }]}>
-            <Image source={plan.artwork} resizeMode={wrapTabs || width > 416 ? "contain" : "cover"} accessible={false}
+            <Image source={plan.artwork} resizeMode="contain" accessible={false}
               style={[styles.tabArtwork, { height: wrapTabs ? 62 : Math.min((width - 56) / 3, 120) }]} />
             <Text style={styles.tabLabel}>{plan.name}</Text>
           </TouchableOpacity>

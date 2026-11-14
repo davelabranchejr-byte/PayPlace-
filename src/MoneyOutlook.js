@@ -26,7 +26,7 @@ export default function MoneyOutlook({ finance, onClose, sample }) {
   const spending = bankSpending(finance, dateKey(now).slice(0, 7));
   const goals = finance.savingsGoals || [];
 
-  return <EntrySheet visible title="Money outlook" onClose={onClose}>
+  return <EntrySheet visible title="Money outlook" closeScene="outlook" onClose={onClose}>
     {sample && <Text style={s.body}>Sample plan · fictional data</Text>}
     <View style={s.summary}>
       <Text accessibilityRole="header" style={s.title}>Estimated money left at the end of {month}</Text>

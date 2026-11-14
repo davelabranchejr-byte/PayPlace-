@@ -62,7 +62,8 @@ function settings({children,style,artworkMode,artworkAction,accessibilityState,a
   const flat=StyleSheet.flatten?.(typeof style==='function'?undefined:style)||{};
   const hotspot=artworkMode==='hotspot'||flat.position==='absolute';
   const action=artworkAction;
-  const hasArt = artworkMode === 'integrated' || hotspot || hasIllustration(children);
+  const illustrated = hasIllustration(children);
+  const hasArt = artworkMode === 'integrated' || hotspot || illustrated;
   const plain = !hasArt && !Object.hasOwn(ACTION_ARTWORK, action);
   const integrated = hasArt || plain;
   const fixedSmall=(typeof flat.width==='number'&&flat.width<=80)||(typeof flat.height==='number'&&flat.height<=56)||!!flat.aspectRatio;
@@ -72,19 +73,20 @@ function settings({children,style,artworkMode,artworkAction,accessibilityState,a
   const stacked=!compact && width<300;
   const fixedSize=typeof flat.width==='number'?Math.max(20,flat.width-16):36;
   const size=compact?Math.min(artworkSize,fixedSmall?fixedSize:64):Math.min(artworkSize,width>0?Math.max(48,width-32):artworkSize);
-  return {flat,hotspot,integrated,plain,action,ink:!flat.backgroundColor||quietSurfaces.has(flat.backgroundColor)?'#071A3A':undefined,compact,fixedSmall,stacked,size,row:!stacked&&(!compact||flat.flexDirection==='row'),radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
+  const showRim = integrated && !hotspot && !illustrated;
+  return {flat,hotspot,integrated,plain,showRim,action,ink:!flat.backgroundColor||quietSurfaces.has(flat.backgroundColor)?'#071A3A':undefined,compact,fixedSmall,stacked,size,row:!stacked&&(!compact||flat.flexDirection==='row'),radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
 }
 export const MascotTouchable=forwardRef(function MascotTouchable({artworkMode,artworkAction,artworkSize,children,style,onLayout,...props},ref){
   const [width,setWidth]=useState(0);
   const view=settings({artworkMode,artworkAction,artworkSize,children,style,width,...props});
   return <TouchableOpacity ref={ref} {...props} onLayout={event=>{const next=event.nativeEvent.layout.width;setWidth(old=>old===next?old:next);onLayout?.(event);}} style={decorate(style,view)}>
     {view.integrated?(view.hotspot?children:readable(children,props.accessibilityRole==='tab',view.ink)):content(children,view.action,view.size,view.row,view.compact,view.ink)}
-    {!view.hotspot&&<ButtonRim radius={view.radius}/>}
+    {view.showRim&&<ButtonRim radius={view.radius}/>}
   </TouchableOpacity>;
 });
 export const MascotPressable=forwardRef(function MascotPressable({artworkMode,artworkAction,artworkSize,children,style,onLayout,...props},ref){
   const [width,setWidth]=useState(0);
   const config=(state,result)=>settings({artworkMode,artworkAction,artworkSize,children:result,style:typeof style==='function'?style(state):style,width,...props});
-  const render=(state,result)=>{const view=config(state,result);return <>{view.integrated?(view.hotspot?result:readable(result,false,view.ink)):content(result,view.action,view.size,view.row,view.compact,view.ink)}{!view.hotspot&&<ButtonRim radius={view.radius}/>}</>;};
+  const render=(state,result)=>{const view=config(state,result);return <>{view.integrated?(view.hotspot?result:readable(result,false,view.ink)):content(result,view.action,view.size,view.row,view.compact,view.ink)}{view.showRim&&<ButtonRim radius={view.radius}/>}</>;};
   return <Pressable ref={ref} {...props} onLayout={event=>{const next=event.nativeEvent.layout.width;setWidth(old=>old===next?old:next);onLayout?.(event);}} style={state=>decorate(typeof style==='function'?style(state):style,config(state,typeof children==='function'?children(state):children))}>{typeof children==='function'?state=>render(state,children(state)):render({},children)}</Pressable>;
 });
