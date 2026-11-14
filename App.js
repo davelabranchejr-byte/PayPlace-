@@ -1236,6 +1236,8 @@ function PayPlaceApp() {
   const [cabaretVisible, setCabaretVisible] = useState(false);
   const [savingsVisible, setSavingsVisible] = useState(false);
   const [tab, setTab] = useState("Home");
+  const [openAnnieWall, setOpenAnnieWall] = useState(false);
+  useEffect(() => { if (tab !== "Annie") setOpenAnnieWall(false); }, [tab]);
   const [welcomeSeen, setWelcomeSeen] = useState(false);
   const seeWelcome = useCallback(() => setWelcomeSeen(true), []);
   const [billiamBack, setBilliamBack] = useState("Bills");
@@ -2021,8 +2023,10 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         )}
 
         {tab === "Spa" && <PetSpa onGrooming={() => setMonthlyCalendarMode("grooming")} reduceAnimation={finance.quietMode?.reduceAnimation} obscured={tabHelpVisible || securityVisible || bankConnectionsVisible || savingsVisible || detectiveVisible || !!monthlyCalendarMode}
+          onFamilyWall={() => { setOpenAnnieWall(true); setTab("Annie"); }}
           library={finance.neighborhoodLibrary} onLibraryChange={changeLibrary} />}
         {["Annie", "Bobbie", "Westley", "Tate", "Chapo", "Daddy"].includes(tab) && <NeighborRoom key={tab} destination={tab}
+          initialPanel={tab === "Annie" && openAnnieWall ? "family" : null}
           finance={finance} onHome={() => setTab("Neighborhood")}
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "BankingDemo") openBankingDemo(); else if (next === "Billiam") openBilliam("Neighborhood"); else setTab(next); }}
           onMirrorAction={updateMirror}
