@@ -6,7 +6,7 @@ Date: November 18, 2026
 Baseline: release/ios-75 at 0bb83574c38b017d6fb75e2cb853f27950cc2e7d
 Review branch: review/app-wide-artwork-layout
 
-Build 75, the live deployment, artwork files, release configuration and release workflows were not changed. No merge, deployment, new native build submission, or Apple submission was initiated.
+Build 75, the live deployment, existing artwork files, release configuration and release workflows were not changed. Two supplied Pet Spa pictures were subsequently added at Dave’s request. No merge, deployment, new native build submission, or Apple submission was initiated.
 
 ## Validation
 
@@ -15,7 +15,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 - Web bundle export passed.
 - iOS JavaScript/Hermes bundle export passed; this is not an Xcode build or native UI test.
 - Browser layout frames: 375 x 667, 390 x 844, 430 x 932. Footer boundary checks passed on My Finances, Budget and Bills at all three sizes (nine checks).
-- Artwork assets and app/release configuration have zero changes relative to the baseline.
+- Existing artwork assets and app/release configuration are unchanged. The only new artwork assets are the two supplied Pet Spa painting pictures.
 
 ## Affected shared components
 
@@ -65,3 +65,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 | Navigation tradeoff | CORRECTED AFTER FEEDBACK. The previous draft made the footer wider than the screen. Four flexible columns now stay inside the available width; no footer horizontal scrolling. All four tabs fit without overlapping at 375, 390 and 430 px. Main-page scrolling remains available. |
 
 The issue is not signed off as fixed. Review the proposed layout first; resolve open native/hit-testing checks before applying it to a release.
+
+## Pet Spa deck additions
+
+At Dave’s request, the exact supplied JPEGs were copied without modification as `spa-turkey-pawprint-art.jpg` and `spa-hollywood-pawprint-art.jpg`. Both appear in the current-stay deck after the seaside scene and before pickup. Their square frames show the complete pictures. Existing scenes, pickup and Annie’s family wall are preserved. No atmosphere animation is drawn over these painting cards. The current stay now has seven scenes. This is a review-branch addition only.
