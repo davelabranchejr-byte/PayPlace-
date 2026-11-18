@@ -57,6 +57,14 @@ test('the glossy rim stays on plain buttons and off illustrated controls', async
     assert.ok(rim(renderer));
     await act(() => renderer.update(React.createElement(f.MascotTouchable, { artworkMode: 'integrated' }, artwork, label)));
     assert.equal(rim(renderer), undefined);
+    // Exported builds can shorten component names; explicit artwork mode must
+    // still suppress the glossy overlay without inspecting a function name.
+    const a = () => React.createElement(f.Image, { source: 'original-painting' });
+    for (const Control of [f.MascotTouchable, f.MascotPressable]) {
+      await act(() => renderer.update(React.createElement(Control, { artworkMode: 'integrated' }, React.createElement(a), label)));
+      assert.equal(rim(renderer), undefined, 'renamed artwork components remain free of the white rim');
+      assert.equal(renderer.root.findAllByType('Image').length, 1);
+    }
     await act(() => renderer.update(React.createElement(f.MascotPressable, { artworkAction: 'close' }, label)));
     assert.equal(renderer.root.findAllByType('Image').length, 1);
     assert.equal(rim(renderer), undefined);
