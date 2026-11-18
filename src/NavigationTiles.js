@@ -8,9 +8,9 @@ import FittedArtwork from './FittedArtwork';
 import { Text } from './Privacy';
 import { featureArtworkForTitle } from './action-artwork.mjs';
 
-export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false, stackedArtworkRatio }) {
+export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false, stackedArtworkRatio, columns }) {
   const { width, fontScale } = useWindowDimensions();
-  const singleColumn = !horizontal && (stackedArtworkRatio || width < 400 || fontScale > 1.2);
+  const singleColumn = !horizontal && (stackedArtworkRatio || width < 340 || fontScale > 1.2 || (columns !== 2 && width < 400));
   const featured = largeArtwork && !horizontal;
   const tileWidth = largeArtwork && horizontal ? Math.min(250, width * 0.61) : fontScale > 1.2 ? Math.min(230, width * 0.72) : Math.min(172, Math.max(132, width * 0.4));
   const tiles = items.map(({ title, body, source, artworkAction, colors, accessibilityLabel, onPress }) => {
