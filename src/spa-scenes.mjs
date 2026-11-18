@@ -11,10 +11,12 @@ export const SPA_SCENES = [
   {id:'grooming',title:'Fresh trims, fresh starts',caption:'Grooming is part of the stay. Em tidies Westley’s coat while the others take their turn being pampered.',action:'Admire Westley’s fresh trim',reply:'Westley: Same little me. Considerably less fluff.',motion:'sparkle',ratio:4/3},
   {id:'fort',title:'The extremely important blanket fort',caption:'Tate supervises construction. Westley arranges cushions. Bobbie claims the suite. Chapo blocks the entrance by falling asleep.',action:'Peek inside the fort',reply:'Tate: Building inspection passed. Treat delivery is still pending.',motion:'sparkle',ratio:4/3},
   {id:'ocean',title:'A seaside spa adventure',caption:'An illustrated ocean daydream: Em keeps an eye on the sandcastle crew while Bobbie enjoys a mud mask and seaweed wrap. Chapo has reserved the shade.',action:'Ask Bobbie about the seaweed wrap',reply:'Bobbie: Darling, I ordered a coastal retreat. Naturally, the coast came with treatments.',motion:'bubbles',ratio:4/3},
+  {id:'turkey-painting',title:'Wild Turkeys, made with paws',caption:'Em, Tate and Westley show off their paw-print turkeys. Twice the trouble, twice the thanks.',action:'Admire their turkey painting',reply:'Westley: Made with our very own paws.',ratio:1},
+  {id:'hollywood-painting',title:'Hollywood paws of fame',caption:'Em paints the Hollywood Walk of Fame with Bobbie Darlending and Chapo, complete with their own paw prints.',action:'Applaud our stars',reply:'Bobbie: A star for each of us, darling.',ratio:1},
   {id:'pickup',title:'A surprise for Daddy',caption:'Daddy is here to pick up Westley and Tate. Em helps them carry the painting they made with their own paws.',action:'Give Daddy the Wild Turkeys',reply:'Tate: Twice the trouble, twice the thanks!\nDaddy: I love it. Let’s hang it next to your paw-print garden at Annie’s.',ratio:4/3},
 ];
 export const SPA_VISITS = [
-  {id:'slumber-party',title:'Our slumber-party stay',description:'Grooming, bedtime stories, a blanket fort, a seaside daydream, and a surprise at pickup.',current:true,scenes:SPA_SCENES},
+  {id:'slumber-party',title:'Our slumber-party stay',description:'Grooming, bedtime stories, a blanket fort, a seaside daydream, paw-print painting, and a surprise at pickup.',current:true,scenes:SPA_SCENES},
   {id:'spa-day',title:'Spa-day memories',description:'Westley’s secret makeover, Chapo’s cookie cleanup, Bobbie’s meowgarita and Tate’s bath negotiations.',current:false,scenes:PAST_SPA_SCENES},
 ];
 export function nextSpaScene(index, direction = 1, scenes = SPA_SCENES) {

@@ -22,7 +22,7 @@ const pastArtwork = [
   require('../assets/characters/spa-bobbie-jacuzzi.png'),
   require('../assets/characters/spa-glamour-and-tate.png'),
 ];
-const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg'),WILD_TURKEYS_ART];
+const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg'),require('../assets/characters/spa-turkey-pawprint-art.jpg'),require('../assets/characters/spa-hollywood-pawprint-art.jpg'),WILD_TURKEYS_ART];
 
 function SpaAtmosphere({ playing, kind }) {
   const progress = useRef(new Animated.Value(0)).current;
@@ -99,7 +99,7 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
     {bookOverlay}
   </ScrollView>;
   const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={pickup ? WILD_TURKEYS_LABEL : scene.caption}>
-    {!pickup && <SpaAtmosphere playing={playing} kind={scene.motion} />}
+    {!!scene.motion && !pickup && <SpaAtmosphere playing={playing} kind={scene.motion} />}
     <EncouragementSpot place="spa"/>
   </ContainedIllustration><View style={s.brandBanner}><PayPlaceBrand compact/><Text style={s.spaBrand}>Em’s Pet Spa</Text></View></View>;
   if(panel === 'scrapbook') return <ScrollView style={s.screen} contentContainerStyle={s.content}>
