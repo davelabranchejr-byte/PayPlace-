@@ -1,3 +1,4 @@
+import { artworkDimensions } from './artwork-ratio';
 import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { MascotTouchable, actionColors } from './MascotTouchable';
@@ -10,13 +11,13 @@ export default function FeatureLinks({ items }) {
   return <View style={s.list}>{items.map(({ title, body, onPress, artworkAction }) => {
     const action = artworkAction || featureArtworkForTitle(title);
     const source = ACTION_ARTWORK[action];
-    const asset = source && Image.resolveAssetSource?.(source);
+    const asset = source && artworkDimensions(source);
     const ratio = asset?.width && asset?.height ? asset.width / asset.height : 3 / 2;
     const colors = actionColors(action);
     return <MascotTouchable key={title} artworkMode="integrated" accessibilityRole="button"
       accessibilityLabel={`Open ${title}`} onPress={onPress}
       style={[s.item, { backgroundColor: colors.fill, borderColor: colors.border }]}>
-      {source && <FittedArtwork source={source} aspectRatio={ratio} resizeMode="cover" accessible={false} />}
+      {source && <FittedArtwork source={source} aspectRatio={ratio} resizeMode="contain" accessible={false} />}
       <View style={s.details}>
         <View style={s.copy}><Text style={s.title}>{title}</Text>{body && <Text style={s.body}>{body}</Text>}</View>
         <Text style={s.arrow} accessible={false} importantForAccessibility="no">›</Text>

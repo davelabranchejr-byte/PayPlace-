@@ -1,3 +1,4 @@
+import { artworkDimensions } from './artwork-ratio';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useMemo, useRef, useState } from 'react';
 import { Image, KeyboardAvoidingView, Linking, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
@@ -13,7 +14,7 @@ const artwork = require('../assets/characters/bobbie-premium-clubhouse.png');
 const money = amount => `$${Number(amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const newCase = () => ({ id: `subscription-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`, name: '', amount: '', frequency: 'Monthly', renewalDate: '', trialEnds: '', manageUrl: '', billId: '', status: 'Keep' });
 function Art() {
-  const size = Image.resolveAssetSource(artwork);
+  const size = artworkDimensions(artwork);
   return <View style={[s.artFrame, { aspectRatio: size.width / size.height }]}><CharacterArtwork source={artwork} style={s.art} resizeMode="contain" accessibilityLabel="Bobbie smiles in the teal, purple, yellow and coral gown she designed, wearing a jeweled tiara in the Detective Clubhouse. Oooh, premium like me!" /></View>;
 }
 function Button({ label, onPress, secondary = false, disabled = false }) {

@@ -21,7 +21,7 @@ function Button({label, onPress, secondary = false}) {
 export function IllustratedLibraryShelf({borrowed, onBook, onStory, enlarged = false}) {
   return <View testID="illustrated-library-shelf" style={[s.shelfScene, enlarged && {width:720}]}>
     <Image testID="library-shelf-artwork" source={borrowed ? libraryAway : libraryStocked}
-      resizeMode="stretch" style={s.shelfArtwork} accessible={false} />
+      resizeMode="contain" style={s.shelfArtwork} accessible={false} />
     <Pressable artworkMode="hotspot" testID="library-slot-A1" style={({pressed}) => [s.shelfTarget, shelfTarget(EM_SHELF_BOUNDS), pressed && s.pressedTarget]}
       accessibilityRole="button" accessibilityLabel={emBook.title + ', shelf A1. ' + (borrowed ? 'Empty spot; borrowed by ' + readerFor(borrowed.reader).name : 'Available to borrow')}
       accessibilityHint="Opens Emma’s book details and checkout."

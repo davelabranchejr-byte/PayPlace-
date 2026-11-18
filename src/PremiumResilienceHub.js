@@ -99,7 +99,7 @@ export default function PremiumResilienceHub({ visible = true, embedded = false,
         {onOpenCategories && <CategoryEntry onOpen={onOpenCategories} inBanking />}
         <Box title="Accounts"><Text style={s.body}>Sample accounts, provider availability and connection controls live here. Everything below uses these same banking settings.</Text><Text style={s.badge}>{sampleReady ? 'SAMPLE ACCOUNTS CONNECTED' : 'SAMPLE ACCOUNTS NOT CONNECTED YET'}</Text><Button secondary label="Demo account settings" onPress={() => open('accounts')} /></Box>
         {FEATURES.map((item, index) => <React.Fragment key={item.id}>{index === 0 && <Text style={s.panelTitle}>Savings & automation</Text>}{index === 2 && <Text style={s.panelTitle}>Recovery plans</Text>}{index === 4 && <Text style={s.panelTitle}>Monitoring & credit</Text>} <TouchableOpacity artworkMode="integrated" key={item.id} accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={() => open(item.id)} style={[s.card,{backgroundColor:featureColors[index%featureColors.length]}]}>
-          <FittedArtwork source={item.image} aspectRatio={3 / 2} resizeMode="cover" accessible={false} /><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View>
+          <FittedArtwork source={item.image} resizeMode="contain" accessible={false} /><View style={s.cardCopy}><Text style={s.badge}>{item.badge}</Text><Text style={s.cardTitle}>{item.title}</Text><Text style={s.body}>{item.body}</Text></View>
         </TouchableOpacity></React.Fragment>)}
       </>}
       {panel === 'accounts' && <>

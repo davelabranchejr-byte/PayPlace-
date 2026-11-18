@@ -4,6 +4,7 @@ import { View, ScrollView, Modal, StyleSheet, Image } from 'react-native';
 import { Text, TextInput } from './Privacy';
 import { paydaySnapshot, moneyCents, canUndoPayment, quietSettings } from './launch-essentials.mjs';
 import PayPlaceBrand from './PayPlaceBrand';
+import { artworkRatio } from './artwork-ratio';
 export const essentialsArtwork = {
   payday:require('../assets/characters/feature-until-payday.png'),
   history:require('../assets/characters/feature-payment-history.png'),
@@ -18,7 +19,7 @@ const panelArtwork = {
 };
 export function FeatureArtwork({source,style,testID,resizeMode='contain'}) {
   const [bounds,setBounds]=useState({width:0,height:0});
-  return <View testID={testID} pointerEvents="none" style={[style,{overflow:'hidden'}]}
+  return <View testID={testID} pointerEvents="none" style={[style,{aspectRatio:artworkRatio(source),height:undefined,maxHeight:undefined,overflow:'hidden'}]}
     onLayout={({nativeEvent:{layout}})=>setBounds(previous=>previous.width===layout.width&&previous.height===layout.height
       ? previous : {width:Math.max(0,layout.width),height:Math.max(0,layout.height)})}>
     {bounds.width>0&&bounds.height>0&&<Image source={source} resizeMode={resizeMode} accessible={false}
@@ -27,7 +28,7 @@ export function FeatureArtwork({source,style,testID,resizeMode='contain'}) {
 }
 export function EssentialsButtons({onOpen,reduceAnimation=false}) {
   return <View style={s.grid}>{Object.entries(captions).map(([key,[title,body]]) => <TouchableOpacity artworkMode="integrated" key={key} accessibilityRole="button" accessibilityLabel={`Open ${title}`} style={[s.tile,{backgroundColor:tileColors[key].backgroundColor,borderColor:tileColors[key].borderColor}]} onPress={() => onOpen(key)}>
-    <FeatureArtwork source={essentialsArtwork[key]} style={s.art} testID={`feature-card-${key}`} resizeMode="cover"/>
+    <FeatureArtwork source={essentialsArtwork[key]} style={s.art} testID={`feature-card-${key}`} resizeMode="contain"/>
     <View style={s.tileCopy}><Text style={[s.tileTitle,{color:tileColors[key].color}]}>{title}</Text><Text style={[s.note,{color:tileColors[key].color}]}>{body}</Text></View>
   </TouchableOpacity>)}</View>;
 }

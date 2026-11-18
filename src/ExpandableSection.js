@@ -1,3 +1,4 @@
+import { artworkDimensions } from './artwork-ratio';
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
@@ -9,7 +10,7 @@ import IllustratedButton from './IllustratedButton';
 export default function ExpandableSection({ title, artworkAction, fullBleedArtwork, compact = false, children }) {
   const [expanded, setExpanded] = useState(false);
   const artwork = ACTION_ARTWORK[artworkAction];
-  const asset = artwork && Image.resolveAssetSource?.(artwork);
+  const asset = artwork && artworkDimensions(artwork);
   const ratio = asset?.width && asset?.height ? asset.width / asset.height : 3 / 2;
   const toggle = () => setExpanded(value => !value);
   return <View style={s.section}>
@@ -18,7 +19,7 @@ export default function ExpandableSection({ title, artworkAction, fullBleedArtwo
       <TouchableOpacity artworkMode={artwork ? 'integrated' : compact ? 'compact' : undefined}
       accessibilityRole="button" accessibilityState={{ expanded }}
       accessibilityLabel={title} onPress={toggle} style={artwork ? s.illustrated : s.toggle}>
-      {artwork && <FittedArtwork source={artwork} aspectRatio={ratio} resizeMode="cover" accessible={false} />}
+      {artwork && <FittedArtwork source={artwork} aspectRatio={ratio} resizeMode="contain" accessible={false} />}
       <View style={artwork ? s.toggle : s.labelRow}>
         <Text style={s.title}>{title}</Text><Text accessible={false} style={s.mark}>{expanded ? '−' : '+'}</Text>
       </View>

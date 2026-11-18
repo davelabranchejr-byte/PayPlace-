@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import ArtworkBrandMark from './ArtworkBrandMark';
+import { artworkRatio } from './artwork-ratio';
 
 // Measure a layout-only frame before mounting a native image. Native Image
 // supplies intrinsic asset dimensions unless BOTH dimensions are overridden.
 export default function FittedArtwork({source,aspectRatio,style,children,testID,onLayout,accessibilityLabel,accessible=true,resizeMode='contain',brandMarkSize}) {
   const [bounds,setBounds]=useState({width:0,height:0});
-  return <View testID={testID} style={[s.frame,aspectRatio?{aspectRatio}:null,style]}
+  return <View testID={testID} style={[s.frame,{aspectRatio:aspectRatio || artworkRatio(source)},style]}
     accessible={accessible} accessibilityRole={accessible?'image':undefined} accessibilityLabel={accessibilityLabel}
     onLayout={event=>{
       const {width,height}=event.nativeEvent.layout;

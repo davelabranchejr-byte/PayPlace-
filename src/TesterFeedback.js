@@ -29,7 +29,7 @@ export default function TesterFeedback({ onClose }) {
   return <>
     {!onClose && <Pressable artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Beta feedback and testing tips"
       onPress={() => { setError(""); setVisible(true); }} style={s.entry}>
-      <FittedArtwork source={require('../assets/characters/neighborhood-tabby.png')} aspectRatio={3 / 2} resizeMode="cover" accessible={false}/>
+      <FittedArtwork source={require('../assets/characters/neighborhood-tabby.png')} resizeMode="contain" accessible={false}/>
       <View style={s.caption}><Text style={s.entryText}>Help make the neighborhood better</Text>
         <Text accessible={false} style={s.chevron}>›</Text></View>
     </Pressable>}

@@ -30,7 +30,7 @@ export default function SeasonalWelcome() {
 }
 
 function WelcomeArtwork({ theme }) {
-  return <FittedArtwork source={scenes[theme]} style={s.art} aspectRatio={1672 / 941} testID="seasonal-welcome-artwork"
+  return <FittedArtwork source={scenes[theme]} style={s.art} testID="seasonal-welcome-artwork"
     accessibilityLabel={labels[theme] ?? `Welcome home to PayPlace on a ${theme} day.`} />;
 }
 

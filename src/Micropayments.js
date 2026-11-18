@@ -19,8 +19,8 @@ function Button({ title, onPress, selected, disabled, testID }) {
 export function MicropaymentsButton({ onPress, forBills = false }) {
   return <TouchableOpacity artworkMode="integrated" testID="open-micropayments" accessibilityRole="button"
     accessibilityLabel="Micropayments: small extra payments" onPress={onPress} style={s.entry}>
-    <FittedArtwork source={forBills ? billiamArtwork : westleyArtwork} aspectRatio={3 / 2}
-      resizeMode="cover" testID="micropayments-shortcut-artwork" accessible={false} />
+    <FittedArtwork source={forBills ? billiamArtwork : westleyArtwork}
+      resizeMode="contain" testID="micropayments-shortcut-artwork" accessible={false} />
     <View style={s.caption}>
       <Text style={s.title}>Micropayments</Text>
       <Text style={s.body}>Track small extra payments.</Text>

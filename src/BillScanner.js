@@ -47,7 +47,7 @@ export default function BillScanner({ bills = [], onAdd, onUpdate, history = [],
     <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Billiam’s bill scanning"
       accessibilityHint={open ? 'Closes the scanner' : 'Opens the bill photo scanner'} accessibilityState={{expanded:open}}
       style={s.toggle} onPress={() => open ? close() : setOpen(true)}>
-      <CaptionedArtwork overlapFraction={0.21} testID="billiam-scanner"
+      <CaptionedArtwork testID="billiam-scanner"
         artwork={<FittedArtwork source={artwork} aspectRatio={3 / 2} testID="billiam-scanner-artwork" accessible={false} />}>
         <Text style={s.title}>{open ? 'Close scanner' : 'Billiam’s bill scanning'}</Text>
       </CaptionedArtwork>

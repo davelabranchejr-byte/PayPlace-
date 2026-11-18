@@ -15,7 +15,7 @@ export default function FacebookNeighborhood() {
   }
   return <TouchableOpacity artworkMode="integrated" accessibilityRole="link" accessibilityLabel={label}
     accessibilityHint="Opens the PayPlace Facebook community outside the app" onPress={open} style={s.card}>
-    <FittedArtwork source={require('../assets/characters/facebook-moving-day.jpg')} aspectRatio={3 / 2} resizeMode="cover" accessible={false} />
+    <FittedArtwork source={require('../assets/characters/facebook-moving-day.jpg')} resizeMode="contain" accessible={false} />
     <View style={s.copy}>
       <Text style={s.title}>{label}</Text>
       <Ionicons name="open-outline" size={20} color="#132547" accessible={false} />

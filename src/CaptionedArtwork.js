@@ -1,19 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-export default function CaptionedArtwork({ artwork, children, overlapFraction = 0, captionStyle, testID }) {
-  const [artHeight, setArtHeight] = useState(0);
-  const [captionHeight, setCaptionHeight] = useState(0);
-  // Keep the entire caption readable, even when it outgrows the part of the
-  // illustration that can safely sit behind it.
-  const overlap = Math.min(captionHeight, artHeight * overlapFraction);
+export default function CaptionedArtwork({ artwork, children, captionStyle, testID }) {
+  // Captions have their own space, regardless of text size or scene content.
   return <View>
-    <View onLayout={event => setArtHeight(event.nativeEvent.layout.height)} testID={testID && `${testID}-frame`}>
+    <View testID={testID && `${testID}-frame`}>
       {artwork}
     </View>
     <View pointerEvents="none" testID={testID && `${testID}-caption`}
-      onLayout={event => setCaptionHeight(event.nativeEvent.layout.height)}
-      style={[s.caption, captionStyle, { marginTop: -overlap }]}>
+      style={[s.caption, captionStyle]}>
       {children}
     </View>
   </View>;

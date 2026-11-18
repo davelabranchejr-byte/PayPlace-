@@ -28,7 +28,7 @@ const taskSpots = {
   breakdown: [4, 68, 32, 26], household: [65, 67, 31, 27],
 };
 export function BilliamShortcut({onPress}){
-  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={billShortcutArtwork} aspectRatio={3 / 2} resizeMode="cover" testID="billiam-shortcut-artwork" accessible={false}/><View style={s.shortcutCopy}><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></View></TouchableOpacity>;
+  return <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Billiam’s mailbox" onPress={onPress} style={s.shortcut}><FittedArtwork source={billShortcutArtwork} resizeMode="contain" testID="billiam-shortcut-artwork" accessible={false}/><View style={s.shortcutCopy}><Text style={s.title}>Billiam’s bill scanning & tools</Text><Text style={s.body}>Visit his mailbox outside Annie Oak Tree.</Text></View></TouchableOpacity>;
 }
 function ImportReview({batch,bills,history,templates,onAdd,onUpdate,onRecurring}){
   const [queue,setQueue]=useState([]),[index,setIndex]=useState(0),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(0),[skipped,setSkipped]=useState(0);

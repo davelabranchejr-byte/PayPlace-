@@ -28,6 +28,6 @@ export default function SafeToSpendArtwork({ placement, style, testID }) {
     setSource(selected.current.source);
   }, [placement]);
 
-  return <FittedArtwork source={source || scenes[placement][0]} aspectRatio={3 / 2} resizeMode={placement === 'budget' ? 'contain' : 'cover'}
-    style={style} testID={testID} accessible={false} brandMarkSize={placement === 'map' ? 20 : 27} />;
+  return <FittedArtwork source={source || scenes[placement][0]} resizeMode="contain"
+    style={style} testID={testID} accessible={false} />;
 }

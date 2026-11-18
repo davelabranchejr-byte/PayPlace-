@@ -1,3 +1,4 @@
+import { artworkDimensions } from './artwork-ratio';
 import React from 'react';
 import { Image, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { MascotTouchable, actionColors } from './MascotTouchable';
@@ -9,14 +10,14 @@ import { featureArtworkForTitle } from './action-artwork.mjs';
 
 export default function NavigationTiles({ items, testID, horizontal = false, largeArtwork = false, stackedArtworkRatio }) {
   const { width, fontScale } = useWindowDimensions();
-  const singleColumn = !horizontal && (stackedArtworkRatio || width < 340 || fontScale > 1.2);
+  const singleColumn = !horizontal && (stackedArtworkRatio || width < 400 || fontScale > 1.2);
   const featured = largeArtwork && !horizontal;
   const tileWidth = largeArtwork && horizontal ? Math.min(250, width * 0.61) : fontScale > 1.2 ? Math.min(230, width * 0.72) : Math.min(172, Math.max(132, width * 0.4));
   const tiles = items.map(({ title, body, source, artworkAction, colors, accessibilityLabel, onPress }) => {
       const action = artworkAction || featureArtworkForTitle(title);
       const { fill, border } = colors || actionColors(action);
       const artwork = source ?? ACTION_ARTWORK[action];
-      const asset = artwork && !artwork.crop ? Image.resolveAssetSource?.(artwork) : null;
+      const asset = artwork && !artwork.crop ? artworkDimensions(artwork) : null;
       const ratio = asset?.width && asset?.height ? asset.width / asset.height : 1;
       return <MascotTouchable key={title} artworkMode="integrated" accessibilityRole="button"
         accessibilityLabel={accessibilityLabel || `Open ${title}`} accessibilityHint={body}
@@ -27,8 +28,8 @@ export default function NavigationTiles({ items, testID, horizontal = false, lar
           featured && s.featuredTile]}>
         {artwork?.crop
           ? <CharacterArtwork source={artwork} style={[s.atlas, { aspectRatio: artwork.crop[2] / artwork.crop[3] }]} accessible={false} />
-          : artwork && <FittedArtwork source={artwork} aspectRatio={stackedArtworkRatio || ratio}
-            resizeMode={stackedArtworkRatio ? 'contain' : 'cover'} accessible={false} />}
+          : artwork && <FittedArtwork source={artwork} aspectRatio={ratio}
+            resizeMode="contain" accessible={false} />}
         <View style={[s.copy, singleColumn && !artwork && s.wideCopy, artwork && s.illustratedCopy]}>
           <Text style={[s.title, singleColumn && !artwork && s.left]}>{title}</Text>
           {body && <Text style={[s.body, singleColumn && !artwork && s.left]}>{body}</Text>}

@@ -106,7 +106,7 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
     {roomBack}
     <Text accessibilityRole="header" style={s.title}>Em’s scrapbook</Text><Text style={s.body}>Favorite visits stay here, ready to open again.</Text>
     {SPA_VISITS.map(item=><TouchableOpacity key={item.id} artworkMode="integrated" accessibilityRole="button" accessibilityLabel={`Open ${item.title}`} onPress={()=>openVisit(item.id)} style={[s.card,s.visitCard]}>
-      <FittedArtwork source={item.current?currentVisitArtwork[0]:pastArtwork[0]} aspectRatio={3 / 2} resizeMode="cover" accessible={false}/><View style={{padding:12}}><Text style={s.sceneTitle}>{item.title}</Text><Text style={s.hint}>{item.current?'CURRENT STAY':'PAST VISIT'}</Text><Text style={s.body}>{item.description}</Text></View>
+      <FittedArtwork source={item.current?currentVisitArtwork[0]:pastArtwork[0]} resizeMode="contain" accessible={false}/><View style={{padding:12}}><Text style={s.sceneTitle}>{item.title}</Text><Text style={s.hint}>{item.current?'CURRENT STAY':'PAST VISIT'}</Text><Text style={s.body}>{item.description}</Text></View>
     </TouchableOpacity>)}
     <TouchableOpacity accessibilityRole="button" style={s.action} onPress={()=>openVisit('slumber-party')}><Text style={s.actionText}>Back to the current stay</Text></TouchableOpacity>
   </ScrollView>;
