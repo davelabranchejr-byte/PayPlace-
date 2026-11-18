@@ -24,7 +24,8 @@ Build 75, the live deployment, artwork files, release configuration and release 
 | IllustratedButton | In-flow artwork at its natural aspect ratio; dedicated dark caption below; remove clipping height/ratio overrides and overlay logo badge. |
 | FittedArtwork + artwork-ratio | Derive missing frame proportions from native or web asset dimensions; continue measuring both rendered image dimensions. |
 | Header + NeighborhoodNav | Larger responsive top actions; four equal-width persistent tabs fit within a reserved footer, with complete square artwork and separate labels. |
-| NavigationTiles, FeatureLinks, ExpandableSection | Contain complete images; retain natural asset proportions; single-column cards below 400 px where needed. |
+| NavigationTiles, FeatureLinks, ExpandableSection | Contain complete images; retain natural asset proportions. My Finances explicitly keeps two shortcut columns at standard text sizes; narrow screens and large text may stack. |
+| My Finances summary and shortcuts | Compact the Safe to Spend summary with its complete proportional scene beside the text. Restore Westley Review my bills and Tate One small step side by side immediately below; keep Bobbie and Chapo shortcuts below them. |
 | CaptionedArtwork, CalmGardenScene, BillScanner | Remove negative caption overlap. Story and scanner labels occupy their own area below the scene. |
 | InteractiveRoom | Retain original hotspot coordinates; move room labels into a separate tappable action list below the illustration. Map labels remain on the map. |
 | SafeToSpendArtwork, SeasonalWelcome | Use each original scene's proportions; remove the extra Safe-to-Spend badge overlay. |
@@ -44,7 +45,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 | Westley, Annie, Daddy, Bobbie, Tate, Chapo | Room views captured at all three sizes. Original artwork and coordinates retained; labels moved below rooms. |
 | Library and family wall | Captured at all three sizes. Source/automated checks also cover borrowed books, shelf alignment and quilt behavior. |
 | Spa and Smart Mirror | Captured at all three sizes. Scrapbook card layout corrected in shared source; every visit/look state still needs native review. |
-| Budget, bills, My Finances and debt | Captured at all three sizes. Navigation, opening forms and expansion controls were exercised. |
+| Budget, bills, My Finances and debt | Captured at all three sizes. Navigation, opening forms and expansion controls were exercised. Westley and Tate shortcut actions rechecked. The complete first row fits above the footer at 390 x 844 and 430 x 932; the 375 x 667 view scrolls naturally. |
 | Banking and six premium panels | Bank demo, Round Up, Life Happens, Bill Shock, Falling Behind, Money Watch and Credit Center captured at all three sizes; all data shown is fictional. |
 | Purchases and remembered categories | Settled remembered-category view captured at all three sizes. Shared button fix covers account filters and category entry cards. |
 | Cabaret, plans and security | Captured at all three sizes. Video playback, camera/scanner, authentication and native permission prompts are outside browser verification. |
