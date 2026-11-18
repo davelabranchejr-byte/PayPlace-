@@ -1,6 +1,6 @@
 import { artworkDimensions } from './artwork-ratio';
 import React from 'react';
-import { Image, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import IllustratedButton from './IllustratedButton';
 import { payplaceColors } from './brand';
 import { NEIGHBORHOOD_DESTINATIONS, PRIMARY_DESTINATIONS, primaryDestination } from './neighborhood-destinations.mjs';
@@ -43,8 +43,6 @@ const menuArtwork = {
 };
 const tabColors = { Home: payplaceColors.purple, Finances: payplaceColors.coral, Budget: payplaceColors.yellow, Bills: payplaceColors.turquoise };
 export default function NeighborhoodNav({ current, switchTab, artworkFirst = false }) {
-  const { width } = useWindowDimensions();
-  const tabWidth = Math.max(104, Math.min(128, (width - 28) / 3));
   if (artworkFirst) return <View accessibilityRole="tablist" style={s.menu}>
     {PRIMARY_DESTINATIONS.map(place => <IllustratedButton key={place.id} artwork={menuArtwork[place.id]}
       label={place.label} accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`}
@@ -52,19 +50,20 @@ export default function NeighborhoodNav({ current, switchTab, artworkFirst = fal
       style={[s.menuTab, { borderColor: tabColors[place.id] }]} />)}
   </View>;
 
-  return <View style={s.wrap}><ScrollView horizontal showsHorizontalScrollIndicator accessibilityRole="tablist" contentContainerStyle={s.strip}>
+  return <View style={s.wrap}><View accessibilityRole="tablist" style={s.strip}>
     {PRIMARY_DESTINATIONS.map(place => <IllustratedButton key={place.id} artwork={tabArtwork[place.id]}
       label={place.label} accessibilityRole="tab" accessibilityLabel={`Open ${place.label}`}
       selected={place.id === primaryDestination(current)} onPress={() => switchTab(place.id)}
-      labelStyle={s.tabLabel} style={[s.tab, { width: tabWidth }, { borderColor: tabColors[place.id] }]} />)}
-  </ScrollView></View>;
+      labelStyle={s.tabLabel} style={[s.tab, { borderColor: tabColors[place.id] }]} />)}
+  </View></View>;
 }
 const s=StyleSheet.create({
-  wrap:{backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
-  strip:{flexDirection:'row',paddingHorizontal:6,paddingTop:4,gap:5},
-  tab:{flexGrow:0,flexShrink:0,minHeight:84,minWidth:0,borderRadius:16},
-  tabLabel:{fontSize:14,lineHeight:18,paddingHorizontal:3,minHeight:42},
-  wrapStrip:{flexWrap:'wrap'},wrapTab:{flexBasis:'45%',minHeight:76},
+  // Reserve footer space in normal flow; every destination shares the available
+  // width instead of overflowing a horizontal rail or covering the page content.
+  wrap:{alignSelf:'stretch',flexGrow:0,flexShrink:0,backgroundColor:'#FFFDF8',borderTopWidth:1,borderColor:'#E6DEEA',paddingBottom:4},
+  strip:{flexDirection:'row',alignItems:'stretch',paddingHorizontal:6,paddingTop:4,gap:5},
+  tab:{flex:1,flexBasis:0,minWidth:0,minHeight:0,borderRadius:16},
+  tabLabel:{fontSize:14,lineHeight:19,paddingHorizontal:2,minHeight:48},
   menu:{flexDirection:'row',flexWrap:'wrap',gap:8,marginBottom:8},
   menuTab:{flexBasis:'46%',flexGrow:1,minHeight:136,alignSelf:'flex-start'},
 });
