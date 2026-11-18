@@ -22,7 +22,7 @@ const pastArtwork = [
   require('../assets/characters/spa-bobbie-jacuzzi.png'),
   require('../assets/characters/spa-glamour-and-tate.png'),
 ];
-const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg'),require('../assets/characters/spa-turkey-pawprint-art.jpg'),require('../assets/characters/spa-hollywood-pawprint-art.jpg'),WILD_TURKEYS_ART];
+const currentVisitArtwork=[require('../assets/characters/spa-slumber-party.jpg'),require('../assets/characters/spa-slumber-grooming.jpg'),require('../assets/characters/spa-slumber-fort.jpg'),require('../assets/characters/spa-slumber-ocean.jpg'),require('../assets/characters/spa-turkey-pawprint-art-pink-sign.png'),require('../assets/characters/spa-hollywood-pawprint-art.jpg'),WILD_TURKEYS_ART];
 
 function SpaAtmosphere({ playing, kind }) {
   const progress = useRef(new Animated.Value(0)).current;
@@ -53,6 +53,9 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
   const scenes=visit.scenes;
   const artwork=visit.current?currentVisitArtwork:pastArtwork;
   const [index, setIndex] = useState(0);
+  const visitScroll = useRef(null);
+  const artworkOffset = useRef({card:0, artwork:0});
+  const revealArtwork = useRef(false);
   const openVisit=(id, sceneIndex = 0)=>{setVisitId(id);setIndex(sceneIndex);setPanel('visit');setPaused(true);setReply('');};
   const [bookDetails, setBookDetails] = useState(false);
   const [paused, setPaused] = useState(true);
@@ -79,7 +82,20 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
     const timer = setInterval(() => { setIndex(current => nextSpaScene(current,1,scenes)); setReply(''); }, 12000);
     return () => clearInterval(timer);
   }, [playing, index, visitId]);
-  const choose = next => { setIndex(next); setReply(''); setPaused(true); };
+  useEffect(() => {
+    if (!revealArtwork.current || !visitScroll.current) return;
+    revealArtwork.current = false;
+    const frame = globalThis.requestAnimationFrame(() => {
+      visitScroll.current?.scrollTo({
+        y: artworkOffset.current.card + artworkOffset.current.artwork, animated: false,
+      });
+    });
+    return () => globalThis.cancelAnimationFrame(frame);
+  }, [index]);
+  const choose = next => {
+    revealArtwork.current = true;
+    setIndex(next); setReply(''); setPaused(true);
+  };
   const showRoom = () => { setPaused(true); setPanel('room'); };
   const bookOverlay = bookDetails && <LibraryBookDetails bookId={LIBRARY_BOOKS[0].id} value={library} onChange={onLibraryChange} onClose={() => setBookDetails(false)} backLabel="Back to Em’s Pet Spa" />;
   const roomBack = <TouchableOpacity accessibilityRole="button" accessibilityLabel="Back to the spa room" style={s.back} onPress={showRoom}><Text style={s.backText}>‹ Spa room</Text></TouchableOpacity>;
@@ -98,7 +114,7 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
     <RoomVisitors destination="Spa" />
     {bookOverlay}
   </ScrollView>;
-  const illustration = <View style={s.artCard}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={pickup ? WILD_TURKEYS_LABEL : scene.caption}>
+  const illustration = <View testID="spa-visit-artwork" style={s.artCard} onLayout={event => { artworkOffset.current.artwork = event.nativeEvent.layout.y; }}><ContainedIllustration source={currentArtwork[index]} aspectRatio={scene.ratio} style={{ borderRadius: 18 }} accessibilityLabel={pickup ? WILD_TURKEYS_LABEL : scene.caption}>
     {!!scene.motion && !pickup && <SpaAtmosphere playing={playing} kind={scene.motion} />}
     <EncouragementSpot place="spa"/>
   </ContainedIllustration><View style={s.brandBanner}><PayPlaceBrand compact/><Text style={s.spaBrand}>Em’s Pet Spa</Text></View></View>;
@@ -110,9 +126,9 @@ export default function PetSpa({ onGrooming, onFamilyWall, obscured = false, red
     </TouchableOpacity>)}
     <TouchableOpacity accessibilityRole="button" style={s.action} onPress={()=>openVisit('slumber-party')}><Text style={s.actionText}>Back to the current stay</Text></TouchableOpacity>
   </ScrollView>;
-  return <ScrollView style={s.screen} contentContainerStyle={s.content}>
+  return <ScrollView key={`visit-${visitId}`} ref={visitScroll} testID="spa-visit-scroll" style={s.screen} contentContainerStyle={s.content}>
     {roomBack}
-    <View style={s.card}>
+    <View testID="spa-visit-card" style={s.card} onLayout={event => { artworkOffset.current.card = event.nativeEvent.layout.y; }}>
       <Text style={s.hint}>{visit.current?"CURRENT STAY":"FROM EM’S SCRAPBOOK"} · {visit.title}</Text>
       {!visit.current && index === 3 && bobbieHasBook ? <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open Emma’s book Bobbie is reading at the spa" onPress={() => setBookDetails(true)}>{illustration}</TouchableOpacity> : illustration}
       <Text style={s.sceneTitle} accessibilityRole="header">{scene.title}</Text>
