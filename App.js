@@ -1,3 +1,4 @@
+import { artworkDimensions, artworkRatio } from './src/artwork-ratio';
 import { MascotTouchable as TouchableOpacity } from './src/MascotTouchable';
 /*
   PAYPLACE PERMANENT CHARACTER LOCK
@@ -2334,7 +2335,7 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
               <View style={[styles.onboardingImage, {alignItems:"center"}]}>
                 <ActionArtwork action={step.artworkAction} size={210} />
               </View>
-            ) : step.image && <CharacterArtwork source={imageSource(step.image)} style={styles.onboardingImage} resizeMode="contain" />}
+            ) : step.image && <CharacterArtwork source={imageSource(step.image)} style={[styles.onboardingImage, {height:undefined,aspectRatio:artworkRatio(imageSource(step.image))}]} resizeMode="contain" />}
             {step.mascot && <View style={[styles.onboardingMascotBadge, { backgroundColor: step.accent }]}>
               <Text style={styles.onboardingMascotName}>{step.mascot}</Text>
               <Text style={styles.onboardingMascotRole}>{step.role}</Text>
@@ -2406,6 +2407,8 @@ function OnboardingFlow({ initialAnswers, onProgress, onComplete, onExit, onSamp
 }
 
 function Header({ onSecurity, onHelp, onPlans, tab }) {
+  const { width } = useWindowDimensions();
+  const actionWidth = Math.max(96, Math.min(144, (width - 48) / 3));
   const helpArtwork = tab === "Finances" ? require("./assets/characters/feature-how-home-works-daddy.png")
     : tab === "Debt" ? require("./assets/characters/feature-how-debt-works.png")
       : require("./assets/characters/header-art-help.jpg");
@@ -2420,17 +2423,17 @@ function Header({ onSecurity, onHelp, onPlans, tab }) {
         </View>
       </View>
 
-      <View style={styles.headerActions}>
+      <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={styles.headerActions}>
         {onHelp && <IllustratedButton artwork={helpArtwork} label="Help"
           accessibilityLabel={`How ${neighborhoodLabel(tab)} works`} onPress={onHelp}
-          style={styles.headerHelp} labelStyle={styles.compactArtLabel} />}
+          style={[styles.headerHelp, {width: actionWidth}]} labelStyle={styles.compactArtLabel} />}
         {onPlans && <IllustratedButton artwork={require("./assets/characters/header-art-plans.jpg")} label="Plans"
           testID="open-plans" accessibilityLabel="Open PayPlace plans" onPress={onPlans}
-          style={styles.headerPlans} labelStyle={styles.compactArtLabel} />}
+          style={[styles.headerPlans, {width: actionWidth}]} labelStyle={styles.compactArtLabel} />}
         {onSecurity && <IllustratedButton artwork={require("./assets/characters/header-art-security.jpg")} label="Security"
           accessibilityLabel="Open security and backup settings" onPress={onSecurity}
-          style={styles.headerSecurity} labelStyle={styles.compactArtLabel} />}
-      </View>
+          style={[styles.headerSecurity, {width: actionWidth}]} labelStyle={styles.compactArtLabel} />}
+      </ScrollView>
     </View>
   );
 }
@@ -2446,7 +2449,7 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
   const posterSource = imageSource(poster.image);
   const posterDimensions = posterSource?.crop
     ? { width: posterSource.crop[2], height: posterSource.crop[3] }
-    : Image.resolveAssetSource(posterSource);
+    : artworkDimensions(posterSource);
   const posterAspectRatio = posterDimensions.width / posterDimensions.height;
   const greeting = NEIGHBORHOOD_GREETING[day % NEIGHBORHOOD_GREETING.length];
 
@@ -2559,7 +2562,7 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
 
       <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Visit Em’s Pet Spa" onPress={() => switchTab("Spa")}
         style={{ marginHorizontal: 18, marginTop: 12, overflow: "hidden", borderRadius: 20, backgroundColor: "#FFF0F6", borderWidth: 1, borderColor: "#ECA8C9" }}>
-        <CharacterArtwork source={spaPorchArtwork} style={{ width: "100%", aspectRatio: 1 }} resizeMode="cover" accessible={false} />
+        <CharacterArtwork source={spaPorchArtwork} style={{ width: "100%", aspectRatio: spaPorchArtwork.crop[2] / spaPorchArtwork.crop[3] }} resizeMode="contain" accessible={false} />
         <View style={{ padding: 12 }}><Text style={{ color: "#A52167", fontWeight: "900", fontSize: 18 }}>Em’s Pet Spa is open</Text>
           <Text style={{ color: "#34465E", fontSize: 14, lineHeight: 20, marginTop: 4 }}>Peek in for pampered paws, top-secret makeovers, and cookie cleanup. ›</Text></View>
       </TouchableOpacity>
@@ -3350,8 +3353,8 @@ const importDemoBills = () => {
 
         <TouchableOpacity artworkMode="integrated" accessibilityRole="button" accessibilityLabel="Try sample bill review"
           style={styles.sampleBillsShortcut} onPress={importDemoBills}>
-          <FittedArtwork source={imageSource(importBillsWestleyGraphic)} aspectRatio={4 / 3}
-            testID="sample-bills-shortcut-artwork" resizeMode="cover" accessible={false} />
+          <FittedArtwork source={imageSource(importBillsWestleyGraphic)}
+            testID="sample-bills-shortcut-artwork" resizeMode="contain" accessible={false} />
           <View style={styles.sampleBillsCopy}>
             <Text style={styles.sampleBillsTitle}>Try sample bill review</Text>
             <Text style={styles.cardSub}>Practice with fictional bills.</Text>
@@ -3609,7 +3612,7 @@ function DebtScreen({ debts, showPayoffStrategy, onMicropayments, payoffMode, mi
             accessibilityState={{ selected: mode === option.id }}
             style={[styles.payoffModeButton, { borderColor: option.color, backgroundColor: option.tint }, mode === option.id && styles.payoffModeButtonActive]}
             onPress={() => setPayoffMode(option.id)}>
-            <FittedArtwork source={option.artwork} aspectRatio={option.artworkRatio} resizeMode="cover" accessible={false} />
+            <FittedArtwork source={option.artwork} resizeMode="contain" accessible={false} />
             <View style={styles.payoffModeCaption}>
               <Text style={[styles.payoffModeTitle, { color: option.color }]}>{option.title}</Text>
               <Text style={styles.payoffModeSub}>{option.subtitle}</Text>
@@ -4476,11 +4479,11 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 6,
   },
-  headerActions: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'stretch', gap: 6, marginTop: 5 },
-  headerHelp: { flex: 1, minWidth: 72, minHeight: 65, borderColor: palette.purple },
-  headerPlans: { minWidth: 64, minHeight: 65, borderColor: palette.gold },
-  headerSecurity: { minWidth: 74, minHeight: 65, borderColor: palette.teal },
-  compactArtLabel: { fontSize: 13, lineHeight: 17, paddingVertical: 3, paddingHorizontal: 5 },
+  headerActions: { flexDirection: 'row', alignItems: 'stretch', gap: 8, paddingBottom: 4, marginTop: 5 },
+  headerHelp: { width: 124, flexShrink: 0, minHeight: 65, borderColor: palette.purple },
+  headerPlans: { width: 124, flexShrink: 0, minHeight: 65, borderColor: palette.gold },
+  headerSecurity: { width: 124, flexShrink: 0, minHeight: 65, borderColor: palette.teal },
+  compactArtLabel: { fontSize: 14, lineHeight: 18, paddingVertical: 3, paddingHorizontal: 5 },
   deletionShortcut: { minWidth: 50, minHeight: 48, borderColor: palette.purple },
   headerTopRow: {
     flexDirection: "row",
@@ -4524,7 +4527,7 @@ const styles = StyleSheet.create({
   safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
   safeMapCopy: { flex: 1, minWidth: 0, padding: 10, justifyContent: "center" },
   safeMapArtwork: { width: "45%", flexShrink: 0, alignSelf: "center" },
-  mapReturnButton: { width: 168, minHeight: 55, marginVertical: 4, borderColor: palette.purple },
+  mapReturnButton: { width: 96, minHeight: 55, marginVertical: 4, borderColor: palette.purple },
   mapUtilityButton: { flexBasis: "46%", flexGrow: 1, minHeight: 100, borderColor: palette.purple },
   mapPlanButton: { flexBasis: "46%", flexGrow: 1, minHeight: 100, borderColor: palette.gold },
   mapSecurityButton: { flexBasis: "100%", minHeight: 86, borderColor: palette.teal },
@@ -5936,7 +5939,7 @@ const styles = StyleSheet.create({
   onboardingProgressFill: { height: "100%", borderRadius: 999 },
   onboardingStepLabel: { marginTop: 8, marginBottom: 14, textAlign: "right", color: palette.muted, fontSize: 12, fontWeight: "800" },
   annieWelcomeScroll: { flexGrow: 1, minHeight: "100%", justifyContent: "flex-start", padding: 16, paddingTop: 16, backgroundColor: "#173D35" },
-  annieWelcomeImage: { width: "100%", height: 170, marginBottom: 12 },
+  annieWelcomeImage: { width: "100%", maxWidth: 320, alignSelf: "center", aspectRatio: 941 / 1672, marginBottom: 12 },
   annieWelcomeShade: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(9, 34, 28, 0.48)" },
   annieWelcomeCard: { backgroundColor: "rgba(255,255,255,0.96)", borderRadius: 30, padding: 22, shadowColor: "#000", shadowOpacity: 0.22, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 8 },
   annieWelcomeEyebrow: { fontSize: 12, fontWeight: "900", letterSpacing: 1.6, color: "#3D7A62", marginBottom: 6 },
@@ -5968,7 +5971,7 @@ const styles = StyleSheet.create({
   quiltGiftButtonText: { color: "white", fontSize: 17, fontWeight: "900" },
   onboardingCard: { backgroundColor: "white", borderRadius: 28, padding: 18, shadowColor: "#172554", shadowOpacity: 0.12, shadowRadius: 18, shadowOffset: { width: 0, height: 9 }, elevation: 5 },
   onboardingImage: { width: "100%", height: 210, borderRadius: 20, backgroundColor: palette.lavender },
-  onboardingMascotBadge: { alignSelf: "flex-start", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8, marginTop: -24, marginLeft: 12, borderWidth: 4, borderColor: "white" },
+  onboardingMascotBadge: { alignSelf: "flex-start", borderRadius: 16, paddingHorizontal: 14, paddingVertical: 8, marginTop: 8, marginLeft: 12, borderWidth: 4, borderColor: "white" },
   onboardingMascotName: { color: "white", fontWeight: "900", fontSize: 15 },
   onboardingMascotRole: { color: "white", opacity: 0.9, fontWeight: "700", fontSize: 11 },
   onboardingQuestion: { fontSize: 27, lineHeight: 32, color: palette.ink, fontWeight: "900", marginTop: 18 },
