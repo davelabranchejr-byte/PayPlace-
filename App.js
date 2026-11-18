@@ -2652,15 +2652,17 @@ function MyFinancesScreen({
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <SectionTitle title="My Finances" />
-      <View style={styles.safeHeroCard} testID="home-safe-to-spend">
+      <View style={[styles.safeHeroCard, styles.financesSummary]} testID="home-safe-to-spend">
+        <View style={styles.financesSummaryCopy}>
         <Text accessibilityRole="header" style={styles.safeHeroLabel}>Safe to Spend</Text>
-        <Text style={styles.safeHeroAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
-        <Text style={styles.safeHeroSub}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
-        <View style={styles.safeHeroImageFrame}>
+        <Text style={[styles.safeHeroAmount, styles.financesSummaryAmount]}>{money(safeToSpendDaily)}<Text style={styles.financesSummaryUnit}>/day</Text></Text>
+        <Text style={[styles.safeHeroSub, styles.financesSummaryNote]}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
+        </View>
+        <View style={[styles.safeHeroImageFrame, styles.financesSummaryArtwork]}>
           <SafeToSpendArtwork placement="finances" testID="home-safe-to-spend-artwork" />
         </View>
       </View>
-      <NavigationTiles testID="home-shortcuts" items={[
+      <NavigationTiles testID="home-shortcuts" columns={2} items={[
         { title: "Review my bills", source: require("./assets/characters/finances-bills-westley.jpg"), body: unpaidBills.length === 1 ? "1 unpaid bill" : `${unpaidBills.length} unpaid bills`, colors: { fill: "#65EBEF", border: "#00AABF" }, onPress: () => switchTab("Bills") },
         { title: "One small step", source: require("./assets/characters/finances-step-tate.jpg"), colors: { fill: "#DCABFF", border: "#9F3DE5" }, onPress: () => setGuidanceVisible(true) },
         { title: "Payoff methods", source: require("./assets/characters/finances-payoff-bobbie.jpg"), colors: { fill: "#FFE455", border: "#E1AC00" }, onPress: onPayoffMethods },
@@ -4522,6 +4524,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: palette.teal,
   },
+  financesSummary: { flexDirection: "row", alignItems: "center", gap: 10, padding: 10, marginBottom: 6 },
+  financesSummaryCopy: { flex: 1, minWidth: 0 },
+  financesSummaryAmount: { fontSize: 26, marginTop: 2 },
+  financesSummaryUnit: { fontSize: 16 },
+  financesSummaryNote: { fontSize: 13, lineHeight: 17 },
+  financesSummaryArtwork: { width: "50%", marginTop: 0, flexShrink: 0, alignSelf: "center" },
   safeMapShortcut: { margin: 10, flexDirection: "row", alignItems: "stretch", overflow: "hidden",
     backgroundColor: "#097A73", borderColor: palette.teal },
   safeMapAmount: { color: "#BDFBFF", fontSize: 29, fontWeight: "900" },
