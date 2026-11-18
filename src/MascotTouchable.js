@@ -73,7 +73,9 @@ function settings({children,style,artworkMode,artworkAction,accessibilityState,a
   const stacked=!compact && width<300;
   const fixedSize=typeof flat.width==='number'?Math.max(20,flat.width-16):36;
   const size=compact?Math.min(artworkSize,fixedSmall?fixedSize:64):Math.min(artworkSize,width>0?Math.max(48,width-32):artworkSize);
-  const showRim = integrated && !hotspot && !illustrated;
+  // Explicit integrated artwork must stay unobstructed even when an export
+  // minifies the child component's function name.
+  const showRim = artworkMode !== 'integrated' && integrated && !hotspot && !illustrated;
   return {flat,hotspot,integrated,plain,showRim,action,ink:!flat.backgroundColor||quietSurfaces.has(flat.backgroundColor)?'#071A3A':undefined,compact,fixedSmall,stacked,size,row:!stacked&&(!compact||flat.flexDirection==='row'),radius:Math.max(flat.borderRadius||0,compact?14:22),selected:!!accessibilityState?.selected};
 }
 export const MascotTouchable=forwardRef(function MascotTouchable({artworkMode,artworkAction,artworkSize,children,style,onLayout,...props},ref){
