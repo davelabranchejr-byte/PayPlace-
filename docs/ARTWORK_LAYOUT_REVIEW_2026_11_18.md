@@ -21,6 +21,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 
 | Component | Proposed correction |
 | --- | --- |
+| MascotTouchable / MascotPressable | Do not paint the glossy white rim over explicitly integrated artwork. Use the artwork mode rather than relying on component function names that an export can shorten. |
 | IllustratedButton | In-flow artwork at its natural aspect ratio; dedicated dark caption below; remove clipping height/ratio overrides and overlay logo badge. |
 | FittedArtwork + artwork-ratio | Derive missing frame proportions from native or web asset dimensions; continue measuring both rendered image dimensions. |
 | Header + NeighborhoodNav | Larger responsive top actions; four equal-width persistent tabs fit within a reserved footer, with complete square artwork and separate labels. |
