@@ -15,7 +15,7 @@ Build 75, the live deployment, existing artwork files, release configuration and
 - Web bundle export passed.
 - iOS JavaScript/Hermes bundle export passed; this is not an Xcode build or native UI test.
 - Browser layout frames: 375 x 667, 390 x 844, 430 x 932. Footer boundary checks passed on My Finances, Budget and Bills at all three sizes (nine checks).
-- Existing artwork assets and app/release configuration are unchanged. The only new artwork assets are the two supplied Pet Spa painting pictures.
+- Existing artwork assets and app/release configuration are unchanged. New artwork assets are the two supplied Pet Spa painting pictures and the requested pink-sign correction of the turkey scene.
 
 ## Affected shared components
 
@@ -69,3 +69,9 @@ The issue is not signed off as fixed. Review the proposed layout first; resolve 
 ## Pet Spa deck additions
 
 At Dave’s request, the exact supplied JPEGs were copied without modification as `spa-turkey-pawprint-art.jpg` and `spa-hollywood-pawprint-art.jpg`. Both appear in the current-stay deck after the seaside scene and before pickup. Their square frames show the complete pictures. Existing scenes, pickup and Annie’s family wall are preserved. No atmosphere animation is drawn over these painting cards. The current stay now has seven scenes. This is a review-branch addition only.
+
+Follow-up: Dave identified the pink sign in the Hollywood scene as the correct Em’s Pet Spa sign. The turkey scene now uses `spa-turkey-pawprint-art-pink-sign.png`, edited to match that pink oval face, wood rim, purple lettering and paw prints. The original uploaded JPEG is retained. The Hollywood image is unchanged.
+
+Pet Spa scene navigation: Previous and Next now return the visit scroll position to the top of the artwork. This prevents a new scene from opening with only the picture’s bottom strip visible above the green spa caption. The source image remains fully contained; short screens retain natural vertical scrolling. Plain-button styling was retained after Dave clarified that the reported problem was the picture position.
+
+Browser verification: the turkey and Hollywood scenes start at the top of the visit viewport after tapping Next; Previous returns to the same artwork position. At 390 x 844 each new square picture is fully visible above the footer. The 430 x 932 view also fits; the 375 x 667 view starts at the picture’s top and allows scrolling to its lower portion. The visit ScrollView has its own key so its native ref and layout measurements connect when entering from the spa room. Native-device verification remains pending.
