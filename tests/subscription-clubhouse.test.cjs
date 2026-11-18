@@ -19,6 +19,7 @@ test('Clubhouse supports add/edit cents, review decisions and sample-data disclo
     if (name === './Encouragement') return { EncouragementSpot: () => null };
     if (name === 'react') return React;
     if (name === 'react-native') return ui;
+    if (name === './artwork-ratio') return { artworkDimensions: ui.Image.resolveAssetSource };
     if (name === './Privacy') return { Text: ui.Text, TextInput: ui.TextInput };
     if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
     if (name.endsWith('subscription-detective.mjs')) return model;

@@ -20,7 +20,7 @@ test.before(async () => {
     ...Object.fromEntries(['View', 'Text', 'TextInput', 'Image', 'ScrollView', 'TouchableOpacity',
       'SafeAreaView', 'KeyboardAvoidingView', 'PayPlaceBrand', 'CharacterArtwork', 'ActionArtwork',
       'ConstructionNotice', 'EmailVerification', 'PrivacyLinks', 'Ionicons', 'AcornSquare'].map(name => [name, name])),
-    styles: {}, palette: {}, portraits: { westley: 'Westley portrait', bobbie: 'Bobbie portrait', chapo: 'Chapo portrait', tate: 'Tate portrait', daddy: 'Daddy portrait' }, greatAnnieHero: {}, require: file => file, imageSource: value => value,
+    artworkRatio: () => 1, styles: {}, palette: {}, portraits: { westley: 'Westley portrait', bobbie: 'Bobbie portrait', chapo: 'Chapo portrait', tate: 'Tate portrait', daddy: 'Daddy portrait' }, greatAnnieHero: {}, require: file => file, imageSource: value => value,
     payPlacePlans: [{ id: 'plus', name: 'Plus', price: '$4.99', onboardingSummary: 'Debt payoff and micropayments', artwork: 'Tate' }],
     Platform: { OS: 'ios' }, Alert: { alert: () => {} }, ...progress, ...contact, module: { exports: {} } };
   vm.runInNewContext(code + '\nmodule.exports = { OnboardingFlow, ONBOARDING_STEPS };', sandbox);

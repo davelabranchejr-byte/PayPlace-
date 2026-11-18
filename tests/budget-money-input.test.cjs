@@ -29,6 +29,7 @@ vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosu
     if (name === './Encouragement') return { EncouragementSpot: () => null };
   if (name === 'react') return React;
   if (name === 'react-native') return { Image:'Image', View:'View', TouchableOpacity:'TouchableOpacity', StyleSheet:{create:value=>value} };
+  if (name === './artwork-ratio') return { artworkDimensions: () => ({width:1536,height:1024}) };
   if (name === './Privacy') return { Text:'Text' };
   if (name === './ActionArtwork') return { ACTION_ARTWORK: {} };
   if (name === './FittedArtwork') return { __esModule: true, default: 'FittedArtwork' };

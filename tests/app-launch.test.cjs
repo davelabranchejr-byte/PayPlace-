@@ -411,9 +411,8 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     const artwork = shortcut.find(node => node.type === 'View' && node.props.testID === 'map-safe-to-spend-artwork');
     await act(() => artwork.props.onLayout({ nativeEvent: { layout: { width: 128, height: 128 / 1.5 } } }));
     const shortcutImage = shortcut.findByProps({testID:'map-safe-to-spend-artwork-image'});
-    assert.equal(shortcut.findByProps({testID:'payplace-artwork-mark'}).props.source,
-      harness.artworkId('assets/branding/payplace-artwork-mark.png'));
-    assert.equal(shortcutImage.props.resizeMode, 'cover');
+    assert.equal(shortcut.findAllByProps({testID:'payplace-artwork-mark'}).length,0,'no badge obscures the original artwork');
+    assert.equal(shortcutImage.props.resizeMode, 'contain');
     assert.ok(['porch', 'rainy-day'].some(scene => shortcutImage.props.source === harness.artworkId(`assets/characters/safe-to-spend-${scene}.jpg`)));
     assert.equal(shortcutImage.props.style.width, 128);
     assert.equal(shortcutImage.props.style.height, 128 / 1.5);
@@ -761,7 +760,7 @@ test('plan tabs keep primary navigation visible and open working tools without p
     const cabaret = button('Open Bobbie’s Cabaret Show');
     const cabaretArt = cabaret.find(node => node.type?.name === 'FittedArtwork');
     assert.equal(cabaretArt.props.source, harness.artworkId('assets/characters/map-menu-cabaret.jpg'));
-    assert.equal(cabaretArt.props.resizeMode, 'cover');
+    assert.equal(cabaretArt.props.resizeMode, 'contain');
     assert.ok(cabaret.props.style.flat(Infinity).some(style => style?.width === '100%' && style?.maxWidth === 480));
     const spa = button('Open Em’s Pet Spa');
     assert.ok(spa.props.style.flat(Infinity).some(style => style?.width >= 190));
@@ -774,15 +773,14 @@ test('plan tabs keep primary navigation visible and open working tools without p
     for (const [label, file] of Object.entries(artworkFiles)) {
       const art = button(label).find(node => node.type?.name === 'FittedArtwork');
       assert.equal(art.props.source, harness.artworkId(`assets/characters/map-menu-${file}.jpg`));
-      assert.equal(art.props.resizeMode, 'cover');
+      assert.equal(art.props.resizeMode, 'contain');
       const artFrame = art.findByType('View');
       await act(() => artFrame.props.onLayout({nativeEvent:{layout:{width:150,height:120}}}));
-      assert.equal(art.findByProps({testID:'payplace-artwork-mark'}).props.source,
-        harness.artworkId('assets/branding/payplace-artwork-mark.png'));
+      assert.equal(art.findAllByProps({testID:'payplace-artwork-mark'}).length,0,'no badge obscures the original artwork');
     }
     const billsArt = button('Open Bills & Banking').find(node => node.type?.name === 'FittedArtwork');
     assert.equal(billsArt.props.source, harness.artworkId('assets/characters/billiam-canonical.png'));
-    assert.equal(billsArt.props.resizeMode, 'cover');
+    assert.equal(billsArt.props.resizeMode, 'contain');
     assert.ok(button('Open Chapo’s Kitchen').findAllByType('Text').every(node => node.props.numberOfLines === undefined));
     await press('Open Chapo’s Kitchen');
     assert.equal(button('Open Home').props.accessibilityState.selected, true);
@@ -797,7 +795,7 @@ test('plan tabs keep primary navigation visible and open working tools without p
       assert.equal(tab.props.accessibilityRole, 'tab');
       const art = tab.find(node => node.type?.name === 'FittedArtwork');
       assert.equal(art.props.source, harness.artworkId(`assets/characters/bottom-tab-${scene}.jpg`));
-      assert.equal(art.props.resizeMode, 'cover');
+      assert.equal(art.props.resizeMode, 'contain');
       assert.ok(tab.findAllByType('Text').every(text => text.props.numberOfLines === undefined),
         'large text may wrap instead of truncating the destination');
     }
@@ -979,7 +977,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Open My Finances');
     const helpArt = button('How My Finances works').find(node => node.type?.name === 'FittedArtwork');
     assert.equal(helpArt.props.source, harness.artworkId('assets/characters/feature-how-home-works-daddy.png'));
-    assert.equal(helpArt.props.resizeMode, 'cover');
+    assert.equal(helpArt.props.resizeMode, 'contain');
     for (const [title, file] of [
       ['Review my bills', 'finances-bills-westley.jpg'],
       ['One small step', 'finances-step-tate.jpg'],
@@ -1049,7 +1047,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     assert.equal(harness.finance().groomingAppointments[0].time, '10:30');
     await pressCalendar('Close monthly calendar');
     const micropaymentShortcut = () => button('Micropayments: small extra payments');
-    const measureArt = async (tile, width = 280, resizeMode = 'cover') => {
+    const measureArt = async (tile, width = 280, resizeMode = 'contain') => {
       const frame = tile.find(node => node.type === 'View' && typeof node.props.onLayout === 'function');
       await act(() => frame.props.onLayout({ nativeEvent: { layout: { width, height: width / 1.5 } } }));
       const image = tile.findByType('Image');
@@ -1125,7 +1123,7 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     const budgetCategories = button('Open purchases and remembered categories')
       .find(node => node.type?.name === 'FittedArtwork');
     assert.equal(budgetCategories.props.source, harness.artworkId('assets/characters/budget-entry-purchases.jpg'));
-    assert.equal(budgetCategories.props.resizeMode, 'cover');
+    assert.equal(budgetCategories.props.resizeMode, 'contain');
     const editArtwork = button('Edit money info').find(node => node.type?.name === 'FittedArtwork');
     assert.equal(editArtwork.props.source, harness.artworkId('assets/characters/budget-entry-edit.jpg'));
     assert.equal(input('Current bank balance'), undefined);
@@ -1175,12 +1173,9 @@ test('compact money pages keep entries visible and open forms and neighborhood e
     await press('Show me another story');
     const quoteFrame = calm.findByProps({testID:'calm-garden-quote-frame'});
     const caption = calm.findByProps({testID:'calm-garden-quote-caption'});
-    await act(() => quoteFrame.props.onLayout({nativeEvent:{layout:{height:350}}}));
-    await act(() => caption.props.onLayout({nativeEvent:{layout:{height:72}}}));
     assert.match(textContent(caption.findAllByType('Text').map(node => node.props.children)), /Rest is not falling behind/);
-    assert.equal(caption.props.style.at(-1).marginTop,-72);
-    await act(() => caption.props.onLayout({nativeEvent:{layout:{height:160}}}));
-    assert.equal(caption.props.style.at(-1).marginTop,-77,'larger text can extend below the clear foreground');
+    assert.equal(quoteFrame.props.onLayout, undefined, 'the scene no longer reserves space for an overlapping caption');
+    assert.ok(caption.props.style.every(style => !style?.marginTop || style.marginTop >= 0), 'the caption stays below the complete illustration at any text size');
     await press('Back to Neighborhood');
     await press('Open neighborhood menu');
 
@@ -1281,7 +1276,7 @@ test('Billiam mailbox opens seven room stations and their original bounded artwo
   const harness=appHarness();let renderer;
   try{
     await act(async()=>{renderer=create(React.createElement(harness.Billiam,{finance:{bills:[]},onAdd:()=>true,onUpdate:()=>true,onTemplates:()=>{},onHousehold:()=>{}}));});
-    const tasks=renderer.root.findAllByType('Pressable').filter(n=>n.props.accessibilityLabel?.startsWith('Billiam: '));
+    const tasks=renderer.root.findAllByType('Pressable').filter(n=>n.props.accessibilityLabel?.startsWith('Billiam: ') && n.findAllByType('Text').length > 0);
     const ids=['scan','import','batch','compare','recurring','breakdown','household'];
     assert.equal(tasks.length,ids.length);
     assert.deepEqual(tasks.map(task => task.findByType('Text').props.children),

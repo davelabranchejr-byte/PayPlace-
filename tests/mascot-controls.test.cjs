@@ -6,7 +6,7 @@ async function fixture({fontScale=1}={}){
   const flatten=s=>Array.isArray(s)?Object.assign({},...s.map(flatten)):s||{};
   const NativePressable=({children,...props})=>React.createElement('Pressable',props,typeof children==='function'?children({pressed:false}):children);
   const ui={Image,Text:'Text',View:'View',TouchableOpacity:'TouchableOpacity',Pressable:NativePressable,useWindowDimensions:()=>({width:375,height:812,fontScale}),StyleSheet:{flatten,create:value=>value}};
-  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./brand')return {...load('brand.js'),payplaceLogo:'approved-payplace-icon'};if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name==='./FittedArtwork')return load('FittedArtwork.js');if(name==='./PayPlaceBadge')return load('PayPlaceBadge.js');if(name==='./ArtworkBrandMark')return load('ArtworkBrandMark.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
+  function load(file){if(cache.has(file))return cache.get(file).exports;const module={exports:{}};cache.set(file,module);const code=babel.transformSync(fs.readFileSync(path.join(__dirname,'../src',file),'utf8'),{configFile:false,babelrc:false,plugins:['@babel/plugin-transform-react-jsx','@babel/plugin-transform-modules-commonjs']}).code;vm.runInNewContext(code,{module,exports:module.exports,require:name=>{if(name==='react')return React;if(name==='react-native')return ui;if(name==='./action-artwork.mjs')return actions;if(name==='./brand')return {...load('brand.js'),payplaceLogo:'approved-payplace-icon'};if(name==='./Privacy')return {Text:'Text'};if(name==='./MascotTouchable')return load('MascotTouchable.js');if(name==='./ActionArtwork')return load('ActionArtwork.js');if(name==='./artwork-ratio')return load('artwork-ratio.js');if(name==='./FittedArtwork')return load('FittedArtwork.js');if(name==='./PayPlaceBadge')return load('PayPlaceBadge.js');if(name==='./ArtworkBrandMark')return load('ArtworkBrandMark.js');if(name.startsWith('../assets/'))return name;throw new Error(name);}});return module.exports;}
   return {...load('MascotTouchable.js'),FeatureLinks:load('FeatureLinks.js').default,Image,actions,flatten,art:load('ActionArtwork.js').ACTION_ARTWORK};
 }
 async function measureFeature(button, width = 320) {
@@ -102,7 +102,7 @@ test('feature shortcuts display large unchanged artwork and open the same destin
       const images=buttons[i].findAllByType('Image');assert.equal(images.length,1,'no duplicate action image is added');
       assert.equal(images[0].props.source,f.art[items[i].artworkAction]);
       assert.equal(images[0].props.style.width,320);assert.equal(images[0].props.style.height,320 / 1.5);
-      assert.equal(images[0].props.resizeMode,'cover');
+      assert.equal(images[0].props.resizeMode,'contain');
       await act(()=>buttons[i].props.onPress());
     }
     assert.deepEqual(opened,items.map(item=>item.title));
@@ -188,7 +188,7 @@ test('feature banners fill the measured width and keep labels below the artwork'
     for(const width of [280,335,390]){
       await measureFeature(button,width);
       assert.equal(button.findByType('Image').props.style.width,width);
-      assert.equal(button.findByType('Image').props.resizeMode,'cover');
+      assert.equal(button.findByType('Image').props.resizeMode,'contain');
       const label=button.findAllByType('Text').find(node=>node.props.children==='Neighborhood');
       assert.equal(label.props.numberOfLines,undefined);
     }

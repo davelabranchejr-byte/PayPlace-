@@ -20,6 +20,7 @@ function loadComponents(model){
   vm.runInNewContext(code,{module,exports:module.exports,require:name=>{
     if (name === './MascotTouchable') return { MascotTouchable: 'TouchableOpacity', MascotPressable: 'Pressable' };
     if (name === './Encouragement') return { EncouragementSpot: () => null };
+    if(name==='./artwork-ratio'){const helper={exports:{}};vm.runInNewContext(babel.transformSync(fs.readFileSync(path.join(__dirname,'../src/artwork-ratio.js'),'utf8'),{plugins:['@babel/plugin-transform-modules-commonjs']}).code,{module:helper,exports:helper.exports,require:()=>ui});return helper.exports;}
     if(name==='react')return React;
     if(name==='react-native')return ui;
     if(name==='./Privacy')return {Text:'Text',TextInput:'TextInput'};
@@ -47,7 +48,7 @@ test('all four original card images stay within measured phone frames and keep t
       for(const image of images){
         assert.equal(image.props.nativeBounds.width,width);
         assert.equal(image.props.nativeBounds.height,height,'native source height must be overridden explicitly');
-        assert.equal(image.props.resizeMode,'cover','the illustration fills the tile');
+        assert.equal(image.props.resizeMode,'contain','the complete illustration stays visible');
         assert.equal(image.props.nativeBounds.left,0);assert.equal(image.props.nativeBounds.top,0);
       }
       for(const frame of frames)assert.equal(flatten(frame.props.style).overflow,'hidden');
@@ -69,7 +70,7 @@ test('feature-screen artwork uses the same bounded sizing and remains compact on
         assert.equal(frame,undefined,'the shortcut scene is shown only on its tile');
         continue;
       }
-      assert.equal(flatten(frame.props.style).maxHeight,220);
+      assert.equal(flatten(frame.props.style).maxHeight,undefined,'the original scene sets the height');
       await act(()=>frame.props.onLayout({nativeEvent:{layout:{width:353,height:220,x:0,y:0}}}));
       const image=renderer.root.findByType('Image');
       assert.equal(image.props.nativeBounds.width,353);assert.equal(image.props.nativeBounds.height,220);
