@@ -14,7 +14,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 - Automated suite: 212 passed, 0 failed.
 - Web bundle export passed.
 - iOS JavaScript/Hermes bundle export passed; this is not an Xcode build or native UI test.
-- Browser layout frames: 375 x 667, 390 x 844, 430 x 932.
+- Browser layout frames: 375 x 667, 390 x 844, 430 x 932. Footer boundary checks passed on My Finances, Budget and Bills at all three sizes (nine checks).
 - Artwork assets and app/release configuration have zero changes relative to the baseline.
 
 ## Affected shared components
@@ -23,7 +23,7 @@ Build 75, the live deployment, artwork files, release configuration and release 
 | --- | --- |
 | IllustratedButton | In-flow artwork at its natural aspect ratio; dedicated dark caption below; remove clipping height/ratio overrides and overlay logo badge. |
 | FittedArtwork + artwork-ratio | Derive missing frame proportions from native or web asset dimensions; continue measuring both rendered image dimensions. |
-| Header + NeighborhoodNav | Larger responsive top actions; swipeable persistent tabs with complete square artwork and separate labels. |
+| Header + NeighborhoodNav | Larger responsive top actions; four equal-width persistent tabs fit within a reserved footer, with complete square artwork and separate labels. |
 | NavigationTiles, FeatureLinks, ExpandableSection | Contain complete images; retain natural asset proportions; single-column cards below 400 px where needed. |
 | CaptionedArtwork, CalmGardenScene, BillScanner | Remove negative caption overlap. Story and scanner labels occupy their own area below the scene. |
 | InteractiveRoom | Retain original hotspot coordinates; move room labels into a separate tappable action list below the illustration. Map labels remain on the map. |
@@ -60,6 +60,6 @@ Build 75, the live deployment, artwork files, release configuration and release 
 | Art Studio | OPEN. Build 75 contains historical Art Studio artwork/docs but no standalone reachable Art Studio screen was found in its current route implementation. The requested studio cannot be certified as an accessible screen in this baseline. |
 | Full state coverage | OPEN. Main sections and many nested panels were exercised, but this is not certification of every scroll position, every data-dependent state, every modal, all seasonal dates, or all onboarding questions on three native iPhones. |
 | Intentional cropping/masks | RETAINED. Character-atlas cell extraction, small framed portrait masks, animation sprite strips, quilt textures and the blurred lock-screen backdrop are intentional. The primary lock illustration remains contained. |
-| Navigation tradeoff | REVIEW. Larger persistent tabs use horizontal scrolling; more vertical scrolling is needed on small screens. Rounded clipping remains at the outer card border. No extra image bars or generated filler were added. |
+| Navigation tradeoff | CORRECTED AFTER FEEDBACK. The previous draft made the footer wider than the screen. Four flexible columns now stay inside the available width; no footer horizontal scrolling. All four tabs fit without overlapping at 375, 390 and 430 px. Main-page scrolling remains available. |
 
 The issue is not signed off as fixed. Review the proposed layout first; resolve open native/hit-testing checks before applying it to a release.
