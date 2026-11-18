@@ -502,7 +502,12 @@ test('a returning neighbor unlocks, enters Home and opens every Premium panel wi
     await act(() => button('Close picture and return to the family wall').props.onPress());
     await openDestination('Spa','Em’s Pet Spa');
     await act(()=>button('Open current spa stay').props.onPress());
-    for (let scene = 0; scene < 5; scene++) {
+    for (let scene = 0; scene < 7; scene++) {
+      if (scene === 4 || scene === 5) {
+        const artwork = renderer.root.find(node => node.type?.name === 'ContainedIllustration');
+        assert.equal(artwork.props.source, harness.artworkId(`assets/characters/${scene === 4 ? 'spa-turkey-pawprint-art.jpg' : 'spa-hollywood-pawprint-art.jpg'}`));
+        assert.equal(artwork.props.aspectRatio, 1, 'new square paintings retain their full frame');
+      }
       assertIllustrationFits(renderer.root.find(node => node.type?.name === 'ContainedIllustration'));
       await act(() => button('Next spa scene').props.onPress());
     }
