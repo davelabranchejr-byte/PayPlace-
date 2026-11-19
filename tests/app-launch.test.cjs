@@ -1352,3 +1352,36 @@ test('Billiam household defaults to private, saves assignments, and previews sel
     assert.equal(button('Create encrypted household share file').props.disabled,true,'changing selection invalidates the preview');
   }finally{await act(()=>renderer.unmount());}
 });
+
+test('At a Glance opens from Budget, shows details without disclosure taps and leaves saved money unchanged', async () => {
+  const harness = appHarness({balance:600, buffer:70, nextPaycheck:1800, nextPaycheckDate:'2026-12-02',
+    bills:[{id:'internet',name:'Internet',amount:'62.38',dueDate:'2026-11-23'},{id:'phone',name:'Phone',amount:'80.00',dueDate:'2026-11-27'}],
+    debts:[{id:'card',name:'Credit card',balance:1240,minimum:30}],
+    savingsGoals:[{id:'fund',name:'Emergency fund',savedCents:15000,targetCents:50000}]});
+  let renderer, pending;
+  const button = label => renderer.root.findAll(n=>['TouchableOpacity','Pressable'].includes(n.type)).find(n=>n.props.accessibilityLabel===label);
+  const press = async label => {assert.ok(button(label),label);await act(async()=>button(label).props.onPress());};
+  try {
+    await act(async()=>{renderer=create(React.createElement(harness.App));});
+    await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+    await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+    await press('Open neighborhood menu');
+    await press('Open Budget');
+    await press('Open At a Glance, your complete money overview');
+    const original = JSON.stringify(harness.finance());
+    const overview=renderer.root.findByProps({testID:'at-a-glance-screen'});
+    const copy=overview.findAllByType('Text').map(node=>textContent(node.props.children)).join(' ');
+    for(const expected of ['Safe to Spend','$357.62','Internet','Nov 23','Phone','Nov 27','Credit card','Min $30.00','Emergency fund','$150.00 / $500.00','30% saved','Purchase records do not reduce your balance.'])
+      assert.ok(copy.includes(expected),expected);
+    assert.equal(overview.findAllByType('TextInput').length,0);
+    const tabs=renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab');
+    assert.equal(tabs.length,4);
+    assert.equal(button('Open Budget').props.accessibilityState.selected,true);
+    assert.equal(JSON.stringify(harness.finance()),original);
+    await press('Back to Budget');
+    assert.ok(button('Open At a Glance, your complete money overview'));
+    await press('Open At a Glance, your complete money overview');
+    await press('Open My Finances');
+    assert.equal(renderer.root.findAllByProps({testID:'at-a-glance-screen'}).length,0);
+  } finally {if(renderer)await act(()=>renderer.unmount());}
+});
