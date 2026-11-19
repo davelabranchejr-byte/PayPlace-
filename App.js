@@ -2045,6 +2045,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onNavigate={next => { if (next === "Calendar") setExtraCalendarVisible(true); else if (next === "Savings") setSavingsVisible(true); else if (next === "Subscriptions") openSubscriptionDetective(); else if (next === "BankingDemo") openBankingDemo(); else if (next === "Billiam") openBilliam("Neighborhood"); else setTab(next); }}
           onMirrorAction={updateMirror}
           onLibraryChange={changeLibrary} onQuiltMilestone={addQuiltSquare}
+          onPerViewChange={update => setFinanceRaw(current => ({ ...current, payPlacePerView: typeof update === 'function' ? update(current.payPlacePerView) : update }))}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
         {!onTownMap && tab !== "AtGlance" && recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
