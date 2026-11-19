@@ -44,9 +44,7 @@ verification limits. PayPlacePerView's separate draft is not part of this change
 ## Validation
 
 - Application binding/source check: 154 source files passed.
-- Automated suite: 216 tests; 215 passed on the initial full run, and the new
-  app-navigation test passed after correcting its test setup to open the map
-  menu before Budget. No application failure was found in that test rerun.
+- Automated suite: full final run passed 216 tests, zero failures.
 - Web export passed.
 - iOS JavaScript/Hermes export passed; this is not a signed Xcode archive.
 - Native and actual viewport validation remain pending. Local Chromium could
@@ -57,3 +55,12 @@ Before distribution, inspect this screen with a populated plan on a native
 phone, including long names, more records, larger text, privacy mode, navigation
 and app-lock resume. The prior review's panorama hit-testing and missing
 standalone Art Studio route are still separate unresolved items.
+
+## Native archive workflow
+
+The archive-only workflow now selects the same Xcode 26.3 toolchain as the
+last successful iOS release and verifies the iOS SDK major version is at least
+26. Its default is signing-only, without an Apple upload; the candidate build
+number is 76. The first archive attempt selected the older workflow default
+Xcode 16.4 and was superseded by the corrected toolchain. Uploading the new
+build to TestFlight remains a separate approval step.
