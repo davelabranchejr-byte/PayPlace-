@@ -9,7 +9,7 @@ import { payplaceColors as colors } from './brand';
 import { atAGlance } from './at-a-glance.mjs';
 import { billDate } from './bill-reminders.mjs';
 
-const money = value => `$${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = value => `${Number(value) < 0 ? '-' : ''}$${Math.abs(Number(value)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const dateLabel = value => {
   const date = billDate(value);
   return date ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Date needed';
