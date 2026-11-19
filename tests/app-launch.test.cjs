@@ -1385,3 +1385,27 @@ test('At a Glance opens from Budget, shows details without disclosure taps and l
     assert.equal(renderer.root.findAllByProps({testID:'at-a-glance-screen'}).length,0);
   } finally {if(renderer)await act(()=>renderer.unmount());}
 });
+
+test('At a Glance privacy mode masks net refunds as well as positive balances', async () => {
+  const now = new Date();
+  const date = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+  const model = models.get(path.join(root,'src/merchant-categories.mjs'));
+  const categorization = model.mergeCategoryPurchases(undefined,[],[{id:'refund',accountId:'manual-main',merchant:'Refund',amountCents:-1234,date,category:'Shopping'}]);
+  const harness=appHarness({balance:123.45,bills:[],debts:[],buffer:0,quietMode:{hideAmounts:true},categorization});
+  let renderer,pending;
+  const button=label=>renderer.root.findAll(n=>['TouchableOpacity','Pressable'].includes(n.type)).find(n=>n.props.accessibilityLabel===label);
+  const press=async label=>{assert.ok(button(label),label);await act(async()=>button(label).props.onPress());};
+  try {
+    await act(async()=>{renderer=create(React.createElement(harness.App));});
+    await act(()=>{pending=button('Unlock PayPlace').props.onPress();});
+    await act(async()=>{harness.completeAuthentication({success:true});await pending;});
+    await press('Open neighborhood menu');await press('Open Budget');
+    await press('Open At a Glance, your complete money overview');
+    const overview=renderer.root.findByProps({testID:'at-a-glance-screen'});
+    const copy=overview.findAllByType('Text').map(n=>textContent(n.props.children)).join(' ');
+    assert.ok(copy.includes('$•••'));
+    assert.ok(!copy.includes('123.45'));
+    assert.ok(!copy.includes('12.34'),'refund amounts are private too');
+    assert.ok(copy.includes('Shopping'));
+  }finally{if(renderer)await act(()=>renderer.unmount());}
+});
