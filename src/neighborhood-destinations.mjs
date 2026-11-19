@@ -27,6 +27,7 @@ export const PRIMARY_DESTINATIONS = ['Home', 'Finances', 'Budget', 'Bills'].map(
 export const NEIGHBOR_DESTINATIONS = ['Spa', 'Calm', 'Annie', 'Bobbie', 'Westley', 'Tate', 'Chapo', 'Daddy']
   .map(id => NEIGHBORHOOD_DESTINATIONS.find(place => place.id === id));
 export function primaryDestination(id) {
+  if (id === 'AtGlance') return 'Budget';
   if (['BankingDemo', 'Billiam', 'Debt'].includes(id)) return 'Bills';
   return id === 'Neighborhood' || NEIGHBOR_DESTINATIONS.some(place => place.id === id) ? 'Home' : id;
 }
