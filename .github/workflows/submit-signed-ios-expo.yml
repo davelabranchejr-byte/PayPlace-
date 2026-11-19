@@ -1,6 +1,11 @@
-name: Submit signed Build 24 through Expo
+name: Upload signed Build 76 to TestFlight
 on:
   workflow_dispatch:
+    inputs:
+      approve_testflight_upload:
+        description: Upload signed Build 76 to Apple for TestFlight processing
+        type: boolean
+        default: false
 permissions:
   contents: read
   actions: read
@@ -9,12 +14,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   submit:
+    if: ${{ inputs.approve_testflight_upload }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 796f4a7b2995875004ad8f014d547fbd4e1ae99e
+          ref: 1d22c9954e961d747ffb6ef34d17f5bb4a3c5cba
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -29,8 +35,8 @@ jobs:
           fi
       - uses: actions/download-artifact@v4
         with:
-          artifact-ids: '11571186620'
-          run-id: '37824474650'
+          name: PayPlace-iPhone-release
+          run-id: '44569322283'
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/payplace-upload
           merge-multiple: true
@@ -46,8 +52,9 @@ jobs:
               info = plistlib.loads(archive.read(names[0]))
               assert info["CFBundleIdentifier"] == "com.davelabranchejr.payplace"
               assert info["CFBundleShortVersionString"] == "1.0.0"
-              assert info["CFBundleVersion"] == "24"
-              print("Verified PayPlace 1.0.0 (24)")
+              assert info["CFBundleVersion"] == "76"
+              assert str(info.get("DTSDKName", "")).startswith("iphoneos26"), "Expected the iOS 26 SDK"
+              print("Verified PayPlace 1.0.0 (76), iOS 26 SDK")
           PY
       - name: Install project dependencies
         run: npm ci
@@ -57,4 +64,4 @@ jobs:
           CI: '1'
         run: npx --yes eas-cli@latest submit --platform ios --path "$RUNNER_TEMP/payplace-upload/PayPlace.ipa" --profile production --non-interactive --wait
       - name: Record completed submission
-        run: echo 'Expo submission of signed PayPlace 1.0.0 (24) completed. Apple processing and tester availability still need checking.' >> "$GITHUB_STEP_SUMMARY"
+        run: echo 'Expo submission of signed PayPlace 1.0.0 (76) completed. Apple processing and tester availability still need checking.' >> "$GITHUB_STEP_SUMMARY"
