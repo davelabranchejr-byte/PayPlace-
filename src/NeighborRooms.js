@@ -13,6 +13,7 @@ import { RoomVisitors } from './NeighborhoodWorld';
 import FacebookNeighborhood from './FacebookNeighborhood';
 import TesterFeedback from './TesterFeedback';
 import DaddyMail from './DaddyMail';
+import PayPlacePerView, { DaddyTelevision } from './PayPlacePerView';
 
 const rooms = {
   Daddy: {
@@ -82,11 +83,12 @@ const spotCaptions = {
   email: 'Email Daddy', feedback: 'Beta Feedback',
 };
 
-export default function NeighborRoom({ destination, initialPanel = null, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone }) {
+export default function NeighborRoom({ destination, initialPanel = null, finance, onHome, onNavigate, onMirrorAction, onStepsChange, onLibraryChange, onQuiltMilestone, onPerViewChange }) {
   const [story, setStory] = useState(null);
   const [quilt, setQuilt] = useState(false);
   const [feedback, setFeedback] = useState(false);
   const [mailOpen, setMailOpen] = useState(false);
+  const [perViewOpen, setPerViewOpen] = useState(false);
   const [panel, setPanel] = useState(initialPanel);
   const title = neighborhoodLabel(destination);
   const neighbor = FAMILY_STORIES.find(person => person.id === destination.toLowerCase());
@@ -119,6 +121,7 @@ export default function NeighborRoom({ destination, initialPanel = null, finance
         <EncouragementSpot place="room" style={{ left: '49%', top: '91%' }} />
       </InteractiveRoom>
       {room.hint && <Text style={s.body}>{room.hint}</Text>}
+      {isDaddy && <DaddyTelevision onPress={() => setPerViewOpen(true)} />}
       {isDaddy && <FacebookNeighborhood />}
       <RoomVisitors destination={destination} />
       {destination !== 'Annie' && <LibraryReader value={finance.neighborhoodLibrary} destination={destination} onNavigate={onNavigate} onChange={onLibraryChange} showLibraryLink={false} />}
@@ -135,6 +138,9 @@ export default function NeighborRoom({ destination, initialPanel = null, finance
     </Modal>
     {feedback && <TesterFeedback onClose={() => setFeedback(false)} />}
     {mailOpen && <DaddyMail onClose={() => setMailOpen(false)} />}
+    <Modal visible={perViewOpen} animationType="slide" onRequestClose={() => setPerViewOpen(false)}>
+      {perViewOpen && <SafeAreaView style={s.perViewSafe}><PayPlacePerView value={finance.payPlacePerView} onChange={onPerViewChange} onQuiltMilestone={onQuiltMilestone} tvSquareEarned={finance.quiltMilestones?.includes('sharedPerView')} isSample={finance.planSource === 'Sample'} onClose={() => setPerViewOpen(false)} /></SafeAreaView>}
+    </Modal>
   </ScrollView>;
 }
 
@@ -143,4 +149,5 @@ const s = StyleSheet.create({ screen: { flex: 1, backgroundColor: '#FFF8F2' }, c
   title: { color: '#173557', fontWeight: '900', fontSize: 28 }, body: { color: '#34465E', fontSize: 16, lineHeight: 24 },
   laptopFrame: { position: 'absolute', left: '3%', top: '69%', width: '23%', height: '27%' },
   laptop: { width: '100%', height: '100%' },
+  perViewSafe: { flex: 1, backgroundColor: '#111831' },
 });

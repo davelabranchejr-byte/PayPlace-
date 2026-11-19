@@ -29,6 +29,7 @@ const patches = {
   borrowedBook: [require("../assets/characters/quilt-borrowed-book.png"), "Borrowed your first library book"],
   joinedFacebook: [require("../assets/characters/quilt-joined-facebook.png"), "Joined the Facebook group"],
   invitedFriend: [require("../assets/characters/quilt-invited-friend.png"), "Invited a friend"],
+  sharedPerView: [require("../assets/characters/quilt-shared-per-view.png"), "Shared your first PayPlacePerView video"],
 };
 
 const patchesPerRow = 3;
@@ -69,6 +70,8 @@ export function ChairQuilt({ finance }) {
   return <View testID="chair-quilt" pointerEvents="none" accessibilityElementsHidden
     importantForAccessibility="no-hide-descendants" style={StyleSheet.absoluteFillObject}>
     {["acorn", ...quiltMilestones(finance)].map(id => {
+      if (id === 'sharedPerView') return <Image key={id} testID="chair-quilt-square-sharedPerView" source={patches.sharedPerView[0]} resizeMode="contain" accessible={false}
+        style={{ position: 'absolute', left: chairPercent(267), top: chairPercent(802), width: chairPercent(34), height: chairPercent(34), transform: [{ rotate: '-12deg' }] }} />;
       const [source, x, y, width, height] = chairPatches[id];
       return <Image key={id} testID={`chair-quilt-square-${id}`} source={source} resizeMode="stretch" accessible={false}
         style={{ position: "absolute", left: chairPercent(x), top: chairPercent(y), width: chairPercent(width), height: chairPercent(height) }} />;

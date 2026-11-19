@@ -1,7 +1,7 @@
 import { isPaid } from './launch-essentials.mjs';
 import { readDate } from './paycheck-calendar.mjs';
 
-const milestones = ['firstBill', 'paidBill', 'foundNote', 'sentNote', 'savingsGoal', 'micropayment', 'plannedPayday', 'addedSavings', 'paidDebt', 'trackedSubscription', 'savedGrooming', 'borrowedBook', 'joinedFacebook', 'invitedFriend'];
+const milestones = ['firstBill', 'paidBill', 'foundNote', 'sentNote', 'savingsGoal', 'micropayment', 'plannedPayday', 'addedSavings', 'paidDebt', 'trackedSubscription', 'savedGrooming', 'borrowedBook', 'joinedFacebook', 'invitedFriend', 'sharedPerView'];
 
 export function quiltMilestones(finance) {
   if (!finance || finance.planSource === 'Sample') return [];
