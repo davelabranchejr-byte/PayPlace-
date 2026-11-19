@@ -30,7 +30,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     [vaultModel.FINANCE_KEY, JSON.stringify(savedFinance)],
   ]);
   const listeners = new Set();
-  const alerts = [], openedURLs = [];
+  const alerts = [], openedURLs = [], videoPlayers = [], videoShares = [];
   const appState = { currentState: 'active', addEventListener: (_, fn) => {
     listeners.add(fn); return { remove: () => listeners.delete(fn) };
   } };
@@ -62,13 +62,21 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
       if (name === 'react') return React;
       if (name === 'react-native') return ui;
       if (name.endsWith('/bill-import')) return {supportsBillImport:true,importBillDocuments:scanner.importDocuments || (async()=>null),importBillBatch:scanner.importBatch || (async()=>null)};
+      if (name.endsWith('/per-view-sharing')) return { sharePerViewVideo: async (source, id) => { videoShares.push({source,id}); return {status:'returned'}; } };
       if (name.endsWith('/monthly-calendar-print')) return { printCalendar: async () => {} };
       if (name.endsWith('/bill-photo')) return { supportsBillPhoto:true, scanBillPhoto:scanner.scanPhoto || (async () => null) };
       if (name === '@expo/vector-icons') return { Ionicons: 'Ionicons' };
       if (name === 'expo-status-bar') return { StatusBar: 'StatusBar' };
       if (name === 'expo-video') return { VideoView: 'VideoView', useVideoPlayer: (_, setup) => {
         const [player] = React.useState(() => {
-          const instance = { replaceAsync: async () => {}, play() {}, pause() {}, addListener: () => ({ remove() {} }) };
+          const callbacks = new Map();
+          const instance = { duration: 66, currentTime: 0, plays: 0, pauses: 0,
+            replaceAsync: async source => { instance.source = source; },
+            play() { this.plays++; }, pause() { this.pauses++; },
+            addListener(name, callback) { if (!callbacks.has(name)) callbacks.set(name, new Set()); callbacks.get(name).add(callback); return { remove: () => callbacks.get(name).delete(callback) }; },
+            emit(name, payload) { for (const callback of callbacks.get(name) || []) callback(payload); },
+          };
+          videoPlayers.push(instance);
           setup?.(instance); return instance;
         });
         return player;
@@ -78,7 +86,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
       if (name === 'expo-secure-store') return { getItemAsync: async () => 'enabled', setItemAsync: async () => {} };
       if (name === 'expo-local-authentication') return { SecurityLevel: { SECRET: 1 }, getEnrolledLevelAsync: async () => 2,
         authenticateAsync: () => { authCalls++; return new Promise(resolve => { resolveAuth = resolve; }); } };
-      if (/\.(png|jpg|jpeg)$/.test(name)) {
+      if (/\.(png|jpg|jpeg|mp4)$/.test(name)) {
         const asset = path.resolve(path.dirname(file), name);
         if (!imageIds.has(asset)) imageIds.set(asset, imageIds.size + 1);
         return imageIds.get(asset);
@@ -115,7 +123,7 @@ function appHarness(savedFinance = {}, profile = { name: 'Dave', email: 'd@examp
     Mirror: load(path.join(root, 'src/BobbieSmartMirror.js')).default, records, alerts, openedURLs,
     finance: () => JSON.parse(records.get(vaultModel.FINANCE_KEY)),
     artworkId: relativePath => imageIds.get(path.join(root, relativePath)),
-    authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
+    videoPlayers, videoShares, authCalls: () => authCalls, completeAuthentication: result => resolveAuth(result),
     setAppState: state => { appState.currentState = state; listeners.forEach(fn => fn(state)); },
   };
 }
@@ -1408,4 +1416,83 @@ test('At a Glance privacy mode masks net refunds as well as positive balances', 
     assert.ok(!copy.includes('12.34'),'refund amounts are private too');
     assert.ok(copy.includes('Shopping'));
   }finally{if(renderer)await act(()=>renderer.unmount());}
+});
+
+test('Daddy’s TV opens PayPlacePerView, preserves favorites after relaunch, and contains video artwork', async () => {
+  const harness = appHarness({ balance: 127, bills: [], debts: [] });
+  let renderer, pending;
+  const button = label => renderer.root.findAll(n => ['TouchableOpacity', 'Pressable'].includes(n.type)).find(n => n.props.accessibilityLabel === label);
+  const press = async label => { assert.ok(button(label), label); await act(async () => button(label).props.onPress()); };
+  async function unlock() {
+    await act(() => { pending = button('Unlock PayPlace').props.onPress(); });
+    await act(async () => { harness.completeAuthentication({ success: true }); await pending; });
+  }
+  try {
+    await act(async () => { renderer = create(React.createElement(harness.App)); });
+    await unlock();
+    await press('Visit Daddy’s House from the map');
+    await press('Open PayPlacePerView on Daddy’s TV');
+    assert.ok(renderer.root.findByProps({testID:'payplace-per-view'}));
+    await press('Share Daddy · Episode 1 on social media');
+    assert.equal(button('I posted a PayPlacePerView video; add my TV quilt square'), undefined, 'opening instructions does not unlock the reward');
+    await press('Open sharing options for Daddy · Episode 1');
+    assert.equal(harness.videoShares.length, 1);
+    assert.equal(harness.finance().quiltMilestones?.includes('sharedPerView') || false, false, 'returning from a share sheet is not proof of a post');
+    await press('Close sharing instructions');
+    assert.equal(harness.finance().quiltMilestones?.includes('sharedPerView') || false, false, 'cancelling does not award a square');
+    await press('Share Daddy · Episode 1 on social media');
+    await press('Open sharing options for Daddy · Episode 1');
+    await press('I posted a PayPlacePerView video; add my TV quilt square');
+    assert.ok(harness.finance().quiltMilestones.includes('sharedPerView'));
+    await press('Save Daddy · Episode 1 to My Favorites');
+    assert.deepEqual(harness.finance().payPlacePerView.favorites, ['daddy-episode-1']);
+    assert.equal(harness.finance().balance, 127);
+    await press('Show My Favorites in PayPlacePerView');
+    await press('Play Daddy · Episode 1 from My Favorites');
+    const player = renderer.root.findByType('VideoView');
+    assert.equal(player.props.contentFit, 'contain');
+    assert.equal(player.props.nativeControls, true);
+    const playing = harness.videoPlayers.at(-1);
+    assert.equal(playing.plays, 0, 'loading a source must not race an unready player');
+    await act(() => playing.emit('statusChange', {status:'readyToPlay'}));
+    assert.equal(playing.plays, 1);
+    assert.equal(harness.finance().payPlacePerView.views?.['daddy-episode-1'], undefined, 'opening and loading do not count as watching');
+    await act(() => playing.emit('timeUpdate', {currentTime:12}));
+    await act(() => playing.emit('statusChange', {status:'readyToPlay'}));
+    await act(() => playing.emit('timeUpdate', {currentTime:12}));
+    assert.equal(harness.finance().payPlacePerView.views['daddy-episode-1'], 1, 'buffering and repeated time events count once per session');
+    assert.equal(harness.finance().payPlacePerView.progress['daddy-episode-1'].seconds, 12);
+    await act(() => harness.setAppState('background'));
+    assert.ok(playing.pauses > 0, 'backgrounding pauses the video');
+    await act(() => harness.setAppState('active'));
+    await press('Close video and return to PayPlacePerView');
+    await press('Show All in PayPlacePerView');
+    assert.ok(button('Play Daddy · Episode 1 from Continue Watching'));
+    await press('Play Daddy · Episode 1 from Continue Watching');
+    const resumed = harness.videoPlayers.at(-1);
+    await act(() => resumed.emit('statusChange', {status:'readyToPlay'}));
+    assert.equal(resumed.currentTime, 12, 'resume seeks to the saved position after readiness');
+    await act(() => resumed.emit('playToEnd'));
+    await press('Close video and return to PayPlacePerView');
+    assert.equal(button('Play Daddy · Episode 1 from Continue Watching'), undefined, 'finished videos leave Continue Watching');
+    await press('Close PayPlacePerView and return to Daddy’s house');
+    assert.ok(button('Open PayPlacePerView on Daddy’s TV'));
+    await act(() => renderer.unmount());
+    await act(async () => { renderer = create(React.createElement(harness.App)); });
+    await unlock();
+    await press('Visit Daddy’s House from the map');
+    await press('Open PayPlacePerView on Daddy’s TV');
+    await press('Show My Favorites in PayPlacePerView');
+    assert.ok(button('Play Daddy · Episode 1 from My Favorites'));
+    await press('Remove Daddy · Episode 1 from My Favorites');
+    assert.deepEqual(harness.finance().payPlacePerView.favorites, []);
+    await press('Show TV Shows in PayPlacePerView');
+    await press('Play Westley’s Modern Life · Episode 1 from TV Shows');
+    const westleyPlayer = renderer.root.findByType('VideoView');
+    assert.equal(westleyPlayer.props.contentFit, 'contain');
+    assert.ok(westleyPlayer.props.accessibilityLabel.includes('Westley’s Modern Life'));
+    await press('Close video and return to PayPlacePerView');
+    await press('Save Westley’s Modern Life · Episode 1 to My Favorites');
+    assert.deepEqual(harness.finance().payPlacePerView.favorites, ['westleys-modern-life-episode-1']);
+  } finally { if (renderer) await act(() => renderer.unmount()); }
 });

@@ -41,3 +41,12 @@ test('additional squares reflect personal planning, community and neighborhood a
   assert.deepEqual(quiltMilestones(finance), ['savingsGoal', 'plannedPayday', 'addedSavings', 'paidDebt', 'trackedSubscription', 'savedGrooming', 'borrowedBook', 'joinedFacebook', 'invitedFriend']);
   assert.deepEqual(quiltMilestones({ neighborhoodLibrary: { loans: { book: { automatic: true } } } }), []);
 });
+
+test('a confirmed first video share adds one durable TV square and never changes the sample quilt', () => {
+  const earned = awardQuiltMilestone({ bills: [] }, 'sharedPerView');
+  assert.deepEqual(quiltMilestones(earned), ['sharedPerView']);
+  assert.equal(awardQuiltMilestone(earned, 'sharedPerView'), earned);
+  assert.doesNotThrow(() => validateQuiltMilestones(JSON.parse(JSON.stringify(earned.quiltMilestones))));
+  const sample = { planSource: 'Sample' };
+  assert.equal(awardQuiltMilestone(sample, 'sharedPerView'), sample);
+});
