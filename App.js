@@ -90,6 +90,7 @@ import PayPlaceBrand from "./src/PayPlaceBrand";
 import DebtMethodComparison from "./src/DebtMethodComparison";
 import MonthlyPaymentCalendar from "./src/MonthlyPaymentCalendar";
 import MoneyOutlook from "./src/MoneyOutlook";
+import AtAGlance from "./src/AtAGlance";
 import Micropayments, { MicropaymentsButton } from "./src/Micropayments";
 import { recordMicropayment, undoMicropayment } from "./src/micropayments.mjs";
 import { STRATEGY_ORDER, normalizeStrategy, orderDebts, selectStrategy, initializeMixedTarget } from "./src/debt-strategies.mjs";
@@ -1893,8 +1894,8 @@ Confidence: ${bill.confidence || "Confirmed"}`,
         <View style={styles.glowTwo} />
         <View style={styles.glowThree} />
 
-        {sampleFinance && !onTownMap && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
-        {!onTownMap && <Header tab={tab}
+        {sampleFinance && !onTownMap && tab !== "AtGlance" && <View style={{padding:12,backgroundColor:"#FFF1CC"}}><Text style={{fontWeight:"900",color:palette.ink}}>SAMPLE NEIGHBORHOOD · Fictional money</Text><TouchableOpacity accessibilityRole="button" accessibilityLabel="Return to my personal plan" onPress={endSample} style={{padding:12}}><Text>Return to my personal plan</Text></TouchableOpacity></View>}
+        {!onTownMap && tab !== "AtGlance" && <Header tab={tab}
           onHelp={tab === "Plans" ? undefined : () => setTabHelpVisible(true)}
           onPlans={tab === "Plans" ? undefined : () => setTab("Plans")}
           onSecurity={() => setSecurityVisible(true)} />}
@@ -1956,8 +1957,11 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             onSavings={() => setSavingsVisible(true)}
             onCategories={() => setCategoriesVisible(true)}
             onOutlook={() => setOutlookVisible(true)}
+            onAtAGlance={() => setTab("AtGlance")}
           />
         )}
+
+        {tab === "AtGlance" && <AtAGlance finance={finance} sample={!!sampleFinance} onBack={() => setTab("Budget")} />}
 
         {tab === "Debt" && (
           <DebtScreen
@@ -2043,14 +2047,14 @@ Confidence: ${bill.confidence || "Confirmed"}`,
           onLibraryChange={changeLibrary} onQuiltMilestone={addQuiltSquare}
           onStepsChange={next => setFinanceRaw(current => ({...current, smallSteps: next}))} />}
 
-        {!onTownMap && recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
+        {!onTownMap && tab !== "AtGlance" && recentDeleted.length > 0 && <View accessibilityLiveRegion="polite" style={{ marginHorizontal: 18, padding: 12, borderRadius: 18, backgroundColor: palette.lavender, flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Text style={{ flex: 1, color: palette.ink }}>Deleted {recentDeleted[0].collection === "bills" ? "bill" : "debt"}. You can bring it back.</Text>
           <IllustratedButton artwork={require("./assets/characters/deletion-art-undo.jpg")} label="Undo" accessibilityLabel="Undo last deletion"
             onPress={() => undoDeletion(recentDeleted[0].key)} style={styles.deletionShortcut} labelStyle={styles.compactArtLabel} />
           <IllustratedButton artwork={require("./assets/characters/deletion-art-all.jpg")} label="All" accessibilityLabel="View recently deleted entries"
             onPress={() => setSecurityVisible(true)} style={styles.deletionShortcut} labelStyle={styles.compactArtLabel} />
         </View>}
-        {!onTownMap && <NeighborhoodNav current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />}
+        {!onTownMap && <NeighborhoodNav compact={tab === "AtGlance"} current={tab === "Billiam" ? billiamBack : tab === "Calm" ? calmBack : tab} switchTab={next => next === "BankingDemo" ? openBankingDemo() : setTab(next)} />}
         {monthlyCalendarMode && <MonthlyPaymentCalendar sample={!!sampleFinance} finance={finance}
           canPrint={monthlyCalendarMode !== "view"} startGrooming={monthlyCalendarMode === "grooming"} onClose={() => setMonthlyCalendarMode(null)}
           onAppointmentsChange={groomingAppointments => setFinanceRaw(current => keepQuiltMilestones(current, { ...current, groomingAppointments }))} />}
@@ -3445,11 +3449,19 @@ function BudgetScreen({
   updateNumber,
   updateText,
   resetDemoData,
-  onPayday, onCalendar, onSavings, onCategories, onOutlook,
+  onPayday, onCalendar, onSavings, onCategories, onOutlook, onAtAGlance,
 }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <SectionTitle title="Budget" />
+      {onAtAGlance && <TouchableOpacity artworkMode="integrated" testID="open-at-a-glance"
+        accessibilityRole="button" accessibilityLabel="Open At a Glance, your complete money overview"
+        onPress={onAtAGlance} style={{flexDirection:"row",alignItems:"center",gap:10,backgroundColor:palette.lavender,borderWidth:2,borderColor:palette.purple,borderRadius:16,padding:10,marginBottom:12,minHeight:56}}>
+        <FittedArtwork source={require("./assets/characters/safe-to-spend-budget-workshop.jpg")} accessible={false} style={{width:66,height:44}} />
+        <View style={{flex:1}}><Text style={{fontSize:19,fontWeight:"900",color:palette.ink}}>At a Glance</Text>
+          <Text style={{fontSize:13,color:palette.ink}}>Your money details, together</Text></View>
+        <Ionicons name="arrow-forward" size={22} color={palette.purple} />
+      </TouchableOpacity>}
       <View style={styles.safeSpendCard} testID="budget-safe-to-spend">
         <Text accessibilityRole="header" style={styles.cardLabelLight}>Safe to Spend</Text>
         <Text style={styles.safeSpendNumber} numberOfLines={1} adjustsFontSizeToFit>
