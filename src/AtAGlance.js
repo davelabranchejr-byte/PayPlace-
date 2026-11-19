@@ -61,7 +61,7 @@ export default function AtAGlance({ finance, sample = false, onBack }) {
         <View style={[s.heroNumbers, narrow && s.stacked]}>
           <View style={s.heroColumn}><Text style={s.heroLabel}>Safe to Spend</Text>
             <Text style={s.amount}>{money(budget.available)}</Text>
-            <Text style={s.heroNote}>After all unpaid bills, minimums & buffer</Text></View>
+            <Text style={s.heroNote}>After reserves below</Text></View>
           <View style={s.heroColumn}><Text style={s.heroLabel}>Bank balance</Text>
             <Text style={s.balance}>{money(budget.balance)}</Text>
             <Text style={s.heroNote}>Your entered balance</Text></View>
@@ -109,7 +109,7 @@ const s = StyleSheet.create({
   screen: { flex: 1, minHeight: 0, backgroundColor: '#FFFDF8' },
   brandRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingHorizontal: 12, paddingVertical: 5 },
   brand: { flex: 1 }, mode: { fontSize: 11, fontWeight: '800', color: '#08796E', backgroundColor: '#DCFAF4', borderRadius: 12, padding: 7, flexShrink: 1 },
-  scroll: { flex: 1, minHeight: 0 }, content: { paddingHorizontal: 10, paddingBottom: 6, gap: 5 },
+  scroll: { flex: 1, minHeight: 0 }, content: { paddingHorizontal: 10, paddingBottom: 6, gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   back: { flexDirection: 'row', alignItems: 'center', minHeight: 44, paddingRight: 5 },
   backText: { color: '#08796E', fontSize: 13, fontWeight: '800' },
@@ -125,11 +125,11 @@ const s = StyleSheet.create({
   reserve: { fontSize: 11, fontWeight: '800', color: colors.ink },
   payday: { backgroundColor: '#EBD7FF', borderRadius: 9, padding: 8, flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'space-between', gap: 5 },
   section: { borderWidth: 1, borderRadius: 10, overflow: 'hidden', flexShrink: 0 },
-  sectionHeader: { paddingHorizontal: 8, paddingVertical: 4, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 },
+  sectionHeader: { paddingHorizontal: 8, paddingVertical: 3, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: 4 },
   sectionTitle: { color: colors.ink, fontSize: 13, fontWeight: '900', flexShrink: 1 },
   sectionValue: { color: colors.ink, fontSize: 14, fontWeight: '900', fontVariant: ['tabular-nums'] },
   sectionBody: { paddingHorizontal: 8, paddingVertical: 3, gap: 2 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', columnGap: 8, rowGap: 1, paddingVertical: 2 },
+  row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', columnGap: 8, rowGap: 1, paddingVertical: 1 },
   rowLabel: { flex: 1, minWidth: 65, color: colors.ink, fontSize: 13, lineHeight: 17, fontWeight: '700' },
   rowDetail: { color: '#46546A', fontSize: 12, lineHeight: 16, flexShrink: 1 },
   rowValue: { color: colors.ink, fontSize: 13, lineHeight: 17, fontWeight: '800', fontVariant: ['tabular-nums'] },
