@@ -1379,7 +1379,7 @@ test('At a Glance opens from Budget, shows details without disclosure taps and l
     const original = JSON.stringify(harness.finance());
     const overview=renderer.root.findByProps({testID:'at-a-glance-screen'});
     const copy=overview.findAllByType('Text').map(node=>textContent(node.props.children)).join(' ');
-    for(const expected of ['Safe to Spend','$357.62','Internet','Nov 23','Phone','Nov 27','Credit card','Min $30.00','Emergency fund','$150.00 / $500.00','30% saved','Purchase records do not reduce your balance.'])
+    for(const expected of ['Safe to Spend','$357.62','Internet','Nov 23','Phone','Nov 27','Credit card','Payment $30.00','Emergency fund','$150.00 / $500.00','30% saved','Purchase records do not reduce your balance.'])
       assert.ok(copy.includes(expected),expected);
     assert.equal(overview.findAllByType('TextInput').length,0);
     const tabs=renderer.root.findAllByType('TouchableOpacity').filter(n=>n.props.accessibilityRole==='tab');
