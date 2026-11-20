@@ -904,8 +904,8 @@ const DEMO_IMPORTED_BILLS = [
 const starterFinance = {
   balance: 1900,
   nextPaycheck: 2180,
-  daysUntilPayday: 9,
-  nextPaycheckDate: "2026-06-10",
+  daysUntilPayday: 0,
+  nextPaycheckDate: "",
   payFrequency: "Biweekly",
   allowance: 38,
   buffer: 150,
@@ -1101,7 +1101,7 @@ function getTellMeWhatToDoPlan({ finance, upcomingTotal, debtDueTotal, safeToSpe
   const buffer = Number(finance.buffer || 0);
   const balance = Number(finance.balance || 0);
 
-  if (!balance) {
+  if (!balance || !paydaySnapshot(finance).validPayday) {
     return {
       title: "Feed the dashboard first",
       body: "PayPlace needs a few numbers before it can give you a clean next move. This is not homework. It is giving the money gremlin a map.",
@@ -1258,6 +1258,9 @@ function PayPlaceApp() {
   const [extraCalendarVisible, setExtraCalendarVisible] = useState(false);
   const [outlookVisible, setOutlookVisible] = useState(false);
   const finance = sampleFinance || savedFinance;
+  const financeLatest = useRef(finance);
+  financeLatest.current = finance;
+  const budgetClock = useNeighborhoodClock();
   const subscriptionPreview = Boolean(sampleFinance);
   function openSubscriptionDetective() {
     if (subscriptionPreview) {
@@ -1491,10 +1494,8 @@ function PayPlaceApp() {
   const debtDueTotal = currentBudget.debt;
   const safeToSpend = currentBudget.available;
 
-  const safeToSpendDaily = useMemo(() => {
-    const days = Math.max(Number(finance.daysUntilPayday || 0), 1);
-    return safeToSpend / days;
-  }, [safeToSpend, finance.daysUntilPayday]);
+  const paydayDays = paydaySnapshot(finance, budgetClock).days;
+  const safeToSpendDaily = paydayDays === null ? safeToSpend : safeToSpend / Math.max(paydayDays, 1);
 
   function updateNumber(field, text) {
     setFinance((current) => ({
@@ -1513,11 +1514,13 @@ function PayPlaceApp() {
   }
 
   function updateMirror(action) {
+    const finance = financeLatest.current;
     try {
       const next = action.type === "save" ? saveFunMoney(finance, action.amount)
         : action.type === "record" ? recordTreat(finance, action)
         : action.type === "undo" ? undoTreat(finance, action.id)
         : action.type === "look" ? saveLook(finance, action.look) : finance;
+      financeLatest.current = next;
       setFinance(next);
       return true;
     } catch (error) {
@@ -2001,7 +2004,7 @@ Confidence: ${bill.confidence || "Confirmed"}`,
             else if (next === "Cabaret") setCabaretVisible(true);
             else { if (next === "Calm") setCalmBack(tab); setTab(next); }
           }}
-          safeToSpendDaily={safeToSpendDaily} daysUntilPayday={finance.daysUntilPayday}
+          safeToSpendDaily={safeToSpendDaily} daysUntilPayday={paydayDays}
           showWelcome={!welcomeSeen && !obscured && !essentialsPanel && !sampleFinance}
           onWelcomeSeen={seeWelcome}
           weatherZip={finance.neighborhoodWeatherZip}
@@ -2586,7 +2589,7 @@ function NeighborhoodWelcome({ finance, onQuiltMilestone, switchTab, safeToSpend
         </View>
         <View style={styles.flexOne}>
           <Text style={styles.gentleLimitLabel}>TODAY’S GENTLE LIMIT</Text>
-          <Text style={styles.gentleLimitValue}>{money(safeToSpendDaily)}/day</Text>
+          <Text style={styles.gentleLimitValue}>{money(safeToSpendDaily)}{paydaySnapshot(finance).validPayday ? "/day" : " available now"}</Text>
           <Text style={styles.gentleLimitSub}>A calm guide, not a guilt trip.</Text>
         </View>
       </View>
@@ -2633,7 +2636,7 @@ function MyFinancesScreen({
   onSavings,
   onStepsChange,
 }) {
-  const daysUntilPayday = Math.max(Number(finance.daysUntilPayday || 0), 1);
+  const daysUntilPayday = paydaySnapshot(finance, useNeighborhoodClock()).days;
   const unpaidBills = finance.bills.filter((bill) => bill.status !== "Paid");
   const nextBill = unpaidBills[0];
   const extraPaycheckInfo = getExtraPaycheckInfo(finance, upcomingTotal, debtDueTotal);
@@ -2660,8 +2663,8 @@ function MyFinancesScreen({
       <View style={[styles.safeHeroCard, styles.financesSummary]} testID="home-safe-to-spend">
         <View style={styles.financesSummaryCopy}>
         <Text accessibilityRole="header" style={styles.safeHeroLabel}>Safe to Spend</Text>
-        <Text style={[styles.safeHeroAmount, styles.financesSummaryAmount]}>{money(safeToSpendDaily)}<Text style={styles.financesSummaryUnit}>/day</Text></Text>
-        <Text style={[styles.safeHeroSub, styles.financesSummaryNote]}>Planning estimate · {daysUntilPayday} day{daysUntilPayday === 1 ? "" : "s"} to payday</Text>
+        <Text style={[styles.safeHeroAmount, styles.financesSummaryAmount]}>{money(safeToSpendDaily)}{daysUntilPayday !== null && <Text style={styles.financesSummaryUnit}>/day</Text>}</Text>
+        <Text style={[styles.safeHeroSub, styles.financesSummaryNote]}>{daysUntilPayday === null ? "Available now · Set or update your payday in Budget" : `Planning estimate · ${daysUntilPayday} day${daysUntilPayday === 1 ? "" : "s"} to payday`}</Text>
         </View>
         <View style={[styles.safeHeroImageFrame, styles.financesSummaryArtwork]}>
           <SafeToSpendArtwork placement="finances" testID="home-safe-to-spend-artwork" />
@@ -2782,12 +2785,12 @@ function NeighborhoodMapScreen({ canRotate, reduceAnimation, paused, onOpen, wea
       {showWelcome && !menu && !resident && <NeighborhoodOpening theme={season} reduceAnimation={reduceAnimation} onFinish={onWelcomeSeen} />}
     </View>
     {!landscape && !fullMap && !menu && !resident && <TouchableOpacity artworkMode="integrated" accessibilityRole="button"
-      accessibilityLabel={`Safe to Spend, ${money(safeToSpendDaily)} per day. Open My Finances`} onPress={() => choose(() => onOpen("Finances"))}
+      accessibilityLabel={`Safe to Spend, ${money(safeToSpendDaily)}${daysUntilPayday === null ? " available now" : " per day"}. Open My Finances`} onPress={() => choose(() => onOpen("Finances"))}
       style={styles.safeMapShortcut}>
       <View style={styles.safeMapCopy}>
         <Text style={styles.safeHeroLabel}>Safe to Spend</Text>
-        <Text style={styles.safeMapAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}/day</Text>
-        <Text style={styles.safeHeroSub}>{Math.max(Number(daysUntilPayday || 0), 1)} {Number(daysUntilPayday) > 1 ? "days" : "day"} to payday</Text>
+        <Text style={styles.safeMapAmount} numberOfLines={1} adjustsFontSizeToFit>{money(safeToSpendDaily)}{daysUntilPayday !== null ? "/day" : ""}</Text>
+        <Text style={styles.safeHeroSub}>{daysUntilPayday === null ? "Available now · Update payday in Budget" : `${daysUntilPayday} ${daysUntilPayday === 1 ? "day" : "days"} to payday`}</Text>
       </View>
       <SafeToSpendArtwork placement="map" style={styles.safeMapArtwork} testID="map-safe-to-spend-artwork" />
     </TouchableOpacity>}
@@ -3452,6 +3455,7 @@ function BudgetScreen({
   resetDemoData,
   onPayday, onCalendar, onSavings, onCategories, onOutlook, onAtAGlance,
 }) {
+  const budgetClock = useNeighborhoodClock();
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, styles.tabContent]}>
       <SectionTitle title="Budget" />
@@ -3535,12 +3539,7 @@ function BudgetScreen({
           onChangeText={text => updateText("secondPaydayDay", text)}
         />}
 
-        <InputField
-          label="Days until payday"
-          value={String(finance.daysUntilPayday)}
-          keyboardType="number-pad"
-          onChangeText={(text) => updateNumber("daysUntilPayday", text)}
-        />
+        <Text style={styles.inputLabel}>Days until payday: {paydaySnapshot(finance, budgetClock).days ?? "Set or update your payday above"}</Text>
 
         <InputField
           label="Daily allowance"
