@@ -31,12 +31,17 @@ export function atAGlance(finance, now = new Date()) {
   }).sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
   const debts = (finance.debts || []).map(debt => ({ ...debt,
     balanceCents: amountCents(debt.balance), minimumCents: amountCents(debt.minimum) }));
-  const goals = (finance.savingsGoals || []).map(goal => ({ ...goal, ...savingsProgress(goal) }));
+  const goals = (finance.savingsGoals || []).map(goal => ({ ...goal, ...savingsProgress(goal),
+    percent: Math.min(100, Math.round(goal.savedCents / goal.targetCents * 1000) / 10) }));
+  const savedPayday = billDate(finance.nextPaycheckDate);
+  const hasAmount = value => value !== null && value !== undefined && String(value).trim() !== '' && Number.isFinite(Number(value));
   return {
     budget, bills, debts, goals,
     debtBalanceCents: debts.reduce((sum, debt) => sum + debt.balanceCents, 0),
     paycheckCents: amountCents(finance.nextPaycheck), payday,
-    paydayDate: payday.validPayday ? finance.nextPaycheckDate : null,
+    hasPaycheckAmount: hasAmount(finance.nextPaycheck), hasBalance: hasAmount(finance.balance),
+    debtPaymentCents: debts.filter(debt => debt.balanceCents > 0).reduce((sum, debt) => sum + debt.minimumCents, 0),
+    paydayDate: savedPayday ? finance.nextPaycheckDate : null,
     spending: [...spending].map(([category, cents]) => ({ category, cents }))
       .sort((a, b) => b.cents - a.cents || a.category.localeCompare(b.category)),
     spendingCents: [...spending.values()].reduce((sum, cents) => sum + cents, 0),

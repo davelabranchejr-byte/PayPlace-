@@ -12,11 +12,40 @@ function cents(value) {
     ? Math.round(number * 100) : 0;
 }
 
+// A matching bill already reserves this debt payment. Consume each bill once
+// so two debts with the same lender cannot share a single reserved payment.
+export function debtPaymentReserves(debts = [], bills = []) {
+  const usedBills = new Set();
+  const nameKey = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+  return debts.reduce((total, debt) => {
+    if (debt.balance !== undefined && Number(debt.balance) <= 0) return total;
+    const minimum = cents(debt.minimum);
+    const match = bills.findIndex((bill, index) => {
+      if (usedBills.has(index) || bill.paid === true || bill.status === 'Paid') return false;
+      const billDue = bill.dueDate || bill.due;
+      const debtDue = debt.dueDate || debt.due;
+      if (billDue && debtDue && billDue !== debtDue) return false;
+      const linked = (debt.id && bill.debtId === debt.id) || (bill.id && debt.billId === bill.id);
+      if (linked) return true;
+      const name = nameKey(debt.name);
+      if (!name || nameKey(bill.name) !== name || cents(bill.amount) !== minimum) return false;
+      const account = String(debt.accountNumberLast4 || '');
+      const billAccount = String(bill.accountNumberLast4 || '');
+      if (account && billAccount && account !== billAccount) return false;
+      return debts.filter(item => nameKey(item.name) === name &&
+        String(item.accountNumberLast4 || '') === account).length === 1;
+    });
+    if (match < 0) return total + minimum;
+    usedBills.add(match);
+    return total + Math.max(0, minimum - cents(bills[match].amount));
+  }, 0);
+}
+
 export function mirrorBudget(finance) {
   const balance = cents(finance.balance);
   const bills = (finance.bills || []).reduce((sum, bill) =>
     sum + (bill.status === "Paid" || bill.paid === true ? 0 : cents(bill.amount)), 0);
-  const debt = (finance.debts || []).reduce((sum, item) => sum + cents(item.minimum), 0);
+  const debt = debtPaymentReserves(finance.debts, finance.bills);
   const buffer = cents(finance.buffer);
   const available = Math.max(balance - bills - debt - buffer, 0);
   const limit = cents(finance.bobbieFunMoney?.limit);

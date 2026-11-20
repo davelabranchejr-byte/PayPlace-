@@ -62,29 +62,30 @@ export default function AtAGlance({ finance, sample = false, onBack }) {
           <View style={s.heroColumn}><Text style={s.heroLabel}>Safe to Spend</Text>
             <Text style={s.amount}>{money(budget.available)}</Text>
             <Text style={s.heroNote}>After reserves below</Text></View>
-          <View style={s.heroColumn}><Text style={s.heroLabel}>Bank balance</Text>
-            <Text style={s.balance}>{money(budget.balance)}</Text>
+          <View style={s.heroColumn}><Text style={s.heroLabel}>Account balance</Text>
+            <Text style={s.balance}>{model.hasBalance ? money(budget.balance) : 'Balance not set'}</Text>
             <Text style={s.heroNote}>Your entered balance</Text></View>
         </View>
         <View style={s.reserves}>
-          <Text style={s.reserve}>Bills {money(budget.bills)}</Text>
-          <Text style={s.reserve}>Debt {money(budget.debt)}</Text>
-          <Text style={s.reserve}>Buffer {money(budget.buffer)}</Text>
+          <Text style={s.reserve}>Unpaid bills {money(budget.bills)}</Text>
+          <Text style={s.reserve}>Debt payments {money(budget.debt)}</Text>
+          <Text style={s.reserve}>Safety buffer {money(budget.buffer)}</Text>
         </View>
-        {model.shortfallCents > 0 && <Text style={s.heroNote}>Reserved costs exceed balance by {money(model.shortfallCents / 100)}.</Text>}
+        {model.shortfallCents > 0 && <Text style={s.heroNote}>Reserves exceed available funds by {money(model.shortfallCents / 100)}.</Text>}
       </View>
       <View style={s.payday} testID="glance-payday">
-        <Text style={s.sectionTitle}>Next paycheck</Text><Text style={s.sectionValue}>{money(model.paycheckCents / 100)}</Text>
-        <Text style={s.rowDetail}>{model.paydayDate ? `${dateLabel(model.paydayDate)} · ${model.payday.days === 0 ? 'Today' : `${model.payday.days} days`}` : 'Update payday in Budget'}</Text>
+        <Text style={s.sectionTitle}>Next paycheck</Text><Text style={s.sectionValue}>{model.hasPaycheckAmount ? money(model.paycheckCents / 100) : 'Amount not set'}</Text>
+        <Text style={s.rowDetail}>{model.paydayDate ? `${dateLabel(model.paydayDate)} · ${!model.payday.validPayday ? 'Update saved payday' : model.payday.days === 0 ? 'Today' : `${model.payday.days} days`}` : 'Payday not set'}</Text>
       </View>
       <Section title="Unpaid bills" value={money(budget.bills)} tone="#FFF0A0" testID="glance-bills">
         {model.bills.length ? model.bills.map((bill, index) => <Row key={bill.id || index} label={bill.name || 'Bill'}
           detail={`${bill.overdue ? 'Overdue · ' : ''}${dateLabel(bill.date)}`} value={money(bill.amountCents / 100)} />)
           : <Text style={s.empty}>No unpaid bills recorded.</Text>}
       </Section>
-      <Section title="Debt" value={money(model.debtBalanceCents / 100)} tone="#FFD9D4" testID="glance-debt">
+      <Section title="Debt payments" value={money(model.debtPaymentCents / 100)} tone="#FFD9D4" testID="glance-debt">
+        <Row label="Total debt remaining" value={money(model.debtBalanceCents / 100)} />
         {model.debts.length ? model.debts.map((debt, index) => <Row key={debt.id || index} label={debt.name || 'Debt'}
-          detail={`Min ${money(debt.minimumCents / 100)}${debt.dueDate || debt.due ? ` · ${dateLabel(debt.dueDate || debt.due)}` : ''}`}
+          detail={`Payment ${money(debt.minimumCents / 100)}${debt.dueDate || debt.due ? ` · ${dateLabel(debt.dueDate || debt.due)}` : ''}`}
           value={money(debt.balanceCents / 100)} />) : <Text style={s.empty}>No debts recorded.</Text>}
       </Section>
       <Section title="Savings goals" tone="#EBD7FF" testID="glance-savings">
