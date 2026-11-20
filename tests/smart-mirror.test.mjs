@@ -76,3 +76,26 @@ test("look plans persist alongside existing finance data and preserve the charac
   assert.equal(JSON.parse(JSON.stringify(next)).bobbieLooks[0].outfit, "Teal gown");
   assert.throws(() => saveLook(finance, { name: " " }));
 });
+
+test('partial linked bills and paid current-cycle bills cover a debt minimum exactly once', () => {
+ const debt={id:'card',name:'Card',balance:900,minimum:100,due:'2026-11-25'};
+ const bill=(id,amount,paid=false,due='2026-11-25')=>({id,debtId:'card',amount,paid,due});
+ const f=example({balance:500,buffer:0,debts:[debt],bills:[bill('a',30),bill('b',20)]});
+ assert.equal(mirrorBudget(f).debt,50);assert.equal(mirrorBudget(f).available,400);
+ assert.equal(mirrorBudget({...f,bills:[bill('paid',100,true)]}).debt,0);
+ assert.equal(mirrorBudget({...f,bills:[bill('old',100,true,'2026-10-25')]}).debt,100);
+ assert.equal(mirrorBudget({...f,bills:[bill('undated',100,true,'')]}).debt,100);
+});
+test('already reflected purchases, retries and undo preserve a reconciled balance', () => {
+ const planned=saveFunMoney(example({balanceUpdatedAt:100}),100);
+ const request={amount:'25.25',name:'Dinner',requestId:'one'};
+ const recorded=recordTreat(planned,request);
+ assert.equal(recordTreat(JSON.parse(JSON.stringify(recorded)),request).bobbieFunMoney.entries.length,1);
+ assert.throws(()=>recordTreat(recorded,{...request,amount:'26'}),/different details/);
+ const reconciled={...recorded,balance:800,balanceUpdatedAt:200};
+ assert.equal(undoTreat(reconciled,recorded.bobbieFunMoney.entries[0].id).balance,800);
+ const past=recordTreat({...planned,balance:0},{...request,alreadyInBalance:true});
+ assert.equal(past.balance,0);assert.equal(mirrorBudget(past).remaining,74.75);
+ assert.equal(undoTreat(past,past.bobbieFunMoney.entries[0].id).balance,0);
+ assert.throws(()=>recordTreat(planned,{...request,amount:'101',alreadyInBalance:true}));
+});

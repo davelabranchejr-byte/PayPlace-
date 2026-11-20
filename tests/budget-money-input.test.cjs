@@ -39,6 +39,7 @@ vm.runInNewContext(disclosureCode, { module: disclosureModule, exports: disclosu
 const sandbox = {
   require: asset => ({ uri: asset }),
   ExpandableSection: disclosureModule.exports.default,
+  useNeighborhoodClock: () => new Date(2026, 10, 20),
   React, useState: React.useState, useEffect: React.useEffect,
   ...Object.fromEntries(['View', 'Text', 'TextInput', 'ScrollView', 'TouchableOpacity',
     'NavigationTiles', 'SectionTitle', 'SafeMiniCard', 'SafeToSpendArtwork', 'CharacterArtwork', 'Ionicons'].map(name => [name, name])),
@@ -50,6 +51,7 @@ const { BudgetScreen, cleanNumber } = sandbox.module.exports;
 
 test('budget cents remain editable, saved and usable after reopening', async () => {
   const { mirrorBudget } = await import('../src/smart-mirror.mjs');
+  sandbox.paydaySnapshot = (await import('../src/launch-essentials.mjs')).paydaySnapshot;
   const { createVaultStorage, FINANCE_KEY } = await import('../src/vault-storage.mjs');
   const records = new Map();
   let key = null;
@@ -99,8 +101,12 @@ test('budget cents remain editable, saved and usable after reopening', async () 
       assert.equal(input(label).props.value, '123.10');
       assert.equal(finance[key], 123.1);
     }
-    // Whole-number controls keep their existing behavior and keyboard.
-    assert.equal(input('Days until payday').props.keyboardType, 'number-pad');
+    // The date owns the countdown; an obsolete saved count cannot override it.
+    assert.equal(input('Days until payday'), undefined);
+    finance = { ...finance, nextPaycheckDate: '2026-11-25', daysUntilPayday: 99 };
+    await act(() => renderer.update(render()));
+    const countdown = renderer.root.findAllByType('Text').find(n => Array.isArray(n.props.children) && n.props.children[0] === 'Days until payday: ');
+    assert.equal(countdown.props.children[1], 5);
     assert.equal(input('Current credit score'), undefined, 'credit entry lives in Plaid Banking');
     await act(() => input('Current bank balance').props.onChangeText('123.45'));
     await act(() => input('Emergency buffer').props.onChangeText('10.10'));

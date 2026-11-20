@@ -1496,3 +1496,24 @@ test('Daddy’s TV opens PayPlacePerView, preserves favorites after relaunch, an
     assert.deepEqual(harness.finance().payPlacePerView.favorites, ['westleys-modern-life-episode-1']);
   } finally { if (renderer) await act(() => renderer.unmount()); }
 });
+
+test('Smart Mirror records an already reflected purchase once without another balance deduction', async () => {
+ const harness=appHarness(); const {recordTreat}=models.get(path.join(root,'src/smart-mirror.mjs'));
+ let finance={balance:0,bills:[],debts:[],bobbieFunMoney:{limit:100,entries:[]}},calls=0,renderer;
+ const render=()=>React.createElement(harness.Mirror,{open:true,finance,onBudget:()=>{},onAction:action=>{
+   calls++;finance=recordTreat(finance,action);return true;
+ }});
+ try {
+   await act(()=>{renderer=create(render());});
+   const field=renderer.root.findAllByType('TextInput').find(n=>n.props.accessibilityLabel==='Full cost, including tax and fees');
+   await act(()=>field.props.onChangeText('25.25'));
+   await act(()=>renderer.root.findByType('Switch').props.onValueChange(true));
+   const button=renderer.root.findAllByType('TouchableOpacity').find(n=>textContent(n.props.children)==='Record this past purchase');
+   assert.equal(button.props.disabled,false);
+   const press=button.props.onPress;
+   await act(()=>{press();press();renderer.update(render());});
+   assert.equal(calls,1);assert.equal(finance.balance,0);
+   assert.equal(finance.bobbieFunMoney.entries.length,1);
+   assert.equal(finance.bobbieFunMoney.entries[0].amount,25.25);
+ } finally {if(renderer)await act(()=>renderer.unmount());}
+});

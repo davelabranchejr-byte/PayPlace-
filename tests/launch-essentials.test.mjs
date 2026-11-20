@@ -43,3 +43,12 @@ test('chosen local reminder time reaches bills and subscriptions without enablin
 test('privacy masks signed and formatted currency without changing dates and bill names',()=>{
  assert.equal(privateText('Power: $1,234.56; shortfall $25.00; -$10.25 on 2026-10-12'),'Power: $•••; shortfall $•••; $••• on 2026-10-12');
 });
+
+test('payday uses local calendar dates across midnight and ignores obsolete saved day counts',()=>{
+ const f={balance:100,bills:[],debts:[],buffer:0,nextPaycheckDate:'2026-11-25',daysUntilPayday:99};
+ assert.equal(paydaySnapshot(f,new Date(2026,10,20,23,59)).days,5);
+ assert.equal(paydaySnapshot(f,new Date(2026,10,21,0,1)).days,4);
+ assert.equal(paydaySnapshot(f,new Date(2026,10,25)).days,0);
+ assert.equal(paydaySnapshot(f,new Date(2026,10,26)).days,null);
+ assert.equal(paydaySnapshot({...f,nextPaycheckDate:''},new Date(2026,10,20)).days,null);
+});
