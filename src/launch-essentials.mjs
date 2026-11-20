@@ -23,7 +23,8 @@ export function paydaySnapshot(finance, now = new Date()) {
   const essentials = finance.paydayEssentials?.payday === finance.nextPaycheckDate ? finance.paydayEssentials : null;
   const groceries = essentials?.groceriesCents || 0, gas = essentials?.gasCents || 0;
   const billTotal = bills.reduce((total,b) => total + cents(b.amount),0);
-  const debt = debtPaymentReserves((finance.debts || []).filter(d => Number(d.balance)>0), bills);
+  const debt = debtPaymentReserves((finance.debts || []).filter(d => Number(d.balance)>0),
+    validPayday ? (finance.bills || []).filter(b => !billDate(b.dueDate || b.due) || billDate(b.dueDate || b.due) <= payday) : []);
   const balance = cents(finance.balance), buffer = cents(finance.buffer);
   const remaining = balance-billTotal-debt-groceries-gas-buffer;
   return { validPayday:!!validPayday, bills, balance, billTotal, debt, buffer, groceries, gas, remaining,

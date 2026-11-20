@@ -1,6 +1,6 @@
 import { MascotTouchable as TouchableOpacity } from './MascotTouchable';
 import React, { useEffect, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, KeyboardAvoidingView, Modal, Platform, SafeAreaView, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { Text, TextInput } from "./Privacy";
 import { Ionicons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -48,6 +48,9 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
   const [message, setMessage] = useState("");
   const [look, setLook] = useState({ name: "", wig: "Ice blonde curls", outfit: "Yellow plaid & white boots", accessories: "Pearls, diamonds & a matching bag" });
   const recording = useRef(false);
+  const requestId = useRef(null);
+  const [alreadyInBalance, setAlreadyInBalance] = useState(false);
+  function editPurchase() { recording.current = false; requestId.current = null; setMessage(""); }
   const budget = mirrorBudget(finance);
   const purchase = checked ? checkPurchase(finance, cost) : null;
   const validCost = parseAmount(cost);
@@ -61,15 +64,19 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
 
   function chooseTab(id) { setTab(id); setMessage(""); }
   function visitBudget() { setVisible(false); onBudget(); }
+  const canRecord = alreadyInBalance
+    ? budget.hasPlan && validCost > 0 && validCost !== null && Math.round(validCost * 100) <= Math.round(budget.remaining * 100)
+    : purchase?.fitsFunMoney;
   function recordPurchase() {
-    if (recording.current || !purchase?.fitsFunMoney) return;
+    if (recording.current || !canRecord) return;
     recording.current = true;
     try {
-      if (onAction({ type: "record", amount: cost, name: purchaseName })) {
-        setMessage(`${purchaseName.trim() || "Your treat"} recorded. Your local balance and fun money are updated.`);
+      requestId.current ||= `mirror-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      if (onAction({ type: "record", amount: cost, name: purchaseName, alreadyInBalance, requestId: requestId.current })) {
+        setMessage(alreadyInBalance ? "Purchase recorded in fun money. Your account balance already includes it." : `${purchaseName.trim() || "Your treat"} recorded. Your local balance and fun money are updated.`);
         setCost(""); setPurchaseName(""); setChecked(false);
-      }
-    } finally { recording.current = false; }
+      } else { recording.current = false; }
+    } catch (error) { recording.current = false; throw error; }
   }
 
   return <>
@@ -119,12 +126,19 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
                 {tab === "check" && <>
                   <Text style={s.panelTitle}>Can I afford this?</Text>
                   <Text style={s.body}>An outfit, dinner, a trip, a little something. Let’s give it a place in your plan.</Text>
-                  <Field label="What are you thinking about?" value={purchaseName} onChangeText={(text) => { setPurchaseName(text); setMessage(""); }} placeholder="Dinner out, a new outfit…" />
+                  <Field label="What are you thinking about?" value={purchaseName} onChangeText={(text) => { editPurchase(); setPurchaseName(text); }} placeholder="Dinner out, a new outfit…" />
                   <Field label="Full cost, including tax and fees" value={cost} money placeholder="0.00"
-                    onChangeText={(text) => { setCost(text); setChecked(false); setMessage(""); }} />
+                    onChangeText={(text) => { editPurchase(); setCost(text); setChecked(false); }} />
                   {cost !== "" && validCost === null && <Text style={s.error}>Enter a valid amount with up to two decimal places.</Text>}
-                  <Button disabled={validCost === null || validCost <= 0} onPress={() => { setChecked(true); setMessage(""); }}>Ask the mirror</Button>
-                  {purchase && <View accessibilityLiveRegion="polite" style={[s.result, !purchase.fits && s.resultAmber]}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                    <Text style={[s.body, { flex: 1 }]}>Already included in my account balance</Text>
+                    <Switch accessibilityLabel="Purchase already included in my account balance" value={alreadyInBalance}
+                      onValueChange={value => { editPurchase(); setAlreadyInBalance(value); setChecked(false); }} />
+                  </View>
+                  {alreadyInBalance && <><Text style={s.small}>Record a past purchase against your fun-money plan without deducting it from your account balance again.</Text>
+                    <Button disabled={!canRecord} onPress={recordPurchase}>Record this past purchase</Button></>}
+                  {!alreadyInBalance && <Button disabled={validCost === null || validCost <= 0} onPress={() => { setChecked(true); setMessage(""); }}>Ask the mirror</Button>}
+                  {!alreadyInBalance && purchase && <View accessibilityLiveRegion="polite" style={[s.result, !purchase.fits && s.resultAmber]}>
                     <Text style={s.resultTitle}>{purchase.fits ? "There’s room in your current plan." : "Let’s give this a little more time."}</Text>
                     <Text style={s.body}>{purchase.fits
                       ? `${dollars(purchase.amount)} leaves ${dollars(purchase.left)} after your saved bills, debt minimums and buffer.`
@@ -162,12 +176,12 @@ export default function BobbieSmartMirror({ finance, onAction, onBudget, open, o
                     {budget.entries.slice().reverse().map((entry) => <View key={entry.id} style={s.entry}>
                       <View style={{ flex: 1 }}><Text style={s.label}>{entry.name}</Text><Text style={s.small}>{dollars(entry.amount)}</Text></View>
                       <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Undo ${entry.name}`}
-                        style={s.undo} onPress={() => { if (onAction({ type: "undo", id: entry.id })) setMessage("Treat undone. Your local balance and fun money are restored."); }}>
+                        style={s.undo} onPress={() => { if (onAction({ type: "undo", id: entry.id })) setMessage("Treat record removed. Your fun-money plan is updated."); }}>
                         <Text style={s.undoText}>Undo</Text>
                       </TouchableOpacity>
                     </View>)}
                   </> : <><Text style={s.body}>Your joy deserves a little room. Set a fun-money amount first, and it will live here.</Text><Button onPress={() => chooseTab("treat")}>Make my fun-money plan</Button></>}
-                  <Text style={s.small}>Recording a treat reduces the balance you entered in PayPlace. Use it for purchases you haven’t already deducted there.</Text>
+                  <Text style={s.small}>For purchases already reflected in your account balance, choose “Already included in my account balance.” Undo only restores money when the saved balance has not been replaced since recording.</Text>
                 </>}
 
                 {tab === "looks" && <>

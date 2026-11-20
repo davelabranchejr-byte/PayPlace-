@@ -12,32 +12,37 @@ function cents(value) {
     ? Math.round(number * 100) : 0;
 }
 
-// A matching bill already reserves this debt payment. Consume each bill once
-// so two debts with the same lender cannot share a single reserved payment.
+// Match explicit links or one unambiguous lender/account/payment combination.
+// A paid match needs the same dated cycle, so an old paid bill cannot hide a
+// newly due debt payment. Each bill can cover only one debt.
 export function debtPaymentReserves(debts = [], bills = []) {
   const usedBills = new Set();
   const nameKey = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
   return debts.reduce((total, debt) => {
     if (debt.balance !== undefined && Number(debt.balance) <= 0) return total;
     const minimum = cents(debt.minimum);
-    const match = bills.findIndex((bill, index) => {
-      if (usedBills.has(index) || bill.paid === true || bill.status === 'Paid') return false;
+    const debtDue = debt.dueDate || debt.due;
+    let covered = 0;
+    bills.forEach((bill, index) => {
+      if (usedBills.has(index) || covered >= minimum) return;
       const billDue = bill.dueDate || bill.due;
-      const debtDue = debt.dueDate || debt.due;
-      if (billDue && debtDue && billDue !== debtDue) return false;
+      const paid = bill.paid === true || bill.status === 'Paid';
+      if (billDue && debtDue && billDue !== debtDue) return;
+      if (paid && (!billDue || !debtDue || billDue !== debtDue)) return;
       const linked = (debt.id && bill.debtId === debt.id) || (bill.id && debt.billId === bill.id);
-      if (linked) return true;
-      const name = nameKey(debt.name);
-      if (!name || nameKey(bill.name) !== name || cents(bill.amount) !== minimum) return false;
-      const account = String(debt.accountNumberLast4 || '');
-      const billAccount = String(bill.accountNumberLast4 || '');
-      if (account && billAccount && account !== billAccount) return false;
-      return debts.filter(item => nameKey(item.name) === name &&
-        String(item.accountNumberLast4 || '') === account).length === 1;
+      if (!linked) {
+        const name = nameKey(debt.name);
+        if (!name || nameKey(bill.name) !== name || cents(bill.amount) !== minimum) return;
+        const account = String(debt.accountNumberLast4 || '');
+        const billAccount = String(bill.accountNumberLast4 || '');
+        if (account && billAccount && account !== billAccount) return;
+        if (debts.filter(item => nameKey(item.name) === name &&
+          String(item.accountNumberLast4 || '') === account).length !== 1) return;
+      }
+      usedBills.add(index);
+      covered += cents(bill.amount);
     });
-    if (match < 0) return total + minimum;
-    usedBills.add(match);
-    return total + Math.max(0, minimum - cents(bills[match].amount));
+    return total + Math.max(0, minimum - covered);
   }, 0);
 }
 
@@ -87,15 +92,28 @@ export function saveFunMoney(finance, amount) {
   } };
 }
 
-export function recordTreat(finance, { amount, name, recordedAt = new Date().toISOString() }) {
-  const purchase = checkPurchase(finance, amount);
+export function recordTreat(finance, { amount, name, recordedAt = new Date().toISOString(), requestId, alreadyInBalance = false }) {
   const budget = mirrorBudget(finance);
-  if (!purchase || !purchase.fitsFunMoney) throw new Error("This treat needs to fit both your fun-money plan and your current budget.");
+  const parsed = parseAmount(amount);
+  const existing = requestId && budget.entries.find(entry => entry.requestId === requestId);
+  const entryName = String(name || "A little treat").trim().slice(0, 100);
+  if (existing) {
+    if (existing.amount !== parsed || existing.name !== entryName || existing.balanceAdjusted !== !alreadyInBalance) {
+      throw new Error("This purchase was already recorded with different details.");
+    }
+    return finance;
+  }
+  const purchase = checkPurchase(finance, amount);
+  const fits = alreadyInBalance
+    ? budget.hasPlan && parsed !== null && parsed > 0 && cents(parsed) <= cents(budget.remaining)
+    : purchase?.fitsFunMoney;
+  if (!fits) throw new Error("This treat needs to fit your fun-money plan and any money still to leave your account.");
   let id = `treat-${recordedAt}`;
   while (budget.entries.some((entry) => entry.id === id)) id += "-next";
-  const entry = { id, amount: purchase.amount,
-    name: String(name || "A little treat").trim().slice(0, 100), recordedAt };
-  return { ...finance, balance: (cents(finance.balance) - cents(purchase.amount)) / 100,
+  const entry = { id, amount: parsed, name: entryName, recordedAt,
+    balanceAdjusted: !alreadyInBalance, balanceCheckpoint: finance.balanceUpdatedAt || null,
+    ...(requestId ? { requestId } : {}) };
+  return { ...finance, balance: alreadyInBalance ? finance.balance : (cents(finance.balance) - cents(parsed)) / 100,
     bobbieFunMoney: { ...finance.bobbieFunMoney, entries: [...budget.entries, entry] } };
 }
 
@@ -103,7 +121,11 @@ export function undoTreat(finance, id) {
   const budget = mirrorBudget(finance);
   const entry = budget.entries.find((item) => item.id === id);
   if (!entry) return finance;
-  return { ...finance, balance: (cents(finance.balance) + cents(entry.amount)) / 100,
+  const reconciled = Object.hasOwn(entry, 'balanceCheckpoint')
+    ? (finance.balanceUpdatedAt || null) !== entry.balanceCheckpoint
+    : Number(finance.balanceUpdatedAt || 0) > Date.parse(entry.recordedAt);
+  const restoreBalance = entry.balanceAdjusted !== false && !reconciled;
+  return { ...finance, balance: restoreBalance ? (cents(finance.balance) + cents(entry.amount)) / 100 : finance.balance,
     bobbieFunMoney: { ...finance.bobbieFunMoney, entries: budget.entries.filter((item) => item.id !== id) } };
 }
 
